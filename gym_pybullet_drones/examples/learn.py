@@ -43,7 +43,12 @@ DEFAULT_AGENTS = 2
 DEFAULT_MA = False
 
 
-def run(multiagent=DEFAULT_MA, output_folder=DEFAULT_OUTPUT_FOLDER, gui=DEFAULT_GUI, plot=True, colab=DEFAULT_COLAB, record_video=DEFAULT_RECORD_VIDEO, local=True):
+def run(multiagent=DEFAULT_MA,
+        output_folder=DEFAULT_OUTPUT_FOLDER,
+        gui=DEFAULT_GUI, plot=True,
+        colab=DEFAULT_COLAB,
+        record_video=DEFAULT_RECORD_VIDEO,
+        local=True):
 
     filename = os.path.join(output_folder, 'save-'+datetime.now().strftime("%m.%d.%Y_%H.%M.%S"))
     if not os.path.exists(filename):
@@ -156,7 +161,7 @@ def run(multiagent=DEFAULT_MA, output_folder=DEFAULT_OUTPUT_FOLDER, gui=DEFAULT_
         Truncated: {truncated}
         #################################################################
         """)
-        # print("Obs:", obs, "\tAction", action, "\tReward:", reward, "\tTerminated:", terminated, "\tTruncated:", truncated)
+
         if DEFAULT_OBS == ObservationType.KIN:
             logger.log(
                 drone=0,
