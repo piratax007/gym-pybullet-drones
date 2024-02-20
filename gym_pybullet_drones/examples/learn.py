@@ -36,8 +36,7 @@ DEFAULT_AGENTS = 1
 DEFAULT_MA = False
 
 
-def run(multiagent=DEFAULT_MA,
-        output_folder=DEFAULT_OUTPUT_FOLDER,
+def run(output_folder=DEFAULT_OUTPUT_FOLDER,
         gui=DEFAULT_GUI, plot=True,
         colab=DEFAULT_COLAB,
         record_video=DEFAULT_RECORD_VIDEO,
