@@ -88,17 +88,6 @@ def run(multiagent=DEFAULT_MA,
     model.save(filename+'/final_model.zip')
     print(filename)
 
-    # Print training progression ############################
-    # with np.load(filename+'/evaluations.npz') as data:
-    #     for j in range(data['timesteps'].shape[0]):
-    #         print(str(data['timesteps'][j])+","+str(data['results'][j][0]))
-
-    ############################################################
-    ############################################################
-    ############################################################
-    ############################################################
-    ############################################################
-
     if local:
         input("Press Enter to continue...")
 
