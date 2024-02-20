@@ -163,11 +163,6 @@ if __name__ == '__main__':
     # Define and parse (optional) arguments for the script ##
     parser = argparse.ArgumentParser(description='Single agent reinforcement learning example script')
     parser.add_argument(
-        '--multiagent',
-        default=DEFAULT_MA,
-        type=str2bool,
-        help='Whether to use example LeaderFollower instead of Hover (default: False)', metavar='')
-    parser.add_argument(
         '--gui',
         default=DEFAULT_GUI,
         type=str2bool,
