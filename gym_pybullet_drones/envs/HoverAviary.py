@@ -75,7 +75,7 @@ class HoverAviary(BaseRLAviary):
     def _is_away(self, state):
         return (np.linalg.norm(self.INIT_XYZS[0][0:2] - state[0:2])**2 >
                 np.linalg.norm(self.INIT_XYZS[0][0:2] - self.TARGET_POS[0:2])**2 + 1 or
-                state[9] > self.TARGET_ORIENTATION[3] + 1)
+                state[9] > self.TARGET_ORIENTATION[2] + 1)
     
     def _computeReward(self):
         """Computes the current reward value.
