@@ -31,7 +31,7 @@ DEFAULT_OUTPUT_FOLDER = 'results'
 DEFAULT_COLAB = False
 
 DEFAULT_OBS = ObservationType('kin')  # 'kin' or 'rgb'
-DEFAULT_ACT = ActionType('one_d_rpm')  # 'rpm' or 'pid' or 'vel' or 'one_d_rpm' or 'one_d_pid'
+DEFAULT_ACT = ActionType('rpm')  # 'rpm' or 'pid' or 'vel' or 'one_d_rpm' or 'one_d_pid'
 DEFAULT_AGENTS = 1
 DEFAULT_MA = False
 
@@ -63,7 +63,7 @@ def run(output_folder=DEFAULT_OUTPUT_FOLDER,
                 # tensorboard_log=filename+'/tb/',
                 verbose=1)
 
-    stop_on_max_episodes = StopTrainingOnMaxEpisodes(max_episodes=int(1e3), verbose=1)
+    stop_on_max_episodes = StopTrainingOnMaxEpisodes(max_episodes=int(2.5e5), verbose=1)
 
     eval_callback = EvalCallback(eval_env,
                                  verbose=1,
