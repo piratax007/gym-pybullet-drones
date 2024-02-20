@@ -377,3 +377,22 @@ class Logger(object):
             plt.savefig(os.path.join('results', 'output_figure.png'))
         else:
             plt.show()
+
+    def plot_instantaneous_reward(self, path: str, log_instantaneous_reward: list):
+        """Logs entries for a single simulation step, of a single drone.
+
+        Parameters
+        ----------
+        path: where save the figure
+        log_instantaneous_reward: a list with the historic instantaneous reward
+        """
+
+        fig, axs = plt.subplots(1)
+
+        t = np.arange(0, self.timestamps.shape[1] / self.LOGGING_FREQ_HZ, 1 / self.LOGGING_FREQ_HZ)
+
+        axs.plot(t, log_instantaneous_reward, color="tab:blue")
+        axs.set_xlabel('time')
+        axs.set_ylabel('instantaneous reward')
+
+        plt.savefig(os.path.join(path, 'instantaneous_reward.png'))
