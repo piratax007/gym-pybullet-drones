@@ -59,7 +59,7 @@ def run(multiagent=DEFAULT_MA,
                              n_envs=1,
                              seed=0
                              )
-    eval_env = HoverAviary(obs=DEFAULT_OBS, act=DEFAULT_ACT)
+    # eval_env = HoverAviary(obs=DEFAULT_OBS, act=DEFAULT_ACT)
 
     # Check the environment's spaces ########################
     print('[INFO] Action space:', train_env.action_space)
@@ -72,10 +72,10 @@ def run(multiagent=DEFAULT_MA,
                 verbose=1)
 
     # Target cumulative rewards (problem-dependent) ##########
-    if DEFAULT_ACT == ActionType.ONE_D_RPM:
-        target_reward = 474.15
-    else:
-        target_reward = 467.0
+    # if DEFAULT_ACT == ActionType.ONE_D_RPM:
+    #     target_reward = 474.15
+    # else:
+    #     target_reward = 467.0
 
     stop_on_max_episodes = StopTrainingOnMaxEpisodes(max_episodes=int(1e3), verbose=1)
 
@@ -98,9 +98,9 @@ def run(multiagent=DEFAULT_MA,
     print(filename)
 
     # Print training progression ############################
-    with np.load(filename+'/evaluations.npz') as data:
-        for j in range(data['timesteps'].shape[0]):
-            print(str(data['timesteps'][j])+","+str(data['results'][j][0]))
+    # with np.load(filename+'/evaluations.npz') as data:
+    #     for j in range(data['timesteps'].shape[0]):
+    #         print(str(data['timesteps'][j])+","+str(data['results'][j][0]))
 
     ############################################################
     ############################################################
@@ -113,11 +113,11 @@ def run(multiagent=DEFAULT_MA,
 
     # if os.path.isfile(filename+'/final_model.zip'):
     #     path = filename+'/final_model.zip'
-    if os.path.isfile(filename+'/best_model.zip'):
-        path = filename+'/best_model.zip'
-    else:
-        print("[ERROR]: no model under the specified path", filename)
-    model = PPO.load(path)
+    # if os.path.isfile(filename+'/best_model.zip'):
+    #     path = filename+'/best_model.zip'
+    # else:
+    #     print("[ERROR]: no model under the specified path", filename)
+    # model = PPO.load(path)
 
     # Show (and record a video of) the model's performance ##
 
@@ -125,7 +125,7 @@ def run(multiagent=DEFAULT_MA,
                            obs=DEFAULT_OBS,
                            act=DEFAULT_ACT,
                            record=record_video)
-    test_env_nogui = HoverAviary(obs=DEFAULT_OBS, act=DEFAULT_ACT)
+    # test_env_nogui = HoverAviary(obs=DEFAULT_OBS, act=DEFAULT_ACT)
 
     logger = Logger(
         logging_freq_hz=int(test_env.CTRL_FREQ),
@@ -134,11 +134,11 @@ def run(multiagent=DEFAULT_MA,
         colab=colab
     )
 
-    mean_reward, std_reward = evaluate_policy(model,
-                                              test_env_nogui,
-                                              n_eval_episodes=10
-                                              )
-    print("\n\n\nMean reward ", mean_reward, " +- ", std_reward, "\n\n")
+    # mean_reward, std_reward = evaluate_policy(model,
+    #                                           test_env_nogui,
+    #                                           n_eval_episodes=10
+    #                                           )
+    # print("\n\n\nMean reward ", mean_reward, " +- ", std_reward, "\n\n")
 
     obs, info = test_env.reset(seed=42, options={})
     start = time.time()
