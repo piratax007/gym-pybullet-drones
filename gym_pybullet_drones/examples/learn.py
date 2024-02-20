@@ -109,11 +109,15 @@ def run(output_folder=DEFAULT_OUTPUT_FOLDER,
 
     obs, info = test_env.reset(seed=42, options={})
     start = time.time()
+
+    log_reward = []
+
     for i in range((test_env.EPISODE_LEN_SEC+2)*test_env.CTRL_FREQ):
         action, _states = model.predict(obs,
                                         deterministic=True
                                         )
         obs, reward, terminated, truncated, info = test_env.step(action)
+        log_reward.append(reward)
         obs2 = obs.squeeze()
         act2 = action.squeeze()
         print(f"""
@@ -152,6 +156,7 @@ def run(output_folder=DEFAULT_OUTPUT_FOLDER,
 
     if plot and DEFAULT_OBS == ObservationType.KIN:
         logger.plot()
+        logger.plot_instantaneous_reward(filename, log_reward)
 
 
 if __name__ == '__main__':
