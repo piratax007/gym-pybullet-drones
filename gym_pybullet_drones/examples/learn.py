@@ -24,7 +24,7 @@ import numpy as np
 import torch
 from stable_baselines3 import PPO
 from stable_baselines3.common.env_util import make_vec_env
-from stable_baselines3.common.callbacks import EvalCallback, StopTrainingOnRewardThreshold, StopTrainingOnMaxEpisodes
+from stable_baselines3.common.callbacks import EvalCallback, StopTrainingOnMaxEpisodes
 from stable_baselines3.common.evaluation import evaluate_policy
 
 from gym_pybullet_drones.utils.Logger import Logger
@@ -59,7 +59,7 @@ def run(multiagent=DEFAULT_MA,
                              n_envs=1,
                              seed=0
                              )
-    # eval_env = HoverAviary(obs=DEFAULT_OBS, act=DEFAULT_ACT)
+    eval_env = HoverAviary(obs=DEFAULT_OBS, act=DEFAULT_ACT)
 
     # Check the environment's spaces ########################
     print('[INFO] Action space:', train_env.action_space)
@@ -71,26 +71,17 @@ def run(multiagent=DEFAULT_MA,
                 # tensorboard_log=filename+'/tb/',
                 verbose=1)
 
-    # Target cumulative rewards (problem-dependent) ##########
-    # if DEFAULT_ACT == ActionType.ONE_D_RPM:
-    #     target_reward = 474.15
-    # else:
-    #     target_reward = 467.0
-
     stop_on_max_episodes = StopTrainingOnMaxEpisodes(max_episodes=int(1e3), verbose=1)
 
-    # callback_on_best = StopTrainingOnRewardThreshold(reward_threshold=target_reward,
-    #                                                  verbose=1)
-    # eval_callback = EvalCallback(eval_env,
-    #                              callback_on_new_best=callback_on_best,
-    #                              verbose=1,
-    #                              best_model_save_path=filename+'/',
-    #                              log_path=filename+'/',
-    #                              eval_freq=int(1000),
-    #                              deterministic=True,
-    #                              render=False)
+    eval_callback = EvalCallback(eval_env,
+                                 verbose=1,
+                                 best_model_save_path=filename+'/',
+                                 log_path=filename+'/',
+                                 eval_freq=int(1000),
+                                 deterministic=True,
+                                 render=False)
     model.learn(total_timesteps=int(1e7) if local else int(1e2),  # shorter training in GitHub Actions pytest
-                callback=stop_on_max_episodes,
+                callback=[stop_on_max_episodes, eval_callback],
                 log_interval=100)
 
     # Save the model ########################################
@@ -111,21 +102,16 @@ def run(multiagent=DEFAULT_MA,
     if local:
         input("Press Enter to continue...")
 
-    # if os.path.isfile(filename+'/final_model.zip'):
-    #     path = filename+'/final_model.zip'
-    # if os.path.isfile(filename+'/best_model.zip'):
-    #     path = filename+'/best_model.zip'
-    # else:
-    #     print("[ERROR]: no model under the specified path", filename)
-    # model = PPO.load(path)
-
-    # Show (and record a video of) the model's performance ##
+    if os.path.isfile(filename+'/best_model.zip'):
+        model = PPO.load(filename+'/best_model.zip')
+    else:
+        print("[ERROR]: no model under the specified path", filename)
 
     test_env = HoverAviary(gui=gui,
                            obs=DEFAULT_OBS,
                            act=DEFAULT_ACT,
                            record=record_video)
-    # test_env_nogui = HoverAviary(obs=DEFAULT_OBS, act=DEFAULT_ACT)
+    test_env_nogui = HoverAviary(obs=DEFAULT_OBS, act=DEFAULT_ACT)
 
     logger = Logger(
         logging_freq_hz=int(test_env.CTRL_FREQ),
@@ -134,11 +120,11 @@ def run(multiagent=DEFAULT_MA,
         colab=colab
     )
 
-    # mean_reward, std_reward = evaluate_policy(model,
-    #                                           test_env_nogui,
-    #                                           n_eval_episodes=10
-    #                                           )
-    # print("\n\n\nMean reward ", mean_reward, " +- ", std_reward, "\n\n")
+    mean_reward, std_reward = evaluate_policy(model,
+                                              test_env_nogui,
+                                              n_eval_episodes=10
+                                              )
+    print("\n\n\nMean reward ", mean_reward, " +- ", std_reward, "\n\n")
 
     obs, info = test_env.reset(seed=42, options={})
     start = time.time()
