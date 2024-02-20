@@ -92,7 +92,6 @@ def run(output_folder=DEFAULT_OUTPUT_FOLDER,
                            obs=DEFAULT_OBS,
                            act=DEFAULT_ACT,
                            record=record_video)
-    test_env_nogui = HoverAviary(obs=DEFAULT_OBS, act=DEFAULT_ACT)
 
     logger = Logger(
         logging_freq_hz=int(test_env.CTRL_FREQ),
