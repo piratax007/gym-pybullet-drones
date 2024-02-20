@@ -2,13 +2,6 @@
 
 Classes HoverAviary and MultiHoverAviary are used as learning envs for the PPO algorithm.
 
-Example
--------
-In a terminal, run as:
-
-    $ python learn.py --multiagent false
-    $ python learn.py --multiagent true
-
 Notes
 -----
 This is a minimal working example integrating `gym-pybullet-drones` with 
@@ -39,7 +32,7 @@ DEFAULT_COLAB = False
 
 DEFAULT_OBS = ObservationType('kin')  # 'kin' or 'rgb'
 DEFAULT_ACT = ActionType('one_d_rpm')  # 'rpm' or 'pid' or 'vel' or 'one_d_rpm' or 'one_d_pid'
-DEFAULT_AGENTS = 2
+DEFAULT_AGENTS = 1
 DEFAULT_MA = False
 
 
@@ -104,7 +97,7 @@ def run(multiagent=DEFAULT_MA,
 
     logger = Logger(
         logging_freq_hz=int(test_env.CTRL_FREQ),
-        num_drones=DEFAULT_AGENTS if multiagent else 1,
+        num_drones=1,
         output_folder=output_folder,
         colab=colab
     )
