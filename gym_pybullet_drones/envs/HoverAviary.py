@@ -49,7 +49,9 @@ class HoverAviary(BaseRLAviary):
             The type of action space (1 or 3D; RPMS, thurst and torques, or waypoint with PID control)
 
         """
+        self.INIT_XYZS = np.array([[0, 0, 0]])
         self.TARGET_POS = np.array([0, 0, 1])
+        self.TARGET_ORIENTATION = np.array([0, 0, 1.7])
         self.EPISODE_LEN_SEC = 8
         super().__init__(drone_model=drone_model,
                          num_drones=1,
@@ -65,6 +67,15 @@ class HoverAviary(BaseRLAviary):
                          )
 
     ################################################################################
+
+    def _compute_target_error(self, state):
+        return (np.linalg.norm(self.TARGET_POS - state[0:3]) ** 2 +
+                np.linalg.norm(self.TARGET_ORIENTATION - state[7:10]) ** 2)
+
+    def _is_away(self, state):
+        return (np.linalg.norm(self.INIT_XYZS[0][0:2] - state[0:2])**2 >
+                np.linalg.norm(self.INIT_XYZS[0][0:2] - self.TARGET_POS[0:2])**2 + 1 or
+                state[9] > self.TARGET_ORIENTATION[3] + 1)
     
     def _computeReward(self):
         """Computes the current reward value.
@@ -76,7 +87,7 @@ class HoverAviary(BaseRLAviary):
 
         """
         state = self._getDroneStateVector(0)
-        ret = max(0, 2 - np.linalg.norm(self.TARGET_POS-state[0:3])**4)
+        ret = 25 - 10*self._compute_target_error(state) - 100*(1 if self._is_away(state) else 0)
         return ret
 
     ################################################################################
