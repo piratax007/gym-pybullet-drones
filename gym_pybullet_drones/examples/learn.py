@@ -24,7 +24,7 @@ import numpy as np
 import torch
 from stable_baselines3 import PPO
 from stable_baselines3.common.env_util import make_vec_env
-from stable_baselines3.common.callbacks import EvalCallback, StopTrainingOnRewardThreshold
+from stable_baselines3.common.callbacks import EvalCallback, StopTrainingOnRewardThreshold, StopTrainingOnMaxEpisodes
 from stable_baselines3.common.evaluation import evaluate_policy
 
 from gym_pybullet_drones.utils.Logger import Logger
@@ -77,18 +77,20 @@ def run(multiagent=DEFAULT_MA,
     else:
         target_reward = 467.0
 
-    callback_on_best = StopTrainingOnRewardThreshold(reward_threshold=target_reward,
-                                                     verbose=1)
-    eval_callback = EvalCallback(eval_env,
-                                 callback_on_new_best=callback_on_best,
-                                 verbose=1,
-                                 best_model_save_path=filename+'/',
-                                 log_path=filename+'/',
-                                 eval_freq=int(1000),
-                                 deterministic=True,
-                                 render=False)
+    stop_on_max_episodes = StopTrainingOnMaxEpisodes(max_episodes=int(1e3), verbose=1)
+
+    # callback_on_best = StopTrainingOnRewardThreshold(reward_threshold=target_reward,
+    #                                                  verbose=1)
+    # eval_callback = EvalCallback(eval_env,
+    #                              callback_on_new_best=callback_on_best,
+    #                              verbose=1,
+    #                              best_model_save_path=filename+'/',
+    #                              log_path=filename+'/',
+    #                              eval_freq=int(1000),
+    #                              deterministic=True,
+    #                              render=False)
     model.learn(total_timesteps=int(1e7) if local else int(1e2),  # shorter training in GitHub Actions pytest
-                callback=eval_callback,
+                callback=stop_on_max_episodes,
                 log_interval=100)
 
     # Save the model ########################################
