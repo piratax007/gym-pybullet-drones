@@ -92,7 +92,7 @@ class HoverAviary(BaseRLAviary):
         """
         state = self._getDroneStateVector(0)
         ret = (15 - 10*self._compute_target_error(state) - 100*(1 if self._is_away(state) else -0.025) -
-               10*(state[10]**2 + state[11]**2 + state[12]**2) + 100*(1 if self._is_closed(state) else -0.15))
+               2*(state[10]**2 + state[11]**2 + state[12]**2) + 100*(1 if self._is_closed(state) else -0.15))
         return ret
 
     ################################################################################
