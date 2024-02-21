@@ -230,7 +230,7 @@ class Logger(object):
         for j in range(self.NUM_DRONES):
             axs[row, col].plot(t, self.states[j, 6, :], label="drone_" + str(j))
         axs[row, col].set_xlabel('time')
-        axs[row, col].set_ylabel('r (rad)')
+        axs[row, col].set_ylabel('roll (rad)')
 
         row = 2
         # Y
@@ -244,7 +244,7 @@ class Logger(object):
         for j in range(self.NUM_DRONES):
             axs[row, col].plot(t, self.states[j, 7, :], label="drone_" + str(j))
         axs[row, col].set_xlabel('time')
-        axs[row, col].set_ylabel('p (rad)')
+        axs[row, col].set_ylabel('pitch (rad)')
 
         row = 4
         # Z
@@ -258,7 +258,7 @@ class Logger(object):
         for j in range(self.NUM_DRONES):
             axs[row, col].plot(t, self.states[j, 8, :], label="drone_"+str(j))
         axs[row, col].set_xlabel('time')
-        axs[row, col].set_ylabel('y (rad)')
+        axs[row, col].set_ylabel('yaw (rad)')
 
         # Ang Vel ###############################################
         row = 6
