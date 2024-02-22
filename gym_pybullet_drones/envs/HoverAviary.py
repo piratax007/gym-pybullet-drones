@@ -130,8 +130,8 @@ class HoverAviary(BaseRLAviary):
 
         if self.step_counter/self.PYB_FREQ > self.EPISODE_LEN_SEC:
             return True
-        else:
-            return False
+
+        return False
 
     ################################################################################
     
