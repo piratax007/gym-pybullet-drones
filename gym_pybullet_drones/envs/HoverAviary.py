@@ -127,6 +127,7 @@ class HoverAviary(BaseRLAviary):
         if (abs(state[0]) > 1.5 or abs(state[1]) > 1.5 or state[2] > 2.0 or
                 abs(state[7]) > .4 or abs(state[8]) > .4):
             return True
+
         if self.step_counter/self.PYB_FREQ > self.EPISODE_LEN_SEC:
             return True
         else:
