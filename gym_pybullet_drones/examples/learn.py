@@ -35,6 +35,10 @@ DEFAULT_AGENTS = 1
 DEFAULT_MA = False
 
 
+def in_degrees(angles):
+    return list(map(lambda angle: angle * 180 / np.pi, angles))
+
+
 def run(output_folder=DEFAULT_OUTPUT_FOLDER,
         gui=DEFAULT_GUI, plot=True,
         colab=DEFAULT_COLAB,
@@ -60,22 +64,25 @@ def run(output_folder=DEFAULT_OUTPUT_FOLDER,
     model = PPO('MlpPolicy',
                 train_env,
                 # tensorboard_log=filename+'/tb/',
-                verbose=1)
+                verbose=0,
+                device='auto')
 
     stop_on_max_episodes = StopTrainingOnMaxEpisodes(max_episodes=int(2.5e5), verbose=1)
 
     eval_callback = EvalCallback(eval_env,
-                                 verbose=1,
+                                 verbose=0,
                                  best_model_save_path=filename+'/',
                                  log_path=filename+'/',
                                  eval_freq=int(1000),
                                  deterministic=True,
                                  render=False)
+
+    print("################# Starting learning ########################")
     model.learn(total_timesteps=int(1e7) if local else int(1e2),  # shorter training in GitHub Actions pytest
                 callback=[stop_on_max_episodes, eval_callback],
                 log_interval=100)
+    print("################# Ending learning ########################")
 
-    # Save the model ########################################
     model.save(filename+'/final_model.zip')
     print(filename)
 
@@ -116,7 +123,7 @@ def run(output_folder=DEFAULT_OUTPUT_FOLDER,
         #################################################################
         Observation Space:
         Position: {obs[0][0:3]}
-        Orientation: {obs[0][3:6]}
+        Orientation: {in_degrees(obs[0][3:6])}
         Linear Velocity: {obs[0][6:9]}
         Angular Velocity: {obs[0][9:12]}
         -----------------------------------------------------------------
