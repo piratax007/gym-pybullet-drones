@@ -46,46 +46,6 @@ def run(output_folder=DEFAULT_OUTPUT_FOLDER,
         record_video=DEFAULT_RECORD_VIDEO,
         local=True):
 
-    # filename = os.path.join(output_folder, 'save-'+datetime.now().strftime("%m.%d.%Y_%H.%M.%S"))
-    # if not os.path.exists(filename):
-    #     os.makedirs(filename+'/')
-    #
-    # train_env = make_vec_env(HoverAviary,
-    #                          env_kwargs=dict(obs=DEFAULT_OBS, act=DEFAULT_ACT),
-    #                          n_envs=1,
-    #                          seed=0
-    #                          )
-    # eval_env = HoverAviary(obs=DEFAULT_OBS, act=DEFAULT_ACT)
-    #
-    # # Check the environment's spaces ########################
-    # print('[INFO] Action space:', train_env.action_space)
-    # print('[INFO] Observation space:', train_env.observation_space)
-    #
-    # # Train the model #######################################
-    # model = PPO('MlpPolicy',
-    #             train_env,
-    #             # tensorboard_log=filename+'/tb/',
-    #             verbose=0,
-    #             device='auto')
-    #
-    # stop_on_max_episodes = StopTrainingOnMaxEpisodes(max_episodes=int(5e5), verbose=1)
-    #
-    # eval_callback = EvalCallback(eval_env,
-    #                              verbose=0,
-    #                              best_model_save_path=filename+'/',
-    #                              log_path=filename+'/',
-    #                              eval_freq=int(1000),
-    #                              deterministic=True,
-    #                              render=False)
-    #
-    # print("################# Starting learning ########################")
-    # model.learn(total_timesteps=int(1e7) if local else int(1e2),  # shorter training in GitHub Actions pytest
-    #             callback=[stop_on_max_episodes, eval_callback],
-    #             log_interval=100)
-    # print("################# Ending learning ########################")
-    #
-    # model.save(filename+'/final_model.zip')
-    # print(filename)
     model = None
 
     filename = run_learning(DEFAULT_OUTPUT_FOLDER, HoverAviary, 100)
