@@ -10,14 +10,9 @@ reinforcement learning library `stable-baselines3`.
 """
 import os
 import time
-from datetime import datetime
 import argparse
-import gymnasium as gym
 import numpy as np
-import torch
 from stable_baselines3 import PPO
-from stable_baselines3.common.env_util import make_vec_env
-from stable_baselines3.common.callbacks import EvalCallback, StopTrainingOnMaxEpisodes
 
 from gym_pybullet_drones.experiments.learning_script import run_learning
 from gym_pybullet_drones.utils.Logger import Logger
