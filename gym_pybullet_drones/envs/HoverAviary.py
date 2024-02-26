@@ -11,8 +11,12 @@ class HoverAviary(BaseRLAviary):
     
     def __init__(self,
                  drone_model: DroneModel = DroneModel.CF2X,
-                 initial_xyzs=None,
+                 initial_xyzs=np.array([[np.random.randint(-2, 2),
+                                         np.random.randint(-2, 2),
+                                         np.random.randint(0, 2)]]),
                  initial_rpys=None,
+                 target_xyzs=np.array([0, 0, 1]),
+                 target_rpys=np.array([0, 0, 1.7]),
                  physics: Physics = Physics.PYB,
                  pyb_freq: int = 240,
                  ctrl_freq: int = 30,
@@ -49,9 +53,9 @@ class HoverAviary(BaseRLAviary):
             The type of action space (1 or 3D; RPMS, thurst and torques, or waypoint with PID control)
 
         """
-        self.INIT_XYZS = np.array([[0, 0, 0]])
-        self.TARGET_POS = np.array([0, 0, 1])
-        self.TARGET_ORIENTATION = np.array([0, 0, 1.7])
+        self.INIT_XYZS = initial_xyzs
+        self.TARGET_POS = target_xyzs
+        self.TARGET_ORIENTATION = target_rpys
         self.EPISODE_LEN_SEC = 8
         super().__init__(drone_model=drone_model,
                          num_drones=1,
@@ -92,7 +96,6 @@ class HoverAviary(BaseRLAviary):
         """
         state = self._getDroneStateVector(0)
         ret = 25 - 15*self._compute_target_error(state) - 100*(1 if self._is_away(state) else -0.025)
-        print(f"############### Reward: {ret} ########################")
         return ret
 
     ################################################################################
