@@ -400,3 +400,56 @@ class Logger(object):
         axs.set_ylabel('instantaneous reward')
 
         plt.savefig(os.path.join(path, 'instantaneous_reward.png'))
+
+    def plot_position_and_orientation(self):
+        """Logs entries for a single simulation step, of a single drone."""
+
+        fig, axs = plt.subplots(3, 2)
+
+        t = np.arange(0, self.timestamps.shape[1] / self.LOGGING_FREQ_HZ, 1 / self.LOGGING_FREQ_HZ)
+
+        col = 0
+
+        row = 0
+        # X
+        for j in range(self.NUM_DRONES):
+            axs[row, col].plot(t, self.states[j, 0, :], color="tab:blue")
+        axs[row, col].set_xlabel('time')
+        axs[row, col].set_ylabel('x (m)')
+
+        row = 1
+        # Y
+        for j in range(self.NUM_DRONES):
+            axs[row, col].plot(t, self.states[j, 1, :], color="tab:blue")
+        axs[row, col].set_xlabel('time')
+        axs[row, col].set_ylabel('y (m)')
+
+        row = 2
+        # Z
+        for j in range(self.NUM_DRONES):
+            axs[row, col].plot(t, self.states[j, 2, :], color="tab:orange")
+        axs[row, col].set_xlabel('time')
+        axs[row, col].set_ylabel('z (m)')
+
+        col = 1
+
+        row = 3
+        # ROLL
+        for j in range(self.NUM_DRONES):
+            axs[row, col].plot(t, self.states[j, 6, :], color="tab:orange")
+        axs[row, col].set_xlabel('time')
+        axs[row, col].set_ylabel('roll (rad)')
+
+        row = 4
+        # PITCH
+        for j in range(self.NUM_DRONES):
+            axs[row, col].plot(t, self.states[j, 7, :], color="tab:green")
+        axs[row, col].set_xlabel('time')
+        axs[row, col].set_ylabel('pitch (rad)')
+
+        row = 5
+        # YAW
+        for j in range(self.NUM_DRONES):
+            axs[row, col].plot(t, self.states[j, 8, :], color="tab:green")
+        axs[row, col].set_xlabel('time')
+        axs[row, col].set_ylabel('yaw (rad)')
