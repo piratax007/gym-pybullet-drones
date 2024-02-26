@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 
 os.environ['KMP_DUPLICATE_LIB_OK']='True'
 
+
 class Logger(object):
     """A class for logging and visualization.
 
@@ -401,7 +402,7 @@ class Logger(object):
 
         plt.savefig(os.path.join(path, 'instantaneous_reward.png'))
 
-    def plot_position_and_orientation(self):
+    def plot_position_and_orientation(self, path):
         """Logs entries for a single simulation step, of a single drone."""
 
         fig, axs = plt.subplots(3, 2)
@@ -416,40 +417,57 @@ class Logger(object):
             axs[row, col].plot(t, self.states[j, 0, :], color="tab:blue")
         axs[row, col].set_xlabel('time')
         axs[row, col].set_ylabel('x (m)')
+        axs[row, col].grid(True)
 
         row = 1
         # Y
         for j in range(self.NUM_DRONES):
-            axs[row, col].plot(t, self.states[j, 1, :], color="tab:blue")
+            axs[row, col].plot(t, self.states[j, 1, :], color="tab:orange")
         axs[row, col].set_xlabel('time')
         axs[row, col].set_ylabel('y (m)')
+        axs[row, col].grid(True)
 
         row = 2
         # Z
         for j in range(self.NUM_DRONES):
-            axs[row, col].plot(t, self.states[j, 2, :], color="tab:orange")
+            axs[row, col].plot(t, self.states[j, 2, :], color="tab:green")
         axs[row, col].set_xlabel('time')
         axs[row, col].set_ylabel('z (m)')
+        axs[row, col].grid(True)
 
         col = 1
 
-        row = 3
+        row = 0
         # ROLL
         for j in range(self.NUM_DRONES):
-            axs[row, col].plot(t, self.states[j, 6, :], color="tab:orange")
+            axs[row, col].plot(t, (self.states[j, 6, :] * 180) / np.pi, color="tab:blue")
         axs[row, col].set_xlabel('time')
-        axs[row, col].set_ylabel('roll (rad)')
+        axs[row, col].set_ylabel('roll (deg)')
+        axs[row, col].grid(True)
 
-        row = 4
+        row = 1
         # PITCH
         for j in range(self.NUM_DRONES):
-            axs[row, col].plot(t, self.states[j, 7, :], color="tab:green")
+            axs[row, col].plot(t, (self.states[j, 7, :] * 180) / np.pi, color="tab:orange")
         axs[row, col].set_xlabel('time')
-        axs[row, col].set_ylabel('pitch (rad)')
+        axs[row, col].set_ylabel('pitch (deg)')
+        axs[row, col].grid(True)
 
-        row = 5
+        row = 2
         # YAW
         for j in range(self.NUM_DRONES):
-            axs[row, col].plot(t, self.states[j, 8, :], color="tab:green")
+            axs[row, col].plot(t, (self.states[j, 8, :] * 180) / np.pi, color="tab:green")
         axs[row, col].set_xlabel('time')
-        axs[row, col].set_ylabel('yaw (rad)')
+        axs[row, col].set_ylabel('yaw (deg)')
+        axs[row, col].grid(True)
+
+        fig.subplots_adjust(left=0.15,
+                            bottom=0.05,
+                            right=0.99,
+                            top=0.98,
+                            wspace=0.15,
+                            hspace=0.0
+                            )
+
+        plt.show()
+        #plt.savefig(os.path.join(path, 'position_and_orientation.png'))
