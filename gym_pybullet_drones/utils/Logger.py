@@ -399,6 +399,7 @@ class Logger(object):
         axs.plot(t, log_instantaneous_reward, color="tab:blue")
         axs.set_xlabel('time')
         axs.set_ylabel('instantaneous reward')
+        axs.grid(True)
 
         plt.savefig(os.path.join(path, 'instantaneous_reward.png'))
 
