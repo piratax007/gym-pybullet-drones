@@ -68,7 +68,7 @@ if __name__ == '__main__':
         help='The name of the environment to learn, registered with gym_pybullet_drones'
     )
     parser.add_argument(
-        '--output_folder',
+        '--output_directory',
         default=DEFAULT_OUTPUT_FOLDER,
         type=str,
         help='Folder where to save logs (default: "results")', metavar='')
