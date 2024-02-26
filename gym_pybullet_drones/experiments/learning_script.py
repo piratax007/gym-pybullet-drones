@@ -17,14 +17,18 @@ DEFAULT_ACT = ActionType('rpm')  # 'rpm' or 'pid' or 'vel' or 'one_d_rpm' or 'on
 DEFAULT_AGENTS = 1
 
 
-def run_learning(output_directory, env_name, num_episodes):
+def run_learning(env_name,
+                 env_parameters,
+                 num_episodes,
+                 output_directory=DEFAULT_OUTPUT_FOLDER):
+
     path_to_results = os.path.join(output_directory, 'save-' + datetime.now().strftime("%m.%d.%Y_%H.%M.%S"))
 
     if not os.path.exists(path_to_results):
         os.makedirs(path_to_results + '/')
 
     train_env = make_vec_env(env_name,
-                             env_kwargs=dict(obs=DEFAULT_OBS, act=DEFAULT_ACT),
+                             env_kwargs=env_parameters,
                              n_envs=1,
                              seed=0
                              )
@@ -77,6 +81,11 @@ if __name__ == '__main__':
         default=int(2.5e5),
         type=int,
         help="Number of episodes to run the learning"
+    )
+    parser.add_argument(
+        '--env_parameters',
+        default=dict(obs=DEFAULT_OBS, act=DEFAULT_ACT),
+        help="Parameters for the environment to learn"
     )
 
     results_path = run_learning(**vars(parser.parse_args()))
