@@ -53,7 +53,11 @@ def run_learning(env_name,
                                  deterministic=True,
                                  render=False)
 
-    print("################# Starting learning ########################")
+    print("""
+    ################# Starting learning ###################################
+    A learning process is running, please don't close this terminal window.
+    #######################################################################
+    """)
     model.learn(total_timesteps=int(1e7),  # shorter training in GitHub Actions pytest
                 callback=[stop_on_max_episodes, eval_callback],
                 log_interval=100)
