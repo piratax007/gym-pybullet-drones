@@ -5,10 +5,12 @@ from gym_pybullet_drones.experiments.learning_script import run_learning
 
 print("######### Learning with RewardRPMsAndC9 Environment #########")
 run_learning(env_name=RewardRPMsAndC9,
+             learning_id="RewardRPMsAndC9",
              num_episodes=int(1e6),
              )
 
 print("######### Learning with SimBasicReward Environment #########")
 run_learning(env_name=SimBasicReward,
+             learning_id="SimBasicReward",
              num_episodes=int(1e6),
              )

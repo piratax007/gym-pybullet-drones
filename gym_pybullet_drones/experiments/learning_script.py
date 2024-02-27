@@ -18,10 +18,11 @@ DEFAULT_AGENTS = 1
 
 
 def run_learning(env_name,
+                 learning_id,
                  num_episodes,
                  output_directory=DEFAULT_OUTPUT_FOLDER):
 
-    path_to_results = os.path.join(output_directory, 'save-' + datetime.now().strftime("%m.%d.%Y_%H.%M.%S"))
+    path_to_results = os.path.join(output_directory, 'save-' + learning_id + datetime.now().strftime("%m.%d.%Y_%H.%M.%S"))
 
     if not os.path.exists(path_to_results):
         os.makedirs(path_to_results + '/')
