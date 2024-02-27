@@ -11,10 +11,10 @@ class SimBasicReward(BaseRLAviary):
     
     def __init__(self,
                  drone_model: DroneModel = DroneModel.CF2X,
-                 initial_xyzs=np.array([[0, 0, 0]]),
+                 initial_xyzs=None,
                  initial_rpys=None,
-                 target_xyzs=np.array([0, 0, 1]),
-                 target_rpys=np.array([0, 0, 1.7]),
+                 target_xyzs=None,
+                 target_rpys=None,
                  physics: Physics = Physics.PYB,
                  pyb_freq: int = 240,
                  ctrl_freq: int = 30,
@@ -76,7 +76,7 @@ class SimBasicReward(BaseRLAviary):
 
     def _is_away(self, state):
         return (np.linalg.norm(self.INIT_XYZS[0][0:2] - state[0:2])**2 >
-                np.linalg.norm(self.INIT_XYZS[0][0:2] - self.TARGET_POS[0:2])**2 + 1 or
+                np.linalg.norm(self.INIT_XYZS[0][0:2] - self.TARGET_POS[0:2])**2 + 0.95 or
                 state[9] > self.TARGET_ORIENTATION[2] + 1)
 
     def _is_closed(self, state):
@@ -125,7 +125,8 @@ class SimBasicReward(BaseRLAviary):
 
         """
         state = self._getDroneStateVector(0)
-        if (abs(state[0]) > 1.5 or abs(state[1]) > 1.5 or state[2] > 2.0 or
+        if (np.linalg.norm(self.INIT_XYZS[0][0:2] - state[0:2])**2 >
+                np.linalg.norm(self.INIT_XYZS[0][0:2] - self.TARGET_POS[0:2])**2 + 1 or
                 abs(state[7]) > .4 or abs(state[8]) > .4):
             return True
 
