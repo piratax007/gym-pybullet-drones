@@ -18,7 +18,6 @@ DEFAULT_AGENTS = 1
 
 
 def run_learning(env_name,
-                 env_parameters,
                  num_episodes,
                  output_directory=DEFAULT_OUTPUT_FOLDER):
 
@@ -28,7 +27,6 @@ def run_learning(env_name,
         os.makedirs(path_to_results + '/')
 
     train_env = make_vec_env(env_name,
-                             env_kwargs=env_parameters,
                              n_envs=1,
                              seed=0
                              )
@@ -59,6 +57,7 @@ def run_learning(env_name,
     model.learn(total_timesteps=int(1e7),  # shorter training in GitHub Actions pytest
                 callback=[stop_on_max_episodes, eval_callback],
                 log_interval=100)
+    print("################# Ending learning ########################")
 
     model.save(path_to_results + '/final_model.zip')
     return path_to_results
