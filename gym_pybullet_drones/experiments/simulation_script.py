@@ -42,14 +42,11 @@ def run_simulation(policy_path, test_env, plot, gui=True, record_video=False):
     obs, info = test_env.reset(seed=42, options={})
     start = time.time()
 
-    log_reward = []
-
     for i in range((test_env.EPISODE_LEN_SEC+12)*test_env.CTRL_FREQ):
         action, _states = model.predict(obs,
                                         deterministic=True
                                         )
-        obs, reward, terminated, truncated, info = test_env.step(action)
-        log_reward.append(reward)
+        obs, _, terminated, truncated, info = test_env.step(action)
         obs2 = obs.squeeze()
         act2 = action.squeeze()
         print(f"""
@@ -61,7 +58,6 @@ def run_simulation(policy_path, test_env, plot, gui=True, record_video=False):
         Angular Velocity: {obs[0][9:12]}
         -----------------------------------------------------------------
         Action Space: {action}
-        Reward: {reward}
         Terminated: {terminated}
         Truncated: {truncated}
         #################################################################
@@ -82,8 +78,9 @@ def run_simulation(policy_path, test_env, plot, gui=True, record_video=False):
         test_env.render()
         print(terminated)
         sync(i, start, test_env.CTRL_TIMESTEP)
-        if terminated:
-            obs = test_env.reset(seed=42, options={})
+        # if terminated:
+        #     logger.plot_position_and_orientation(policy_path)
+        #     obs = test_env.reset(seed=42, options={})
     test_env.close()
 
     if plot and DEFAULT_OBS == ObservationType.KIN:
