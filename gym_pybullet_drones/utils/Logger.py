@@ -462,13 +462,12 @@ class Logger(object):
         axs[row, col].set_ylabel('yaw (deg)')
         axs[row, col].grid(True)
 
-        fig.subplots_adjust(left=0.15,
+        fig.subplots_adjust(left=0.05,
                             bottom=0.05,
-                            right=0.99,
+                            right=0.95,
                             top=0.98,
                             wspace=0.15,
                             hspace=0.0
                             )
 
         plt.show()
-        #plt.savefig(os.path.join(path, 'position_and_orientation.png'))
