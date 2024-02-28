@@ -4,16 +4,14 @@ from gym_pybullet_drones.envs.BaseRLAviary import BaseRLAviary
 from gym_pybullet_drones.utils.enums import DroneModel, Physics, ActionType, ObservationType
 
 
-class EnvironmentTest(BaseRLAviary):
+class RewardRollPitchRPMsC9(BaseRLAviary):
     """Single agent RL problem: hover at position."""
 
     ################################################################################
     
     def __init__(self,
                  drone_model: DroneModel = DroneModel.CF2X,
-                 initial_xyzs=np.array([[np.random.randint(-2, 2),
-                                         np.random.randint(-2, 2),
-                                         np.random.randint(0, 2)]]),
+                 initial_xyzs=None,
                  initial_rpys=None,
                  target_xyzs=np.array([0, 0, 1]),
                  target_rpys=np.array([0, 0, 1.7]),
@@ -54,7 +52,6 @@ class EnvironmentTest(BaseRLAviary):
 
         """
         self.INIT_XYZS = initial_xyzs
-        self.INIT_RPYS = initial_rpys
         self.TARGET_POS = target_xyzs
         self.TARGET_ORIENTATION = target_rpys
         self.EPISODE_LEN_SEC = 8
@@ -73,6 +70,18 @@ class EnvironmentTest(BaseRLAviary):
 
     ################################################################################
 
+    def _compute_target_error(self, state):
+        return (np.linalg.norm(self.TARGET_POS - state[0:3])**2 +
+                np.linalg.norm(self.TARGET_ORIENTATION - state[7:10])**2)
+
+    def _is_away(self, state):
+        return (np.linalg.norm(self.INIT_XYZS[0][0:2] - state[0:2])**2 >
+                np.linalg.norm(self.INIT_XYZS[0][0:2] - self.TARGET_POS[0:2])**2 + 0.95 or
+                state[9] > self.TARGET_ORIENTATION[2] + 1)
+
+    def _is_closed(self, state):
+        return np.linalg.norm(self.TARGET_POS-state[0:3]) < .15
+
     def _computeReward(self):
         """Computes the current reward value.
 
@@ -82,8 +91,11 @@ class EnvironmentTest(BaseRLAviary):
             The reward.
 
         """
-
-        ret = 0
+        state = self._getDroneStateVector(0)
+        ret = ((25 - 15*self._compute_target_error(state) - 100*(1 if self._is_away(state) else -0.025) -
+               5*(state[16]**2 + state[17]**2 + state[18]**2 + state[19]**2)) -
+               15*(1 if state[7] > 0.4 or state[8] > 0.4 else 0) +
+               100*(1 if self._is_closed(state) else - 0.03))
         return ret
 
     ################################################################################

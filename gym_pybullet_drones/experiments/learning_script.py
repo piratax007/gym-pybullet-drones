@@ -63,7 +63,6 @@ def run_learning(env_name,
                 callback=[stop_on_max_episodes, eval_callback],
                 log_interval=100)
     print("################# Ending learning ########################")
-
     model.save(path_to_results + '/final_model.zip')
     return path_to_results
 

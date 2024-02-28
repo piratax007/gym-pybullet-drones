@@ -78,9 +78,7 @@ def run_simulation(policy_path, test_env, plot, gui=True, record_video=False):
         test_env.render()
         print(terminated)
         sync(i, start, test_env.CTRL_TIMESTEP)
-        # if terminated:
-        #     logger.plot_position_and_orientation(policy_path)
-        #     obs = test_env.reset(seed=42, options={})
+
     test_env.close()
 
     if plot and DEFAULT_OBS == ObservationType.KIN:

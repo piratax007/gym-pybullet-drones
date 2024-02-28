@@ -11,13 +11,9 @@ class RewardRPMsAndC9(BaseRLAviary):
     
     def __init__(self,
                  drone_model: DroneModel = DroneModel.CF2X,
-                 initial_xyzs=np.array([[np.random.randint(-10, 10),
-                                         np.random.randint(-10, 10),
-                                         np.random.randint(0, 10)]]),
+                 initial_xyzs=None,
                  initial_rpys=None,
-                 target_xyzs=np.array([np.random.randint(-10, 10),
-                                       np.random.randint(-10, 10),
-                                       np.random.randint(0, 10)]),
+                 target_xyzs=np.array([0, 0, 1]),
                  target_rpys=np.array([0, 0, 1.7]),
                  physics: Physics = Physics.PYB,
                  pyb_freq: int = 240,
@@ -98,7 +94,7 @@ class RewardRPMsAndC9(BaseRLAviary):
         state = self._getDroneStateVector(0)
         ret = ((25 - 15*self._compute_target_error(state) - 100*(1 if self._is_away(state) else -0.025) -
                2*(state[16]**2 + state[17]**2 + state[18]**2 + state[19]**2)) +
-               110*(1 if self._is_closed(state) else - 0.03))
+               100*(1 if self._is_closed(state) else - 0.03))
         return ret
 
     ################################################################################
