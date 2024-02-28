@@ -14,7 +14,7 @@ class EnvironmentTest(BaseRLAviary):
                  initial_xyzs=np.array([[np.random.randint(-2, 2),
                                          np.random.randint(-2, 2),
                                          np.random.randint(0, 2)]]),
-                 initial_rpys=None,
+                 initial_rpys=np.array([[0, 0, -1]]),
                  target_xyzs=np.array([0, 0, 1]),
                  target_rpys=np.array([0, 0, 1.7]),
                  physics: Physics = Physics.PYB,
@@ -54,6 +54,7 @@ class EnvironmentTest(BaseRLAviary):
 
         """
         self.INIT_XYZS = initial_xyzs
+        self.INIT_RPYS = initial_rpys
         self.TARGET_POS = target_xyzs
         self.TARGET_ORIENTATION = target_rpys
         self.EPISODE_LEN_SEC = 8
