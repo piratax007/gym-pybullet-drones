@@ -72,19 +72,6 @@ class EnvironmentTest(BaseRLAviary):
 
     ################################################################################
 
-    def _compute_target_error(self, state):
-        return (np.linalg.norm(self.TARGET_POS - state[0:3]) ** 2 +
-                np.linalg.norm(self.TARGET_ORIENTATION - state[7:10]) ** 2)
-
-    def _is_away(self, state):
-        return (np.linalg.norm(self.INIT_XYZS[0][0:2] - state[0:2])**2 >
-                np.linalg.norm(self.INIT_XYZS[0][0:2] - self.TARGET_POS[0:2])**2 + 1 or
-                state[9] > self.TARGET_ORIENTATION[2] + 1)
-
-    def _is_closed(self, state):
-        return (np.linalg.norm(state[0:2] - self.TARGET_POS[0:2])**2 < 0.1 and
-                (state[2] - self.TARGET_POS[2])**2) < 0.1
-
     def _computeReward(self):
         """Computes the current reward value.
 
@@ -94,8 +81,8 @@ class EnvironmentTest(BaseRLAviary):
             The reward.
 
         """
-        state = self._getDroneStateVector(0)
-        ret = 25 - 15*self._compute_target_error(state) - 100*(1 if self._is_away(state) else -0.025)
+
+        ret = 0
         return ret
 
     ################################################################################
