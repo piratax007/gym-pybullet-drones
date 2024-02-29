@@ -94,7 +94,6 @@ class SimBasicReward(BaseRLAviary):
         """
         state = self._getDroneStateVector(0)
         ret = 25 - 15*self._compute_target_error(state) - 100*(1 if self._is_away(state) else -0.025)
-        print(f"############ ONLY TO TEST ##############")
         return ret
 
     ################################################################################
@@ -110,7 +109,6 @@ class SimBasicReward(BaseRLAviary):
         initial_obs = self._computeObs()
         initial_info = self._computeInfo()
         self.EPISODE_LEN_SEC += 1
-        print(f"####### NEW EPISODE LENGTH: {self.EPISODE_LEN_SEC} #######")
         return initial_obs, initial_info
 
     ################################################################################
