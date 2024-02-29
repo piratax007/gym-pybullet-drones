@@ -32,5 +32,5 @@ print("######### Learning with SimBasicReward Environment #########")
 # Target = [0 0 1 0 0 1.7]
 run_learning(env_name=SimBasicReward,
              learning_id="SimBasicReward",
-             num_episodes=int(2.5e6),
+             num_episodes=int(5e6),
              )

@@ -29,7 +29,7 @@ def run_learning(env_name,
         os.makedirs(path_to_results + '/')
 
     train_env = make_vec_env(env_name,
-                             n_envs=4,
+                             n_envs=10,
                              seed=0
                              )
     eval_env = env_name(obs=DEFAULT_OBS, act=DEFAULT_ACT)
