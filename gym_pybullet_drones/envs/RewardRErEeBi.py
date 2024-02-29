@@ -133,8 +133,8 @@ class RewardRErEeBi(BaseRLAviary):
                 abs(state[7]) > .4 or abs(state[8]) > .4):
             return True
 
-        if self.step_counter/self.PYB_FREQ > self.EPISODE_LEN_SEC:
-            return True
+        # if self.step_counter/self.PYB_FREQ > self.EPISODE_LEN_SEC:
+        #     return True
 
         return False
 

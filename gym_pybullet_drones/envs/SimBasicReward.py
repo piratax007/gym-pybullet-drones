@@ -94,10 +94,27 @@ class SimBasicReward(BaseRLAviary):
         """
         state = self._getDroneStateVector(0)
         ret = 25 - 15*self._compute_target_error(state) - 100*(1 if self._is_away(state) else -0.025)
+        print(f"############ ONLY TO TEST ##############")
         return ret
 
     ################################################################################
-    
+    def reset(self,
+              seed: int = None,
+              options: dict = None):
+
+        #### Housekeeping ##########################################
+        self._housekeeping()
+        #### Update and store the drones kinematic information #####
+        self._updateAndStoreKinematicInformation()
+        #### Return the initial observation ########################
+        initial_obs = self._computeObs()
+        initial_info = self._computeInfo()
+        self.EPISODE_LEN_SEC += 1
+        print(f"####### NEW EPISODE LENGTH: {self.EPISODE_LEN_SEC} #######")
+        return initial_obs, initial_info
+
+    ################################################################################
+
     def _computeTerminated(self):
         """Computes the current done value.
 
@@ -109,6 +126,7 @@ class SimBasicReward(BaseRLAviary):
         """
         state = self._getDroneStateVector(0)
         if np.linalg.norm(self.TARGET_POS-state[0:3]) < .1:
+            print("########### ¡¡¡TERMINATED!!! ################")
             return True
         else:
             return False

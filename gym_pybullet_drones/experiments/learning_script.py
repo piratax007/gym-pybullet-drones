@@ -22,7 +22,8 @@ def run_learning(env_name,
                  num_episodes,
                  output_directory=DEFAULT_OUTPUT_FOLDER):
 
-    path_to_results = os.path.join(output_directory, 'save-' + learning_id + datetime.now().strftime("%m.%d.%Y_%H.%M.%S"))
+    path_to_results = os.path.join(output_directory, 'save-' + learning_id +
+                                   datetime.now().strftime("%m.%d.%Y_%H.%M.%S"))
 
     if not os.path.exists(path_to_results):
         os.makedirs(path_to_results + '/')
@@ -59,7 +60,7 @@ def run_learning(env_name,
     A learning process is running, please don't close this terminal window.
     #######################################################################
     """)
-    model.learn(total_timesteps=int(1e7),  # shorter training in GitHub Actions pytest
+    model.learn(total_timesteps=int(1e7),
                 callback=[stop_on_max_episodes, eval_callback],
                 log_interval=100)
     print("################# Ending learning ########################")
