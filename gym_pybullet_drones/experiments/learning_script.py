@@ -19,18 +19,17 @@ DEFAULT_AGENTS = 1
 
 def run_learning(env_name,
                  learning_id,
-                 num_episodes,
                  continuous_learning=False,
                  output_directory=DEFAULT_OUTPUT_FOLDER):
 
-    path_to_results = os.path.join(output_directory, 'save-' + learning_id +
+    path_to_results = os.path.join(output_directory, 'save-' + learning_id + '-' +
                                    datetime.now().strftime("%m.%d.%Y_%H.%M.%S"))
 
     if not os.path.exists(path_to_results):
         os.makedirs(path_to_results + '/')
 
     train_env = make_vec_env(env_name,
-                             n_envs=10,
+                             n_envs=4,
                              seed=0
                              )
     eval_env = env_name(obs=DEFAULT_OBS, act=DEFAULT_ACT)
@@ -42,7 +41,9 @@ def run_learning(env_name,
     # Train the model #######################################
     if continuous_learning:
         model = PPO.load(path='continuous_learning/best_model.zip',
-                         env=train_env)
+                         device='auto',
+                         env=train_env,
+                         force_reset=True)
     else:
         model = PPO('MlpPolicy',
                     train_env,
@@ -50,13 +51,11 @@ def run_learning(env_name,
                     verbose=0,
                     device='auto')
 
-    stop_on_max_episodes = StopTrainingOnMaxEpisodes(max_episodes=num_episodes, verbose=1)
-
     eval_callback = EvalCallback(eval_env,
                                  verbose=0,
                                  best_model_save_path=path_to_results + '/',
                                  log_path=path_to_results + '/',
-                                 eval_freq=int(1000),
+                                 eval_freq=int(250),
                                  deterministic=True,
                                  render=False)
 
@@ -65,9 +64,10 @@ def run_learning(env_name,
     A learning process is running, please don't close this terminal window.
     #######################################################################
     """)
-    model.learn(total_timesteps=int(1e7),
-                callback=[stop_on_max_episodes, eval_callback],
-                log_interval=100)
+    model.learn(total_timesteps=int(10e6),
+                callback=eval_callback,
+                log_interval=1,
+                progress_bar=True)
     print("################# Ending learning ########################")
     model.save(path_to_results + '/final_model.zip')
     return path_to_results
@@ -85,12 +85,6 @@ if __name__ == '__main__':
         default=DEFAULT_OUTPUT_FOLDER,
         type=str,
         help='Folder where to save logs (default: "results")', metavar='')
-    parser.add_argument(
-        '--num_episodes',
-        default=int(2.5e5),
-        type=int,
-        help="Number of episodes to run the learning"
-    )
     parser.add_argument(
         '--env_parameters',
         default=dict(obs=DEFAULT_OBS, act=DEFAULT_ACT),
