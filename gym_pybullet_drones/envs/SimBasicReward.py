@@ -108,7 +108,7 @@ class SimBasicReward(BaseRLAviary):
 
         """
         state = self._getDroneStateVector(0)
-        if np.linalg.norm(self.TARGET_POS-state[0:3]) < .1:
+        if np.linalg.norm(self.TARGET_POS-state[0:3]) < .1 and self.step_counter/self.PYB_FREQ > self.EPISODE_LEN_SEC:
             print("########### ¡¡¡TERMINATED!!! ################")
             return True
         else:
@@ -129,7 +129,12 @@ class SimBasicReward(BaseRLAviary):
         if (np.linalg.norm(self.INIT_XYZS[0][0:2] - state[0:2])**2 >
                 np.linalg.norm(self.INIT_XYZS[0][0:2] - self.TARGET_POS[0:2])**2 + 1 or
                 abs(state[7]) > .4 or abs(state[8]) > .4):
+            print("######## TRUNCATED BY FIRST CONDITION ##########")
             return True
+
+        # if self.step_counter/self.PYB_FREQ > self.EPISODE_LEN_SEC:
+        #     print("######## TRUNCATED BY SECOND CONDITION ##########")
+        #     return True
 
         return False
 
