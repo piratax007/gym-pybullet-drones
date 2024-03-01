@@ -391,6 +391,8 @@ class Logger(object):
         path: where save the figure
         log_instantaneous_reward: a list with the historic instantaneous reward
         """
+        font = {'family': 'serif', 'weight': 'normal', 'size': 22}
+        plt.rc('font', **font)
 
         fig, axs = plt.subplots(1)
 
@@ -401,10 +403,13 @@ class Logger(object):
         axs.set_ylabel('instantaneous reward')
         axs.grid(True)
 
-        plt.savefig(os.path.join(path, 'instantaneous_reward.png'))
+        plt.plot()
 
     def plot_position_and_orientation(self, path):
         """Logs entries for a single simulation step, of a single drone."""
+
+        font = {'family': 'serif', 'weight': 'normal', 'size': 22}
+        plt.rc('font', **font)
 
         fig, axs = plt.subplots(3, 2)
 
@@ -462,10 +467,10 @@ class Logger(object):
         axs[row, col].set_ylabel('yaw (deg)')
         axs[row, col].grid(True)
 
-        fig.subplots_adjust(left=0.05,
-                            bottom=0.05,
-                            right=0.95,
-                            top=0.98,
+        fig.subplots_adjust(left=0.08,
+                            bottom=0.08,
+                            right=0.98,
+                            top=0.92,
                             wspace=0.15,
                             hspace=0.0
                             )
