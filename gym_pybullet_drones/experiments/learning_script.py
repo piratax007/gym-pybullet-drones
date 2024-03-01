@@ -39,11 +39,15 @@ def run_learning(env_name,
     print('[INFO] Observation space:', train_env.observation_space)
 
     # Train the model #######################################
-    model = PPO('MlpPolicy',
-                train_env,
-                # tensorboard_log=filename+'/tb/',
-                verbose=0,
-                device='auto')
+    if continuous_learning:
+        model = PPO.load(path='continuous_learning/best_model.zip',
+                         env=train_env)
+    else:
+        model = PPO('MlpPolicy',
+                    train_env,
+                    # tensorboard_log=filename+'/tb/',
+                    verbose=0,
+                    device='auto')
 
     stop_on_max_episodes = StopTrainingOnMaxEpisodes(max_episodes=num_episodes, verbose=1)
 
