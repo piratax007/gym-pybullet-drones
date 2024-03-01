@@ -20,6 +20,7 @@ DEFAULT_AGENTS = 1
 def run_learning(env_name,
                  learning_id,
                  num_episodes,
+                 continuous_learning=False,
                  output_directory=DEFAULT_OUTPUT_FOLDER):
 
     path_to_results = os.path.join(output_directory, 'save-' + learning_id +
