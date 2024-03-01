@@ -11,9 +11,7 @@ class EnvironmentTest(BaseRLAviary):
     
     def __init__(self,
                  drone_model: DroneModel = DroneModel.CF2X,
-                 initial_xyzs=np.array([[np.random.randint(-2, 2),
-                                         np.random.randint(-2, 2),
-                                         np.random.randint(0, 2)]]),
+                 initial_xyzs=None,
                  initial_rpys=None,
                  target_xyzs=np.array([0, 0, 1]),
                  target_rpys=np.array([0, 0, 1.7]),
@@ -119,9 +117,6 @@ class EnvironmentTest(BaseRLAviary):
                 np.linalg.norm(self.INIT_XYZS[0][0:2] - self.TARGET_POS[0:2])**2 + 1 or
                 abs(state[7]) > .4 or abs(state[8]) > .4):
             return True
-
-        # if self.step_counter/self.PYB_FREQ > self.EPISODE_LEN_SEC:
-        #     return True
 
         return False
 
