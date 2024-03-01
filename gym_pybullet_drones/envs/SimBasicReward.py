@@ -97,21 +97,6 @@ class SimBasicReward(BaseRLAviary):
         return ret
 
     ################################################################################
-    def reset(self,
-              seed: int = None,
-              options: dict = None):
-
-        #### Housekeeping ##########################################
-        self._housekeeping()
-        #### Update and store the drones kinematic information #####
-        self._updateAndStoreKinematicInformation()
-        #### Return the initial observation ########################
-        initial_obs = self._computeObs()
-        initial_info = self._computeInfo()
-        self.EPISODE_LEN_SEC += 1
-        return initial_obs, initial_info
-
-    ################################################################################
 
     def _computeTerminated(self):
         """Computes the current done value.
@@ -144,9 +129,6 @@ class SimBasicReward(BaseRLAviary):
         if (np.linalg.norm(self.INIT_XYZS[0][0:2] - state[0:2])**2 >
                 np.linalg.norm(self.INIT_XYZS[0][0:2] - self.TARGET_POS[0:2])**2 + 1 or
                 abs(state[7]) > .4 or abs(state[8]) > .4):
-            return True
-
-        if self.step_counter/self.PYB_FREQ > self.EPISODE_LEN_SEC:
             return True
 
         return False
