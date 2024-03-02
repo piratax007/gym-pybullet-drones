@@ -93,8 +93,8 @@ class BasicRewardWithRWeAndBi(BaseRLAviary):
         """
         state = self._getDroneStateVector(0)
         ret = ((25 - 15*self._compute_target_error(state) - 100*(1 if self._is_away(state) else -0.025) -
-               5*(state[16]**2 + state[17]**2 + state[18]**2 + state[19]**2) -
-               10*(state[13]**2 + state[14]**2 + state[15]**2)) + 100*(1 if self._is_closed(state) else - 0.1))
+               8*(state[16]**2 + state[17]**2 + state[18]**2 + state[19]**2) -
+               13*(state[13]**2 + state[14]**2 + state[15]**2)) + 100*(1 if self._is_closed(state) else - 0.2))
         return ret
 
     ################################################################################
@@ -109,9 +109,8 @@ class BasicRewardWithRWeAndBi(BaseRLAviary):
 
         """
         state = self._getDroneStateVector(0)
-        if (np.linalg.norm(self.TARGET_POS - state[0:3]) < .1 and
+        if (np.linalg.norm(self.TARGET_POS - state[0:3]) < .05 and
                 self.step_counter / self.PYB_FREQ > self.EPISODE_LEN_SEC):
-            print("########### ¡¡¡TERMINATED!!! ################")
             return True
         else:
             return False
