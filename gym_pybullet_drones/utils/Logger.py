@@ -383,12 +383,11 @@ class Logger(object):
         else:
             plt.show()
 
-    def plot_instantaneous_reward(self, path: str, log_instantaneous_reward: list):
+    def plot_instantaneous_reward(self, log_instantaneous_reward: list):
         """Logs entries for a single simulation step, of a single drone.
 
         Parameters
         ----------
-        path: where save the figure
         log_instantaneous_reward: a list with the historic instantaneous reward
         """
         font = {'family': 'serif', 'weight': 'normal', 'size': 22}
