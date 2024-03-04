@@ -4,7 +4,7 @@ from gym_pybullet_drones.envs.BaseRLAviary import BaseRLAviary
 from gym_pybullet_drones.utils.enums import DroneModel, Physics, ActionType, ObservationType
 
 
-class BasicRewardWithRAndWe(BaseRLAviary):
+class BasicRewardWithPitchRollPenalty(BaseRLAviary):
     """Single agent RL problem: hover at position."""
 
     ################################################################################
@@ -80,7 +80,8 @@ class BasicRewardWithRAndWe(BaseRLAviary):
                 state[9] > self.TARGET_ORIENTATION[2] + 1)
 
     def _is_closed(self, state):
-        return np.linalg.norm(state[0:3] - self.TARGET_POS[0:3])**2 < 0.05
+        return (np.linalg.norm(state[0:2] - self.TARGET_POS[0:2])**2 < 0.1 and
+                (state[2] - self.TARGET_POS[2])**2) < 0.1
 
     def _computeReward(self):
         """Computes the current reward value.
@@ -92,9 +93,8 @@ class BasicRewardWithRAndWe(BaseRLAviary):
 
         """
         state = self._getDroneStateVector(0)
-        ret = ((25 - 15*self._compute_target_error(state) - 100*(1 if self._is_away(state) else -0.025) -
-               8*(state[16]**2 + state[17]**2 + state[18]**2 + state[19]**2)) -
-               13*(state[13]**2 + state[14]**2 + state[15]**2))
+        ret = (25 - 15*self._compute_target_error(state) - 100*(1 if self._is_away(state) else -0.025) -
+               8*(state[16]**2 + state[17]**2 + state[18]**2 + state[19]**2))
         return ret
 
     ################################################################################
@@ -109,7 +109,7 @@ class BasicRewardWithRAndWe(BaseRLAviary):
 
         """
         state = self._getDroneStateVector(0)
-        if (np.linalg.norm(self.TARGET_POS - state[0:3]) < .1 and
+        if (np.linalg.norm(self.TARGET_POS - state[0:3])**2 < .05 and
                 self.step_counter / self.PYB_FREQ > self.EPISODE_LEN_SEC):
             return True
         else:
