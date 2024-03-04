@@ -29,7 +29,7 @@ def run_learning(env_name,
         os.makedirs(path_to_results + '/')
 
     train_env = make_vec_env(env_name,
-                             n_envs=4,
+                             n_envs=10,
                              seed=0
                              )
     eval_env = env_name(obs=DEFAULT_OBS, act=DEFAULT_ACT)
@@ -55,7 +55,7 @@ def run_learning(env_name,
                                  verbose=0,
                                  best_model_save_path=path_to_results + '/',
                                  log_path=path_to_results + '/',
-                                 eval_freq=int(250),
+                                 eval_freq=int(100),
                                  deterministic=True,
                                  render=False)
 
@@ -64,7 +64,7 @@ def run_learning(env_name,
     A learning process is running, please don't close this terminal window.
     #######################################################################
     """)
-    model.learn(total_timesteps=int(10e6),
+    model.learn(total_timesteps=int(10e7),
                 callback=eval_callback,
                 log_interval=1,
                 progress_bar=True)
