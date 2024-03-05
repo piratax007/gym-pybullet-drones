@@ -77,20 +77,16 @@ class BasicRewardWithPitchRollPenalty(BaseRLAviary):
     def _is_away_from_exploration_area(self, state):
         return (np.linalg.norm(self.INIT_XYZS[0][0:2] - state[0:2])**2 >
                 np.linalg.norm(self.INIT_XYZS[0][0:2] - self.TARGET_POS[0:2])**2 + 0.1 or
-                state[9] > self.TARGET_ORIENTATION[2] + 0.25)
+                state[2] > self.TARGET_POS[2] + 0.025)
 
     def _is_closed(self, state):
-        return (np.linalg.norm(state[0:3] - self.TARGET_POS[0:3])**2 < 0.05 and
-                (state[2] - self.TARGET_POS[2])**2) < 0.01
+        return np.linalg.norm(state[0:3] - self.TARGET_POS[0:3])**2 < 0.05
 
     def _performance(self, state):
         if self._is_closed(state) and state[7]**2 + state[8]**2 < 0.01:
             return 1
 
-        if not self._is_closed(state) and state[7]**2 + state[8]**2 < 0.05:
-            return 0.05
-
-        return -0.01 * state[7]**2 + state[8]**2
+        return -0.01 * (state[7]**2 + state[8]**2)
 
     def _computeReward(self):
         """Computes the current reward value.
@@ -119,7 +115,7 @@ class BasicRewardWithPitchRollPenalty(BaseRLAviary):
 
         """
         state = self._getDroneStateVector(0)
-        if (np.linalg.norm(self.TARGET_POS - state[0:3])**2 < .05 and
+        if (np.linalg.norm(self.TARGET_POS - state[0:3])**2 < .05 and state[7]**2 + state[8]**2 < 0.01 and
                 self.step_counter / self.PYB_FREQ > self.EPISODE_LEN_SEC):
             return True
         else:
@@ -139,6 +135,7 @@ class BasicRewardWithPitchRollPenalty(BaseRLAviary):
         state = self._getDroneStateVector(0)
         if (np.linalg.norm(self.INIT_XYZS[0][0:2] - state[0:2])**2 >
                 np.linalg.norm(self.INIT_XYZS[0][0:2] - self.TARGET_POS[0:2])**2 + 0.5 or
+                state[2] > self.TARGET_POS[2] + 0.5 or
                 abs(state[7]) > .15 or abs(state[8]) > .15):
             return True
 
