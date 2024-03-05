@@ -39,6 +39,22 @@ def get_ppo_model(environment, reuse_model=False, path='continuous_learning/best
                device='auto')
 
 
+def callbacks(episodes, evaluation_environment, parallel_environments, path_to_results, stop_on_max_episodes):
+    eval_callback = EvalCallback(evaluation_environment,
+                                 verbose=0,
+                                 best_model_save_path=path_to_results + '/',
+                                 log_path=path_to_results + '/',
+                                 eval_freq=int(1000 / parallel_environments),
+                                 deterministic=True,
+                                 render=False)
+    if stop_on_max_episodes:
+        stop_on_max_episodes = StopTrainingOnMaxEpisodes(int(episodes / parallel_environments), verbose=1)
+        callback_list = [stop_on_max_episodes, eval_callback]
+    else:
+        callback_list = [eval_callback]
+    return callback_list
+
+
 def run_learning(environment,
                  learning_id,
                  continuous_learning=False,
@@ -47,7 +63,6 @@ def run_learning(environment,
                  time_steps=10e7,
                  episodes=int(1e6),
                  output_directory=DEFAULT_OUTPUT_FOLDER):
-
     path_to_results = results_directory(output_directory, learning_id)
 
     learning_environment = make_vec_env(environment,
@@ -56,38 +71,18 @@ def run_learning(environment,
                                         )
     evaluation_environment = environment(obs=DEFAULT_OBS, act=DEFAULT_ACT)
 
-    # Check the environment's spaces ########################
-    print('[INFO] Action space:', learning_environment.action_space)
-    print('[INFO] Observation space:', learning_environment.observation_space)
-
-    # Train the model #######################################
     model = get_ppo_model(learning_environment, continuous_learning)
 
-    eval_callback = EvalCallback(evaluation_environment,
-                                 verbose=0,
-                                 best_model_save_path=path_to_results + '/',
-                                 log_path=path_to_results + '/',
-                                 eval_freq=int(1000/parallel_environments),
-                                 deterministic=True,
-                                 render=False)
+    callback_list = callbacks(episodes, evaluation_environment, parallel_environments, path_to_results,
+                              stop_on_max_episodes)
 
-    if stop_on_max_episodes:
-        stop_on_max_episodes = StopTrainingOnMaxEpisodes(int(episodes/parallel_environments), verbose=1)
-        callback_list = [stop_on_max_episodes, eval_callback]
-    else:
-        callback_list = [eval_callback]
-
-    print("""
-    ################# Starting learning ###################################
-    A learning process is running, please don't close this terminal window.
-    #######################################################################
-    """)
     model.learn(total_timesteps=int(time_steps/parallel_environments),
                 callback=callback_list,
                 log_interval=1,
                 progress_bar=True)
-    print("################# Ending learning ########################")
+
     model.save(path_to_results + '/final_model.zip')
+
     return path_to_results
 
 
