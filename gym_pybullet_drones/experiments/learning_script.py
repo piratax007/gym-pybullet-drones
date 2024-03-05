@@ -29,6 +29,8 @@ def results_directory(base_directory, results_id):
 def run_learning(env_name,
                  learning_id,
                  continuous_learning=False,
+                 stop_on_max_episodes=True,
+                 episodes=int(1e6),
                  output_directory=DEFAULT_OUTPUT_FOLDER):
 
     path_to_results = results_directory(output_directory, learning_id)
@@ -64,13 +66,19 @@ def run_learning(env_name,
                                  deterministic=True,
                                  render=False)
 
+    if stop_on_max_episodes:
+        stop_on_max_episodes = StopTrainingOnMaxEpisodes(episodes)
+        callback_list = [stop_on_max_episodes, eval_callback]
+    else:
+        callback_list = [eval_callback]
+
     print("""
     ################# Starting learning ###################################
     A learning process is running, please don't close this terminal window.
     #######################################################################
     """)
-    model.learn(total_timesteps=int(25e6),
-                callback=eval_callback,
+    model.learn(total_timesteps=int(10e7),
+                callback=callback_list,
                 log_interval=1,
                 progress_bar=True)
     print("################# Ending learning ########################")
