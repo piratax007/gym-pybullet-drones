@@ -83,6 +83,7 @@ def run_simulation(policy_path, test_env, plot, gui=True, record_video=False):
 
     if plot and DEFAULT_OBS == ObservationType.KIN:
         logger.plot_position_and_orientation()
+        logger.plot_rpms()
         logger.plot_trajectory()
 
 
