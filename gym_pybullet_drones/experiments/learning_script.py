@@ -76,7 +76,7 @@ def run_learning(environment,
     callback_list = callbacks(episodes, evaluation_environment, parallel_environments, path_to_results,
                               stop_on_max_episodes)
 
-    model.learn(total_timesteps=int(time_steps/parallel_environments),
+    model.learn(total_timesteps=int(time_steps),
                 callback=callback_list,
                 log_interval=1,
                 progress_bar=True)

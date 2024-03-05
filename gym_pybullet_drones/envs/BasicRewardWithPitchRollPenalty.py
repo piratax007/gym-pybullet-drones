@@ -86,7 +86,7 @@ class BasicRewardWithPitchRollPenalty(BaseRLAviary):
         if self._is_closed(state) and state[7]**2 + state[8]**2 < 0.01:
             return 1
 
-        return -0.01 * (state[7]**2 + state[8]**2)
+        return -0.1 * (state[7]**2 + state[8]**2)
 
     def _computeReward(self):
         """Computes the current reward value.
