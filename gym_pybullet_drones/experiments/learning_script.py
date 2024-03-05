@@ -64,7 +64,7 @@ def run_learning(env_name,
     A learning process is running, please don't close this terminal window.
     #######################################################################
     """)
-    model.learn(total_timesteps=int(10e6),
+    model.learn(total_timesteps=int(10e7),
                 callback=eval_callback,
                 log_interval=1,
                 progress_bar=True)

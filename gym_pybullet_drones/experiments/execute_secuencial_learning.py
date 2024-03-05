@@ -2,7 +2,7 @@
 from gym_pybullet_drones.envs import BasicRewardWithPitchRollPenalty
 from gym_pybullet_drones.experiments.learning_script import run_learning
 
-print("""######### Learning with BasicRewardWithR Environment #########
+print("""######### Learning with Basic-Reward-With-Pitch-Roll-Penalty Environment #########
 R(t) = 25 - 15te - 100Bo + 100Per
 Target = [0 0 1 0 0 1.7]
 Time steps = 10e6
