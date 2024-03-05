@@ -9,6 +9,5 @@ Time steps = 10e6
 Episode Length = 15s""")
 
 run_learning(env_name=BasicRewardWithPitchRollPenalty,
-             learning_id="Basic-Reward-With-Pitch-Roll-Penalty",
-             continuous_learning=False
+             learning_id="Basic-Reward-With-Pitch-Roll-Penalty"
              )

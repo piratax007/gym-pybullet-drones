@@ -54,7 +54,7 @@ class BasicRewardWithPitchRollPenalty(BaseRLAviary):
         self.INIT_XYZS = initial_xyzs
         self.TARGET_POS = target_xyzs
         self.TARGET_ORIENTATION = target_rpys
-        self.EPISODE_LEN_SEC = 15
+        self.EPISODE_LEN_SEC = 8
         super().__init__(drone_model=drone_model,
                          num_drones=1,
                          initial_xyzs=initial_xyzs,

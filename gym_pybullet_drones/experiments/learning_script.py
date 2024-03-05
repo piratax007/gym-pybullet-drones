@@ -17,16 +17,21 @@ DEFAULT_ACT = ActionType('rpm')  # 'rpm' or 'pid' or 'vel' or 'one_d_rpm' or 'on
 DEFAULT_AGENTS = 1
 
 
+def results_directory(base_directory, results_id):
+    path = os.path.join(base_directory, 'save-' + results_id + '-' + datetime.now().strftime("%m.%d.%Y_%H.%M.%S"))
+
+    if not os.path.exists(path):
+        os.makedirs(path + '/')
+
+    return str(path)
+
+
 def run_learning(env_name,
                  learning_id,
                  continuous_learning=False,
                  output_directory=DEFAULT_OUTPUT_FOLDER):
 
-    path_to_results = os.path.join(output_directory, 'save-' + learning_id + '-' +
-                                   datetime.now().strftime("%m.%d.%Y_%H.%M.%S"))
-
-    if not os.path.exists(path_to_results):
-        os.makedirs(path_to_results + '/')
+    path_to_results = results_directory(output_directory, learning_id)
 
     train_env = make_vec_env(env_name,
                              n_envs=10,
