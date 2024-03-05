@@ -8,6 +8,14 @@ Target = [0 0 1 0 0 1.7]
 Time steps = 10e6
 Episode Length = 15s""")
 
-run_learning(env_name=BasicRewardWithPitchRollPenalty,
-             learning_id="Basic-Reward-With-Pitch-Roll-Penalty"
-             )
+results = run_learning(environment=BasicRewardWithPitchRollPenalty,
+                       learning_id="Test",
+                       episodes=2.5e5,
+                       parallel_environments=10
+                       )
+
+print(f"""
+################# Learning End ########################
+Results: {results}
+#######################################################
+""")
