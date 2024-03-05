@@ -493,3 +493,36 @@ class Logger(object):
                             )
 
         plt.show()
+
+    def plot_rpms(self):
+        font = {'family': 'serif', 'weight': 'normal', 'size': 22}
+        plt.rc('font', **font)
+
+        fig, axs = plt.subplots(2, 2)
+
+        t = np.arange(0, self.timestamps.shape[1] / self.LOGGING_FREQ_HZ, 1 / self.LOGGING_FREQ_HZ)
+
+        col = 0
+
+        row = 0
+        for j in range(self.NUM_DRONES):
+            axs[row, col].plot(t, self.states[j, 12, :], label="drone_" + str(j))
+        axs[row, col].set_xlabel('time')
+
+        row = 1
+        for j in range(self.NUM_DRONES):
+            axs[row, col].plot(t, self.states[j, 13, :], label="drone_" + str(j))
+        axs[row, col].set_xlabel('time')
+
+        col = 1
+        row = 0
+        for j in range(self.NUM_DRONES):
+            axs[row, col].plot(t, self.states[j, 14, :], label="drone_" + str(j))
+        axs[row, col].set_xlabel('time')
+
+        row = 1
+        for j in range(self.NUM_DRONES):
+            axs[row, col].plot(t, self.states[j, 15, :], label="drone_" + str(j))
+        axs[row, col].set_xlabel('time')
+
+        plt.show()
