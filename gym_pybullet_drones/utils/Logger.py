@@ -3,6 +3,7 @@ from datetime import datetime
 from cycler import cycler
 import numpy as np
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import axes3d, Axes3D
 
 os.environ['KMP_DUPLICATE_LIB_OK']='True'
 
@@ -404,7 +405,24 @@ class Logger(object):
 
         plt.plot()
 
-    def plot_position_and_orientation(self, path):
+    def plot_trajectory(self):
+        fig = plt.figure()
+        ax = fig.add_subplot(projection='3d')
+
+        ax.plot(self.states[0, 0, :], self.states[0, 1, :], self.states[0, 2, :])
+
+        ax.set_xlim(-1, 1)
+        ax.set_ylim(-1, 1)
+        ax.set_zlim(0, 1.5)
+        ax.set_xlabel('X')
+        ax.set_ylabel('Y')
+        ax.set_zlabel('Z')
+
+        ax.view_init(elev=20., azim=-35, roll=0)
+
+        plt.show()
+
+    def plot_position_and_orientation(self):
         """Logs entries for a single simulation step, of a single drone."""
 
         font = {'family': 'serif', 'weight': 'normal', 'size': 22}
