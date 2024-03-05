@@ -14,7 +14,6 @@ DEFAULT_OUTPUT_FOLDER = 'results'
 
 DEFAULT_OBS = ObservationType('kin')  # 'kin' or 'rgb'
 DEFAULT_ACT = ActionType('rpm')  # 'rpm' or 'pid' or 'vel' or 'one_d_rpm' or 'one_d_pid'
-DEFAULT_AGENTS = 1
 
 
 def results_directory(base_directory, results_id):
@@ -26,48 +25,54 @@ def results_directory(base_directory, results_id):
     return str(path)
 
 
-def run_learning(env_name,
+def get_ppo_model(environment, reuse_model=False, path='continuous_learning/best_model.zip'):
+    if reuse_model:
+        return PPO.load(path=path,
+                        device='auto',
+                        env=environment,
+                        force_reset=True)
+
+    return PPO('MlpPolicy',
+               environment,
+               # tensorboard_log=filename+'/tb/',
+               verbose=0,
+               device='auto')
+
+
+def run_learning(environment,
                  learning_id,
                  continuous_learning=False,
                  stop_on_max_episodes=True,
+                 parallel_environments=4,
+                 time_steps=10e7,
                  episodes=int(1e6),
                  output_directory=DEFAULT_OUTPUT_FOLDER):
 
     path_to_results = results_directory(output_directory, learning_id)
 
-    train_env = make_vec_env(env_name,
-                             n_envs=10,
-                             seed=0
-                             )
-    eval_env = env_name(obs=DEFAULT_OBS, act=DEFAULT_ACT)
+    learning_environment = make_vec_env(environment,
+                                        n_envs=parallel_environments,
+                                        seed=0
+                                        )
+    evaluation_environment = environment(obs=DEFAULT_OBS, act=DEFAULT_ACT)
 
     # Check the environment's spaces ########################
-    print('[INFO] Action space:', train_env.action_space)
-    print('[INFO] Observation space:', train_env.observation_space)
+    print('[INFO] Action space:', learning_environment.action_space)
+    print('[INFO] Observation space:', learning_environment.observation_space)
 
     # Train the model #######################################
-    if continuous_learning:
-        model = PPO.load(path='continuous_learning/best_model.zip',
-                         device='auto',
-                         env=train_env,
-                         force_reset=True)
-    else:
-        model = PPO('MlpPolicy',
-                    train_env,
-                    # tensorboard_log=filename+'/tb/',
-                    verbose=0,
-                    device='auto')
+    model = get_ppo_model(learning_environment, continuous_learning)
 
-    eval_callback = EvalCallback(eval_env,
+    eval_callback = EvalCallback(evaluation_environment,
                                  verbose=0,
                                  best_model_save_path=path_to_results + '/',
                                  log_path=path_to_results + '/',
-                                 eval_freq=int(100),
+                                 eval_freq=int(1000/parallel_environments),
                                  deterministic=True,
                                  render=False)
 
     if stop_on_max_episodes:
-        stop_on_max_episodes = StopTrainingOnMaxEpisodes(episodes)
+        stop_on_max_episodes = StopTrainingOnMaxEpisodes(int(episodes/parallel_environments), verbose=1)
         callback_list = [stop_on_max_episodes, eval_callback]
     else:
         callback_list = [eval_callback]
@@ -77,7 +82,7 @@ def run_learning(env_name,
     A learning process is running, please don't close this terminal window.
     #######################################################################
     """)
-    model.learn(total_timesteps=int(10e7),
+    model.learn(total_timesteps=int(time_steps/parallel_environments),
                 callback=callback_list,
                 log_interval=1,
                 progress_bar=True)
