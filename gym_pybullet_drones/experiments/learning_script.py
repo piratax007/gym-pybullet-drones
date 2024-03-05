@@ -25,7 +25,7 @@ def results_directory(base_directory, results_id):
     return str(path)
 
 
-def get_ppo_model(environment, reuse_model=False, path='continuous_learning/best_model.zip'):
+def get_ppo_model(environment, path, reuse_model=False):
     if reuse_model:
         return PPO.load(path=path,
                         device='auto',
@@ -34,7 +34,7 @@ def get_ppo_model(environment, reuse_model=False, path='continuous_learning/best
 
     return PPO('MlpPolicy',
                environment,
-               # tensorboard_log=filename+'/tb/',
+               tensorboard_log=path+'/tb/',
                verbose=0,
                device='auto')
 
@@ -71,7 +71,9 @@ def run_learning(environment,
                                         )
     evaluation_environment = environment(obs=DEFAULT_OBS, act=DEFAULT_ACT)
 
-    model = get_ppo_model(learning_environment, continuous_learning)
+    model = get_ppo_model(learning_environment,
+                          'continuous_learning/best_model.zip' if continuous_learning else path_to_results,
+                          continuous_learning)
 
     callback_list = callbacks(episodes, evaluation_environment, parallel_environments, path_to_results,
                               stop_on_max_episodes)
