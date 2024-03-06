@@ -54,7 +54,7 @@ class BasicRewardWithPitchRollPenalty(BaseRLAviary):
         self.INIT_XYZS = initial_xyzs
         self.TARGET_POS = target_xyzs
         self.TARGET_ORIENTATION = target_rpys
-        self.EPISODE_LEN_SEC = 8
+        self.EPISODE_LEN_SEC = 15
         super().__init__(drone_model=drone_model,
                          num_drones=1,
                          initial_xyzs=initial_xyzs,
@@ -71,22 +71,22 @@ class BasicRewardWithPitchRollPenalty(BaseRLAviary):
     ################################################################################
 
     def _target_error(self, state):
-        return (np.linalg.norm(self.TARGET_POS - state[0:3])**2 +
-                np.linalg.norm(self.TARGET_ORIENTATION - state[7:10])**2)
+        return (np.linalg.norm(self.TARGET_POS - state[0:3]) +
+                np.linalg.norm(self.TARGET_ORIENTATION - state[7:10]))
 
     def _is_away_from_exploration_area(self, state):
-        return (np.linalg.norm(self.INIT_XYZS[0][0:2] - state[0:2])**2 >
-                np.linalg.norm(self.INIT_XYZS[0][0:2] - self.TARGET_POS[0:2])**2 + 0.1 or
+        return (np.linalg.norm(self.INIT_XYZS[0][0:2] - state[0:2]) >
+                np.linalg.norm(self.INIT_XYZS[0][0:2] - self.TARGET_POS[0:2]) + 0.1 or
                 state[2] > self.TARGET_POS[2] + 0.025)
 
     def _is_closed(self, state):
-        return np.linalg.norm(state[0:3] - self.TARGET_POS[0:3])**2 < 0.05
+        return np.linalg.norm(state[0:3] - self.TARGET_POS[0:3]) < 0.05
 
     def _performance(self, state):
         if self._is_closed(state) and state[7]**2 + state[8]**2 < 0.01:
             return 1
 
-        return -0.1 * (state[7]**2 + state[8]**2)
+        return -(state[7]**2 + state[8]**2)
 
     def _computeReward(self):
         """Computes the current reward value.
@@ -98,9 +98,11 @@ class BasicRewardWithPitchRollPenalty(BaseRLAviary):
 
         """
         state = self._getDroneStateVector(0)
-        ret = ((25 - 15 * self._target_error(state) -
-                100 * (1 if self._is_away_from_exploration_area(state) else -0.025)) +
-               15 * (self._performance(state)))
+        ret = (25 - 15 * self._target_error(state) -
+               100 * (1 if self._is_away_from_exploration_area(state) else -0.025) +
+               15 * (self._performance(state)) -
+               8 * (state[16]**2 + state[17]**2 + state[18]**2 + state[19]**2) -
+               13 * (state[13]**2 + state[14]**2 + state[15]**2))
         return ret
 
     ################################################################################
