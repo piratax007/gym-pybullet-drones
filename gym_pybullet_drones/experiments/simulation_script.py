@@ -7,9 +7,10 @@ from stable_baselines3 import PPO
 from gym_pybullet_drones.utils.Logger import Logger
 from gym_pybullet_drones.utils.utils import sync, str2bool
 from gym_pybullet_drones.utils.enums import ObservationType, ActionType
-from gym_pybullet_drones.envs.EnvironmentTest import EnvironmentTest
+# from gym_pybullet_drones.envs.EnvironmentTest import EnvironmentTest
+from gym_pybullet_drones.envs.BasicRewardWithPitchRollPenalty import BasicRewardWithPitchRollPenalty
 
-DEFAULT_TEST_ENV = EnvironmentTest
+DEFAULT_TEST_ENV = BasicRewardWithPitchRollPenalty
 DEFAULT_OUTPUT_FOLDER = 'results'
 DEFAULT_RECORD_VIDEO = False
 DEFAULT_OBS = ObservationType('kin')  # 'kin' or 'rgb'
