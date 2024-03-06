@@ -72,7 +72,7 @@ def run_learning(environment,
     evaluation_environment = environment(obs=DEFAULT_OBS, act=DEFAULT_ACT)
 
     model = get_ppo_model(learning_environment,
-                          'continuous_learning/best_model.zip' if continuous_learning else path_to_results,
+                          'continuous_learning/best_030324020042.zip' if continuous_learning else path_to_results,
                           continuous_learning)
 
     callback_list = callbacks(episodes, evaluation_environment, parallel_environments, path_to_results,
