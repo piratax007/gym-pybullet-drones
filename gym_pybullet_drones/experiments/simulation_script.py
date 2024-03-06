@@ -40,13 +40,15 @@ def run_simulation(policy_path, test_env, plot, gui=True, record_video=False):
     )
 
     obs, info = test_env.reset(seed=42, options={})
+    log_reward = []
     start = time.time()
 
     for i in range((test_env.EPISODE_LEN_SEC+12)*test_env.CTRL_FREQ):
         action, _states = model.predict(obs,
                                         deterministic=True
                                         )
-        obs, _, terminated, truncated, info = test_env.step(action)
+        obs, reward, terminated, truncated, info = test_env.step(action)
+        log_reward.append(reward)
         obs2 = obs.squeeze()
         act2 = action.squeeze()
         print(f"""
@@ -83,6 +85,7 @@ def run_simulation(policy_path, test_env, plot, gui=True, record_video=False):
 
     if plot and DEFAULT_OBS == ObservationType.KIN:
         logger.plot_position_and_orientation()
+        logger.plot_instantaneous_reward(log_reward)
         logger.plot_rpms()
         logger.plot_trajectory()
 
