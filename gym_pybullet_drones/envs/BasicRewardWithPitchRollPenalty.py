@@ -118,8 +118,8 @@ class BasicRewardWithPitchRollPenalty(BaseRLAviary):
         if (np.linalg.norm(self.TARGET_POS - state[0:3])**2 < .05 and state[7]**2 + state[8]**2 < 0.01 and
                 self.step_counter / self.PYB_FREQ > self.EPISODE_LEN_SEC):
             return True
-        else:
-            return False
+
+        return False
         
     ################################################################################
     
