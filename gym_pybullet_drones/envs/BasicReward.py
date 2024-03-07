@@ -4,7 +4,7 @@ from gym_pybullet_drones.envs.BaseRLAviary import BaseRLAviary
 from gym_pybullet_drones.utils.enums import DroneModel, Physics, ActionType, ObservationType
 
 
-class BasicRewardWithPitchRollPenaltyWithoutWe(BaseRLAviary):
+class BasicReward(BaseRLAviary):
     """Single agent RL problem: hover at position."""
 
     ################################################################################
@@ -14,7 +14,7 @@ class BasicRewardWithPitchRollPenaltyWithoutWe(BaseRLAviary):
                  initial_xyzs=None,
                  initial_rpys=None,
                  target_xyzs=np.array([0, 0, 1]),
-                 target_rpys=np.array([0, 0, 1.7]),
+                 target_rpys=np.array([0, 0, np.pi/2]),
                  physics: Physics = Physics.PYB,
                  pyb_freq: int = 240,
                  ctrl_freq: int = 30,
@@ -84,7 +84,7 @@ class BasicRewardWithPitchRollPenaltyWithoutWe(BaseRLAviary):
 
     def _performance(self, state):
         if self._is_closed(state) and state[7]**2 + state[8]**2 < 0.01:
-            return 1
+            return 1.5
 
         return -(state[7]**2 + state[8]**2)
 
@@ -98,10 +98,8 @@ class BasicRewardWithPitchRollPenaltyWithoutWe(BaseRLAviary):
 
         """
         state = self._getDroneStateVector(0)
-        ret = (25 - 15 * self._target_error(state) -
-               100 * (1 if self._is_away_from_exploration_area(state) else -0.025) +
-               15 * (self._performance(state)) -
-               8 * (state[16]**2 + state[17]**2 + state[18]**2 + state[19]**2))
+        ret = (25 - 20 * self._target_error(state) -
+               100 * (1 if self._is_away_from_exploration_area(state) else -0.25))
         return ret
 
     ################################################################################

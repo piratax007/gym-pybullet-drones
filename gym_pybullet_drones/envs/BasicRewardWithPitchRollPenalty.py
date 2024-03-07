@@ -84,7 +84,7 @@ class BasicRewardWithPitchRollPenalty(BaseRLAviary):
 
     def _performance(self, state):
         if self._is_closed(state) and state[7]**2 + state[8]**2 < 0.01:
-            return 1
+            return 1.5
 
         return -(state[7]**2 + state[8]**2)
 
@@ -98,11 +98,10 @@ class BasicRewardWithPitchRollPenalty(BaseRLAviary):
 
         """
         state = self._getDroneStateVector(0)
-        ret = (25 - 15 * self._target_error(state) -
-               100 * (1 if self._is_away_from_exploration_area(state) else -0.025) +
-               15 * (self._performance(state)) -
-               8 * (state[16]**2 + state[17]**2 + state[18]**2 + state[19]**2) -
-               13 * (state[13]**2 + state[14]**2 + state[15]**2))
+        ret = (25 - 20 * self._target_error(state) -
+               100 * (1 if self._is_away_from_exploration_area(state) else -0.25) +
+               20 * self._performance(state) -
+               18 * (state[13]**2 + state[14]**2 + state[15]**2))
         return ret
 
     ################################################################################
