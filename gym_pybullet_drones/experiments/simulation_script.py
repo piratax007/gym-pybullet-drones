@@ -76,8 +76,8 @@ def run_simulation(policy_path, test_env, plot, gui=True, record_video=False):
                 timestamp=i/test_env.CTRL_FREQ,
                 state=np.hstack([obs2[0:3],
                                 np.zeros(4),
-                                obs2[3:15],
-                                act2
+                                obs2[3:12],
+                                actions2
                                  ]),
                 control=np.zeros(12)
             )
