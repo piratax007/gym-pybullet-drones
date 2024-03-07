@@ -505,27 +505,23 @@ class Logger(object):
         col = 0
 
         row = 0
-        for j in range(self.NUM_DRONES):
-            axs[row, col].plot(t, self.states[j, 12, :], label="drone_" + str(j))
+        axs[row, col].plot(t, self.states[0, 12], label="drone_" + str(0))
         axs[row, col].set_xlabel('time')
         axs[row, col].set_ylabel('RPM_0')
 
         row = 1
-        for j in range(self.NUM_DRONES):
-            axs[row, col].plot(t, self.states[j, 13, :], label="drone_" + str(j))
+        axs[row, col].plot(t, self.states[0, 13], label="drone_" + str(0))
         axs[row, col].set_xlabel('time')
         axs[row, col].set_ylabel('RPM_1')
 
         col = 1
         row = 0
-        for j in range(self.NUM_DRONES):
-            axs[row, col].plot(t, self.states[j, 14, :], label="drone_" + str(j))
+        axs[row, col].plot(t, self.states[0, 14], label="drone_" + str(0))
         axs[row, col].set_xlabel('time')
         axs[row, col].set_ylabel('RPM_2')
 
         row = 1
-        for j in range(self.NUM_DRONES):
-            axs[row, col].plot(t, self.states[j, 15, :], label="drone_" + str(j))
+        axs[row, col].plot(t, self.states[0, 15], label="drone_" + str(0))
         axs[row, col].set_xlabel('time')
         axs[row, col].set_ylabel('RPM_3')
 
