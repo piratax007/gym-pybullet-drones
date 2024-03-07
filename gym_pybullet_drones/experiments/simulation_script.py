@@ -50,8 +50,12 @@ def run_simulation(policy_path, test_env, plot, gui=True, record_video=False):
                                         )
         obs, reward, terminated, truncated, info = test_env.step(action)
         log_reward.append(reward)
+        actions = test_env._getDroneStateVector(0)[16:20]
+        actions2 = actions.squeeze()
         obs2 = obs.squeeze()
         act2 = action.squeeze()
+        print(f"############# ACTIONS: {actions2} #############")
+        print(f"############# ACT: {act2} #############")
         print(f"""
         #################################################################
         Observation Space:
