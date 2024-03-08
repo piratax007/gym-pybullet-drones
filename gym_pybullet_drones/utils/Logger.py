@@ -436,24 +436,21 @@ class Logger(object):
 
         row = 0
         # X
-        for j in range(self.NUM_DRONES):
-            axs[row, col].plot(t, self.states[j, 0, :], color="tab:blue")
+        axs[row, col].plot(t, self.states[0, 0], color="tab:blue")
         axs[row, col].set_xlabel('time')
         axs[row, col].set_ylabel('x (m)')
         axs[row, col].grid(True)
 
         row = 1
         # Y
-        for j in range(self.NUM_DRONES):
-            axs[row, col].plot(t, self.states[j, 1, :], color="tab:orange")
+        axs[row, col].plot(t, self.states[0, 1], color="tab:orange")
         axs[row, col].set_xlabel('time')
         axs[row, col].set_ylabel('y (m)')
         axs[row, col].grid(True)
 
         row = 2
         # Z
-        for j in range(self.NUM_DRONES):
-            axs[row, col].plot(t, self.states[j, 2, :], color="tab:green")
+        axs[row, col].plot(t, self.states[0, 2], color="tab:green")
         axs[row, col].set_xlabel('time')
         axs[row, col].set_ylabel('z (m)')
         axs[row, col].grid(True)
@@ -462,24 +459,21 @@ class Logger(object):
 
         row = 0
         # ROLL
-        for j in range(self.NUM_DRONES):
-            axs[row, col].plot(t, (self.states[j, 6, :] * 180) / np.pi, color="tab:blue")
+        axs[row, col].plot(t, (self.states[0, 6] * 180) / np.pi, color="tab:blue")
         axs[row, col].set_xlabel('time')
         axs[row, col].set_ylabel('roll (deg)')
         axs[row, col].grid(True)
 
         row = 1
         # PITCH
-        for j in range(self.NUM_DRONES):
-            axs[row, col].plot(t, (self.states[j, 7, :] * 180) / np.pi, color="tab:orange")
+        axs[row, col].plot(t, (self.states[0, 7] * 180) / np.pi, color="tab:orange")
         axs[row, col].set_xlabel('time')
         axs[row, col].set_ylabel('pitch (deg)')
         axs[row, col].grid(True)
 
         row = 2
         # YAW
-        for j in range(self.NUM_DRONES):
-            axs[row, col].plot(t, (self.states[j, 8, :] * 180) / np.pi, color="tab:green")
+        axs[row, col].plot(t, (self.states[0, 8] * 180) / np.pi, color="tab:green")
         axs[row, col].set_xlabel('time')
         axs[row, col].set_ylabel('yaw (deg)')
         axs[row, col].grid(True)
