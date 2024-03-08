@@ -99,7 +99,7 @@ class BasicRewardWithPitchRollPenalty(BaseRLAviary):
         """
         state = self._getDroneStateVector(0)
         ret = (25 - 20 * self._target_error(state) -
-               100 * (1 if self._is_away_from_exploration_area(state) else -0.25) +
+               100 * (1 if self._is_away_from_exploration_area(state) else -0.15) +
                20 * self._performance(state) -
                18 * (state[13]**2 + state[14]**2 + state[15]**2))
         return ret
@@ -116,7 +116,7 @@ class BasicRewardWithPitchRollPenalty(BaseRLAviary):
 
         """
         state = self._getDroneStateVector(0)
-        if np.linalg.norm(self.TARGET_POS - state[0:3]) < .05 and state[7]**2 + state[8]**2 < 0.01:
+        if np.linalg.norm(self.TARGET_POS - state[0:3]) < .025 and state[7]**2 + state[8]**2 < 0.001:
             return True
 
         return False
