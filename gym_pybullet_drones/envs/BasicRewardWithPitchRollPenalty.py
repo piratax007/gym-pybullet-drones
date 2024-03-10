@@ -80,11 +80,11 @@ class BasicRewardWithPitchRollPenalty(BaseRLAviary):
                 state[2] > self.TARGET_POS[2] + 0.025)
 
     def _is_closed(self, state):
-        return np.linalg.norm(state[0:3] - self.TARGET_POS[0:3]) < 0.05
+        return np.linalg.norm(state[0:3] - self.TARGET_POS[0:3]) < 0.35
 
     def _performance(self, state):
         if self._is_closed(state) and state[7]**2 + state[8]**2 < 0.01:
-            return 1.5
+            return 2
 
         return -(state[7]**2 + state[8]**2)
 
