@@ -406,6 +406,9 @@ class Logger(object):
         plt.plot()
 
     def plot_trajectory(self):
+        font = {'family': 'serif', 'weight': 'normal', 'size': 15}
+        plt.rc('font', **font)
+
         fig = plt.figure()
         ax = fig.add_subplot(projection='3d')
 
@@ -413,7 +416,7 @@ class Logger(object):
 
         ax.set_xlim(-1, 1)
         ax.set_ylim(-1, 1)
-        ax.set_zlim(0, 1.5)
+        ax.set_zlim(-0, 1.5)
         ax.set_xlabel('X')
         ax.set_ylabel('Y')
         ax.set_zlabel('Z')
@@ -425,8 +428,9 @@ class Logger(object):
     def plot_position_and_orientation(self):
         """Logs entries for a single simulation step, of a single drone."""
 
-        font = {'family': 'serif', 'weight': 'normal', 'size': 22}
+        font = {'family': 'serif', 'weight': 'bold', 'size': 22}
         plt.rc('font', **font)
+        plt.rcParams['text.usetex'] = True
 
         fig, axs = plt.subplots(3, 2)
 
@@ -461,21 +465,21 @@ class Logger(object):
         # ROLL
         axs[row, col].plot(t, (self.states[0, 6] * 180) / np.pi, color="tab:blue")
         axs[row, col].set_xlabel('time')
-        axs[row, col].set_ylabel('roll (deg)')
+        axs[row, col].set_ylabel(r"$\phi^\circ$")
         axs[row, col].grid(True)
 
         row = 1
         # PITCH
         axs[row, col].plot(t, (self.states[0, 7] * 180) / np.pi, color="tab:orange")
         axs[row, col].set_xlabel('time')
-        axs[row, col].set_ylabel('pitch (deg)')
+        axs[row, col].set_ylabel(r"$\theta^\circ$")
         axs[row, col].grid(True)
 
         row = 2
         # YAW
         axs[row, col].plot(t, (self.states[0, 8] * 180) / np.pi, color="tab:green")
         axs[row, col].set_xlabel('time')
-        axs[row, col].set_ylabel('yaw (deg)')
+        axs[row, col].set_ylabel(r"$\psi^\circ$")
         axs[row, col].grid(True)
 
         fig.subplots_adjust(left=0.08,
@@ -518,5 +522,33 @@ class Logger(object):
         axs[row, col].plot(t, self.states[0, 15], label="drone_" + str(0))
         axs[row, col].set_xlabel('time')
         axs[row, col].set_ylabel('RPM_3')
+
+        plt.show()
+
+    def plot_angular_velocities(self):
+        font = {'family': 'serif', 'weight': 'normal', 'size': 22}
+        plt.rc('font', **font)
+        plt.rcParams['text.usetex'] = True
+
+        fig, axs = plt.subplots(3, 1)
+
+        t = np.arange(0, self.timestamps.shape[1] / self.LOGGING_FREQ_HZ, 1 / self.LOGGING_FREQ_HZ)
+
+        row = 0
+        rdot = np.hstack([0, (self.states[0, 6, 1:] - self.states[0, 6, 0:-1]) * self.LOGGING_FREQ_HZ])
+        axs[row].plot(t, rdot, color="olivedrab")
+        axs[row].set_ylabel(r"$\dot{\phi}$ (rad/s)")
+        axs[row].grid(True)
+        row = 1
+        pdot = np.hstack([0, (self.states[0, 7, 1:] - self.states[0, 7, 0:-1]) * self.LOGGING_FREQ_HZ])
+        axs[row].plot(t, pdot, color="olivedrab")
+        axs[row].set_ylabel(r"$\dot{\theta}$ (rad/s)")
+        axs[row].grid(True)
+        row = 2
+        ydot = np.hstack([0, (self.states[0, 8, 1:] - self.states[0, 8, 0:-1]) * self.LOGGING_FREQ_HZ])
+        axs[row].plot(t, ydot, color="olivedrab")
+        axs[row].set_xlabel('time')
+        axs[row].set_ylabel(r"$\dot{\psi}$ (rad/s)")
+        axs[row].grid(True)
 
         plt.show()
