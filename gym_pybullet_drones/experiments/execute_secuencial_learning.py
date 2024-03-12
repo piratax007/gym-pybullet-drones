@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 from gym_pybullet_drones.envs import BasicRewardWithPitchRollPenalty
-# from gym_pybullet_drones.envs.BasicRewardWithPerformWeRPMsPenalties import BasicRewardWithPerformWeRPMsPenalties
 from gym_pybullet_drones.experiments.learning_script import run_learning
 
 print("""######### Learning from best 030324020042 #########
