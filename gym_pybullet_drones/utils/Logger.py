@@ -403,7 +403,7 @@ class Logger(object):
         axs.set_ylabel('instantaneous reward')
         axs.grid(True)
 
-        plt.plot()
+        plt.show()
 
     def plot_trajectory(self):
         font = {'family': 'serif', 'weight': 'normal', 'size': 15}
@@ -443,6 +443,7 @@ class Logger(object):
         axs[row, col].plot(t, self.states[0, 0], color="tab:blue")
         axs[row, col].set_xlabel('time')
         axs[row, col].set_ylabel('x (m)')
+        axs[row, col].set_ylim([-.5, .5])
         axs[row, col].grid(True)
 
         row = 1
@@ -450,6 +451,7 @@ class Logger(object):
         axs[row, col].plot(t, self.states[0, 1], color="tab:orange")
         axs[row, col].set_xlabel('time')
         axs[row, col].set_ylabel('y (m)')
+        axs[row, col].set_ylim([-.5, .5])
         axs[row, col].grid(True)
 
         row = 2
@@ -466,6 +468,7 @@ class Logger(object):
         axs[row, col].plot(t, (self.states[0, 6] * 180) / np.pi, color="tab:blue")
         axs[row, col].set_xlabel('time')
         axs[row, col].set_ylabel(r"$\phi^\circ$")
+        axs[row, col].set_ylim([-8.6, 8.6])
         axs[row, col].grid(True)
 
         row = 1
@@ -473,6 +476,7 @@ class Logger(object):
         axs[row, col].plot(t, (self.states[0, 7] * 180) / np.pi, color="tab:orange")
         axs[row, col].set_xlabel('time')
         axs[row, col].set_ylabel(r"$\theta^\circ$")
+        axs[row, col].set_ylim([-8.6, 8.6])
         axs[row, col].grid(True)
 
         row = 2
