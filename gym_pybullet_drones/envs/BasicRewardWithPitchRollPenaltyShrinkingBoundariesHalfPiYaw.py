@@ -4,17 +4,17 @@ from gym_pybullet_drones.envs.BaseRLAviary import BaseRLAviary
 from gym_pybullet_drones.utils.enums import DroneModel, Physics, ActionType, ObservationType
 
 
-class BasicRewardWithPitchRollPenalty(BaseRLAviary):
+class BasicRewardWithPitchRollPenaltyShrinkingBoundariesHalfPiYaw(BaseRLAviary):
     """Single agent RL problem: hover at position."""
 
     ################################################################################
     
     def __init__(self,
                  drone_model: DroneModel = DroneModel.CF2X,
-                 initial_xyzs=np.array([[0, 0, 0]]),
+                 initial_xyzs=None,
                  initial_rpys=None,
                  target_xyzs=np.array([0, 0, 1]),
-                 target_rpys=np.array([0, 0, 1.7]),
+                 target_rpys=np.array([0, 0, np.pi/2]),
                  physics: Physics = Physics.PYB,
                  pyb_freq: int = 240,
                  ctrl_freq: int = 30,
@@ -76,14 +76,14 @@ class BasicRewardWithPitchRollPenalty(BaseRLAviary):
 
     def _is_away_from_exploration_area(self, state):
         return (np.linalg.norm(self.INIT_XYZS[0][0:2] - state[0:2]) >
-                np.linalg.norm(self.INIT_XYZS[0][0:2] - self.TARGET_POS[0:2]) + 0.1 or
-                state[2] > self.TARGET_POS[2] + 0.025)
+                np.linalg.norm(self.INIT_XYZS[0][0:2] - self.TARGET_POS[0:2]) + 0.05 or
+                state[2] > self.TARGET_POS[2] + 0.0125)
 
     def _is_closed(self, state):
-        return np.linalg.norm(state[0:3] - self.TARGET_POS[0:3]) < 0.05
+        return np.linalg.norm(state[0:3] - self.TARGET_POS[0:3]) < 0.025
 
     def _performance(self, state):
-        if self._is_closed(state) and state[7]**2 + state[8]**2 < 0.01:
+        if self._is_closed(state) and state[7]**2 + state[8]**2 < 0.001:
             return 2
 
         return -(state[7]**2 + state[8]**2)
@@ -99,7 +99,7 @@ class BasicRewardWithPitchRollPenalty(BaseRLAviary):
         """
         state = self._getDroneStateVector(0)
         ret = (25 - 20 * self._target_error(state) -
-               100 * (1 if self._is_away_from_exploration_area(state) else -0.15) +
+               100 * (1 if self._is_away_from_exploration_area(state) else -0.2) +
                20 * self._performance(state) -
                18 * (state[13]**2 + state[14]**2 + state[15]**2))
         return ret
@@ -116,7 +116,7 @@ class BasicRewardWithPitchRollPenalty(BaseRLAviary):
 
         """
         state = self._getDroneStateVector(0)
-        if np.linalg.norm(self.TARGET_POS - state[0:3]) < .025 and state[7]**2 + state[8]**2 < 0.001:
+        if np.linalg.norm(self.TARGET_POS - state[0:3]) < .02 and state[7]**2 + state[8]**2 < 0.0005:
             return True
 
         return False
@@ -134,8 +134,8 @@ class BasicRewardWithPitchRollPenalty(BaseRLAviary):
         """
         state = self._getDroneStateVector(0)
         if (np.linalg.norm(self.INIT_XYZS[0][0:2] - state[0:2]) >
-                np.linalg.norm(self.INIT_XYZS[0][0:2] - self.TARGET_POS[0:2]) + 0.5 or
-                state[2] > self.TARGET_POS[2] + 0.5 or
+                np.linalg.norm(self.INIT_XYZS[0][0:2] - self.TARGET_POS[0:2]) + 0.1 or
+                state[2] > self.TARGET_POS[2] + 0.025 or
                 abs(state[7]) > .15 or abs(state[8]) > .15):
             return True
 
