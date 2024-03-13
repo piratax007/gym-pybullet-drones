@@ -93,6 +93,7 @@ def run_simulation(policy_path, test_env, plot, gui=True, record_video=False):
         logger.plot_instantaneous_reward(log_reward)
         logger.plot_rpms()
         logger.plot_trajectory()
+        logger.plot_angular_velocities()
 
 
 if __name__ == '__main__':
