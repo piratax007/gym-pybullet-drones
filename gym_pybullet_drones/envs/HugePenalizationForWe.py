@@ -4,7 +4,7 @@ from gym_pybullet_drones.envs.BaseRLAviary import BaseRLAviary
 from gym_pybullet_drones.utils.enums import DroneModel, Physics, ActionType, ObservationType
 
 
-class BasicRewardWithPitchRollPenalty(BaseRLAviary):
+class HugePenalizationForWe(BaseRLAviary):
     """Single agent RL problem: hover at position."""
 
     ################################################################################
@@ -55,6 +55,7 @@ class BasicRewardWithPitchRollPenalty(BaseRLAviary):
         self.TARGET_POS = target_xyzs
         self.TARGET_ORIENTATION = target_rpys
         self.EPISODE_LEN_SEC = 15
+        self.LOG_ANGULAR_VELOCITY = np.zeros((1, 3))
         super().__init__(drone_model=drone_model,
                          num_drones=1,
                          initial_xyzs=initial_xyzs,
@@ -76,17 +77,32 @@ class BasicRewardWithPitchRollPenalty(BaseRLAviary):
 
     def _is_away_from_exploration_area(self, state):
         return (np.linalg.norm(self.INIT_XYZS[0][0:2] - state[0:2]) >
-                np.linalg.norm(self.INIT_XYZS[0][0:2] - self.TARGET_POS[0:2]) + 0.1 or
-                state[2] > self.TARGET_POS[2] + 0.025)
+                np.linalg.norm(self.INIT_XYZS[0][0:2] - self.TARGET_POS[0:2]) + 0.05 or
+                state[2] > self.TARGET_POS[2] + 0.0125)
 
     def _is_closed(self, state):
-        return np.linalg.norm(state[0:3] - self.TARGET_POS[0:3]) < 0.05
+        return np.linalg.norm(state[0:3] - self.TARGET_POS[0:3]) < 0.025
 
     def _performance(self, state):
-        if self._is_closed(state) and state[7]**2 + state[8]**2 < 0.01:
+        if self._is_closed(state) and state[7]**2 + state[8]**2 < 0.001:
             return 2
 
         return -(state[7]**2 + state[8]**2)
+
+    def _get_previous_current_we(self, current_state):
+        if np.shape(self.LOG_ANGULAR_VELOCITY)[0] > 2:
+            self.LOG_ANGULAR_VELOCITY = np.delete(self.LOG_ANGULAR_VELOCITY, 0, axis=0)
+
+        return np.vstack((self.LOG_ANGULAR_VELOCITY, current_state[13:16]))
+
+    def _get_we_differences(self, state):
+        log = self._get_previous_current_we(state)
+        differences = {
+            'roll': log[0][0] - log[1][0],
+            'pitch': log[0][1] - log[1][1],
+            'yaw': log[0][2] - log[1][2],
+        }
+        return differences
 
     def _computeReward(self):
         """Computes the current reward value.
@@ -98,10 +114,11 @@ class BasicRewardWithPitchRollPenalty(BaseRLAviary):
 
         """
         state = self._getDroneStateVector(0)
+        we_differences = self._get_we_differences(state)
         ret = (25 - 20 * self._target_error(state) -
-               100 * (1 if self._is_away_from_exploration_area(state) else -0.15) +
+               100 * (1 if self._is_away_from_exploration_area(state) else -0.2) +
                20 * self._performance(state) -
-               18 * (state[13]**2 + state[14]**2 + state[15]**2))
+               22 * (we_differences['roll']**2 + we_differences['pitch']**2 + we_differences['yaw']**2))
         return ret
 
     ################################################################################
@@ -116,7 +133,7 @@ class BasicRewardWithPitchRollPenalty(BaseRLAviary):
 
         """
         state = self._getDroneStateVector(0)
-        if np.linalg.norm(self.TARGET_POS - state[0:3]) < .025 and state[7]**2 + state[8]**2 < 0.001:
+        if np.linalg.norm(self.TARGET_POS - state[0:3]) < .02 and state[7]**2 + state[8]**2 < 0.0005:
             return True
 
         return False
@@ -134,8 +151,8 @@ class BasicRewardWithPitchRollPenalty(BaseRLAviary):
         """
         state = self._getDroneStateVector(0)
         if (np.linalg.norm(self.INIT_XYZS[0][0:2] - state[0:2]) >
-                np.linalg.norm(self.INIT_XYZS[0][0:2] - self.TARGET_POS[0:2]) + 0.5 or
-                state[2] > self.TARGET_POS[2] + 0.5 or
+                np.linalg.norm(self.INIT_XYZS[0][0:2] - self.TARGET_POS[0:2]) + 0.1 or
+                state[2] > self.TARGET_POS[2] + 0.025 or
                 abs(state[7]) > .15 or abs(state[8]) > .15):
             return True
 
