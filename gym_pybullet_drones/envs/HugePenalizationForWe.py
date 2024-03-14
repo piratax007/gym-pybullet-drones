@@ -11,7 +11,7 @@ class HugePenalizationForWe(BaseRLAviary):
     
     def __init__(self,
                  drone_model: DroneModel = DroneModel.CF2X,
-                 initial_xyzs=None,
+                 initial_xyzs=np.array([[0, 0, 0]]),
                  initial_rpys=None,
                  target_xyzs=np.array([0, 0, 1]),
                  target_rpys=np.array([0, 0, 1.7]),
@@ -118,7 +118,7 @@ class HugePenalizationForWe(BaseRLAviary):
         ret = (25 - 20 * self._target_error(state) -
                100 * (1 if self._is_away_from_exploration_area(state) else -0.2) +
                20 * self._performance(state) -
-               22 * (we_differences['roll']**2 + we_differences['pitch']**2 + we_differences['yaw']**2))
+               20 * (we_differences['roll']**2 + we_differences['pitch']**2 + we_differences['yaw']**2))
         return ret
 
     ################################################################################
