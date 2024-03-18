@@ -12,7 +12,7 @@ class HugePenalizationForWe(BaseRLAviary):
     def __init__(self,
                  drone_model: DroneModel = DroneModel.CF2X,
                  initial_xyzs=np.array([[0, 0, 0]]),
-                 initial_rpys=None,
+                 initial_rpys=np.array([[0, 0, 0]]),
                  target_xyzs=np.array([0, 0, 1]),
                  target_rpys=np.array([0, 0, 1.7]),
                  physics: Physics = Physics.PYB,
@@ -56,6 +56,7 @@ class HugePenalizationForWe(BaseRLAviary):
         self.TARGET_ORIENTATION = target_rpys
         self.EPISODE_LEN_SEC = 15
         self.LOG_ANGULAR_VELOCITY = np.zeros((1, 3))
+        self.LOG_RPMS = np.zeros((1, 4))
         super().__init__(drone_model=drone_model,
                          num_drones=1,
                          initial_xyzs=initial_xyzs,
@@ -104,6 +105,23 @@ class HugePenalizationForWe(BaseRLAviary):
         }
         return differences
 
+    def _get_previous_current_rpm(self, current_state):
+        if np.shape(self.LOG_RPMS)[0] > 2:
+            self.LOG_RPMS = np.delete(self.LOG_RPMS, 0)
+
+        return np.vstack((self.LOG_RPMS, current_state[16:20]))
+
+    def _get_rpms_differences(self, state):
+        log = self._get_previous_current_rpm(state)
+        differences = {
+            'rpm1': log[0][0] - log[1][0],
+            'rpm2': log[0][1] - log[1][1],
+            'rpm3': log[0][2] - log[1][2],
+            'rpm4': log[0][3] - log[1][3]
+        }
+
+        return differences
+
     def _computeReward(self):
         """Computes the current reward value.
 
@@ -115,10 +133,13 @@ class HugePenalizationForWe(BaseRLAviary):
         """
         state = self._getDroneStateVector(0)
         we_differences = self._get_we_differences(state)
+        rpms_differences = self._get_rpms_differences(state)
         ret = (25 - 20 * self._target_error(state) -
                100 * (1 if self._is_away_from_exploration_area(state) else -0.2) +
                20 * self._performance(state) -
-               20 * (we_differences['roll']**2 + we_differences['pitch']**2 + we_differences['yaw']**2))
+               18 * (we_differences['roll']**2 + we_differences['pitch']**2 + we_differences['yaw']**2) -
+               0.0104 * (rpms_differences['rpm1'] + rpms_differences['rpm2'] +
+                         rpms_differences['rpm3'] + rpms_differences['rpm4']))
         return ret
 
     ################################################################################
