@@ -15,12 +15,15 @@ def in_degrees(angles):
     return list(map(lambda angle: angle * 180 / np.pi, angles))
 
 
-def run_simulation(policy_path, test_env, plot, gui=True, record_video=False):
-    model = None
-    if os.path.isfile(policy_path+'/best_model.zip'):
-        model = PPO.load(policy_path+'/best_model.zip')
-    else:
-        print("[ERROR]: no model under the specified path", policy_path)
+def get_policy(policy_path):
+    if os.path.isfile(policy_path + '/best_model.zip'):
+        return PPO.load(policy_path + '/best_model.zip')
+
+    raise Exception("[ERROR]: no model under the specified path", policy_path)
+
+
+def run_simulation(policy_path, test_env, gui=True, record_video=False):
+    policy = get_policy(policy_path)
 
     test_env = test_env(gui=gui,
                         obs=ObservationType('kin'),
