@@ -54,7 +54,7 @@ class HugePenalizationForWe(BaseRLAviary):
         self.INIT_XYZS = initial_xyzs
         self.TARGET_POS = target_xyzs
         self.TARGET_ORIENTATION = target_rpys
-        self.EPISODE_LEN_SEC = 15
+        self.EPISODE_LEN_SEC = 8
         self.LOG_ANGULAR_VELOCITY = np.zeros((1, 3))
         self.LOG_RPMS = np.zeros((1, 4))
         super().__init__(drone_model=drone_model,
@@ -138,8 +138,8 @@ class HugePenalizationForWe(BaseRLAviary):
                100 * (1 if self._is_away_from_exploration_area(state) else -0.2) +
                20 * self._performance(state) -
                18 * (we_differences['roll']**2 + we_differences['pitch']**2 + we_differences['yaw']**2) -
-               0.0104 * (rpms_differences['rpm1'] + rpms_differences['rpm2'] +
-                         rpms_differences['rpm3'] + rpms_differences['rpm4']))
+               0.0052 * (rpms_differences['rpm1']**2 + rpms_differences['rpm2']**2 +
+                         rpms_differences['rpm3']**2 + rpms_differences['rpm4']**2))
         return ret
 
     ################################################################################

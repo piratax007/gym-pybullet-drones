@@ -6,13 +6,13 @@ from gym_pybullet_drones.experiments.learning_script import run_learning
 print("""######### Learning from third best #########
 R(t) = 25 - 20te - 100Bo + 20P - 18we - 0.0104R
 Target = [0 0 1 0 0 1.7]
-Time steps = 20M
-Episode Length = 15s
+Time steps = 2M
+Episode Length = 8s
 ##################################################
 """)
 
 results = run_learning(environment=HugePenalizationForWe,
-                       learning_id="TEST-WITH-RPMS-DIFFERENCE-10M",
+                       learning_id="TEST-WITH-0.0052RPMS-SQUARED-DIFFERENCE-2M",
                        continuous_learning=True,
                        stop_on_max_episodes=False,
                        parallel_environments=4,

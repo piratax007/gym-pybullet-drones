@@ -4,13 +4,16 @@ import os
 import time
 import numpy as np
 from stable_baselines3 import PPO
+
+from gym_pybullet_drones.envs import HugePenalizationForWe
 from gym_pybullet_drones.utils.Logger import Logger
 from gym_pybullet_drones.utils.utils import sync, str2bool
 from gym_pybullet_drones.utils.enums import ObservationType, ActionType
 # from gym_pybullet_drones.envs.EnvironmentTest import EnvironmentTest
-from gym_pybullet_drones.envs.BasicRewardWithPitchRollPenalty import BasicRewardWithPitchRollPenalty
+# from gym_pybullet_drones.envs.BasicRewardWithPitchRollPenalty import BasicRewardWithPitchRollPenalty
+# from gym_pybullet_drones.envs.BasicRewardWithPitchRollPenaltyShrinkingBoundaries import BasicRewardWithPitchRollPenaltyShrinkingBoundaries
 
-DEFAULT_TEST_ENV = BasicRewardWithPitchRollPenalty
+DEFAULT_TEST_ENV = HugePenalizationForWe
 DEFAULT_OUTPUT_FOLDER = 'results'
 DEFAULT_RECORD_VIDEO = False
 DEFAULT_OBS = ObservationType('kin')  # 'kin' or 'rgb'
@@ -44,7 +47,21 @@ def run_simulation(policy_path, test_env, plot, gui=True, record_video=False):
     log_reward = []
     start = time.time()
 
-    for i in range((test_env.EPISODE_LEN_SEC+12)*test_env.CTRL_FREQ):
+    simulation_length = (test_env.EPISODE_LEN_SEC + 22) * test_env.CTRL_FREQ
+
+    for i in range(simulation_length):
+        # if i < (simulation_length / 5):
+        #     z_target = 1
+        # elif i < 2 * (simulation_length / 5):
+        #     z_target = 0.2
+        # elif i < 3 * (simulation_length / 5):
+        #     z_target = 0.8
+        # elif i < 4 * (simulation_length / 5):
+        #     z_target = 0.4
+        # else:
+        #     z_target = 1
+        #
+        # obs[0][2] += 1 - z_target
         action, _states = model.predict(obs,
                                         deterministic=True
                                         )
@@ -89,11 +106,13 @@ def run_simulation(policy_path, test_env, plot, gui=True, record_video=False):
     test_env.close()
 
     if plot and DEFAULT_OBS == ObservationType.KIN:
+        # logger.save()
+        # logger.save_as_csv("changing_z")
         logger.plot_position_and_orientation()
-        logger.plot_instantaneous_reward(log_reward)
-        logger.plot_rpms()
         logger.plot_trajectory()
-        logger.plot_angular_velocities()
+        # logger.plot_instantaneous_reward(log_reward)
+        logger.plot_rpms()
+        # logger.plot_angular_velocities()
 
 
 if __name__ == '__main__':

@@ -11,7 +11,7 @@ class BasicRewardWithPitchRollPenalty(BaseRLAviary):
     
     def __init__(self,
                  drone_model: DroneModel = DroneModel.CF2X,
-                 initial_xyzs=None,
+                 initial_xyzs=np.array([[0, 0, 0]]),
                  initial_rpys=None,
                  target_xyzs=np.array([0, 0, 1]),
                  target_rpys=np.array([0, 0, 1.7]),
