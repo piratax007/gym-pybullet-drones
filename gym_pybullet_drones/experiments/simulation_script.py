@@ -5,19 +5,10 @@ import time
 import numpy as np
 from stable_baselines3 import PPO
 
-from gym_pybullet_drones.envs import HugePenalizationForWe
 from gym_pybullet_drones.utils.Logger import Logger
 from gym_pybullet_drones.utils.utils import sync, str2bool
 from gym_pybullet_drones.utils.enums import ObservationType, ActionType
-# from gym_pybullet_drones.envs.EnvironmentTest import EnvironmentTest
-# from gym_pybullet_drones.envs.BasicRewardWithPitchRollPenalty import BasicRewardWithPitchRollPenalty
-# from gym_pybullet_drones.envs.BasicRewardWithPitchRollPenaltyShrinkingBoundaries import BasicRewardWithPitchRollPenaltyShrinkingBoundaries
-
-DEFAULT_TEST_ENV = HugePenalizationForWe
-DEFAULT_OUTPUT_FOLDER = 'results'
-DEFAULT_RECORD_VIDEO = False
-DEFAULT_OBS = ObservationType('kin')  # 'kin' or 'rgb'
-DEFAULT_ACT = ActionType('rpm')
+from gym_pybullet_drones.envs import HugePenalizationForWe
 
 
 def in_degrees(angles):
@@ -32,8 +23,8 @@ def run_simulation(policy_path, test_env, plot, gui=True, record_video=False):
         print("[ERROR]: no model under the specified path", policy_path)
 
     test_env = test_env(gui=gui,
-                        obs=DEFAULT_OBS,
-                        act=DEFAULT_ACT,
+                        obs=ObservationType('kin'),
+                        act=ActionType('rpm'),
                         record=record_video)
 
     logger = Logger(
@@ -45,9 +36,9 @@ def run_simulation(policy_path, test_env, plot, gui=True, record_video=False):
 
     obs, info = test_env.reset(seed=42, options={})
     log_reward = []
-    start = time.time()
-
     simulation_length = (test_env.EPISODE_LEN_SEC + 22) * test_env.CTRL_FREQ
+
+    start = time.time()
 
     for i in range(simulation_length):
         # if i < (simulation_length / 5):
@@ -62,9 +53,9 @@ def run_simulation(policy_path, test_env, plot, gui=True, record_video=False):
         #     z_target = 1
         #
         # obs[0][2] += 1 - z_target
-        action, _states = model.predict(obs,
-                                        deterministic=True
-                                        )
+        action, _states = policy.predict(obs,
+                                         deterministic=True
+                                         )
         obs, reward, terminated, truncated, info = test_env.step(action)
         log_reward.append(reward)
         actions = test_env._getDroneStateVector(0)[16:20]
@@ -87,17 +78,16 @@ def run_simulation(policy_path, test_env, plot, gui=True, record_video=False):
         #################################################################
         """)
 
-        if DEFAULT_OBS == ObservationType.KIN:
-            logger.log(
-                drone=0,
-                timestamp=i/test_env.CTRL_FREQ,
-                state=np.hstack([obs2[0:3],
-                                np.zeros(4),
-                                obs2[3:12],
-                                actions2
-                                 ]),
-                control=np.zeros(12)
-            )
+        logger.log(
+            drone=0,
+            timestamp=i / test_env.CTRL_FREQ,
+            state=np.hstack([obs2[0:3],
+                             np.zeros(4),
+                             obs2[3:12],
+                             actions2
+                             ]),
+            control=np.zeros(12)
+        )
 
         test_env.render()
         print(terminated)
@@ -105,14 +95,13 @@ def run_simulation(policy_path, test_env, plot, gui=True, record_video=False):
 
     test_env.close()
 
-    if plot and DEFAULT_OBS == ObservationType.KIN:
-        # logger.save()
-        # logger.save_as_csv("changing_z")
-        logger.plot_position_and_orientation()
-        logger.plot_trajectory()
-        # logger.plot_instantaneous_reward(log_reward)
-        logger.plot_rpms()
-        # logger.plot_angular_velocities()
+    # logger.save()
+    # logger.save_as_csv("changing_z")
+    logger.plot_position_and_orientation()
+    logger.plot_trajectory()
+    # logger.plot_instantaneous_reward(log_reward)
+    # logger.plot_rpms()
+    # logger.plot_angular_velocities()
 
 
 if __name__ == '__main__':
@@ -123,13 +112,7 @@ if __name__ == '__main__':
     )
     parser.add_argument(
         '--test_env',
-        default=DEFAULT_TEST_ENV,
-        help='The name of the environment to learn, registered with gym_pybullet_drones'
-    )
-    parser.add_argument(
-        '--plot',
-        default=True,
-        type=str2bool,
+        default=HugePenalizationForWe,
         help='The name of the environment to learn, registered with gym_pybullet_drones'
     )
     parser.add_argument(
