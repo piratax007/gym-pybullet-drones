@@ -456,7 +456,7 @@ class Logger(object):
         # axs[row, col].set_yticklabels(axs[row, col].get_yticks(), weight='bold')
         axs[row, col].set_xlabel('time')
         axs[row, col].set_ylabel('x (m)')
-        axs[row, col].set_ylim([-.5, .5])
+        axs[row, col].set_ylim([-1, 1])
         axs[row, col].grid(True)
 
         row = 1
@@ -464,7 +464,7 @@ class Logger(object):
         axs[row, col].plot(t, self.states[0, 1], color="tab:orange", linewidth=2.5)
         axs[row, col].set_xlabel('time')
         axs[row, col].set_ylabel('y (m)')
-        axs[row, col].set_ylim([-.5, .5])
+        axs[row, col].set_ylim([-1, 1])
         axs[row, col].grid(True)
 
         row = 2
