@@ -85,10 +85,10 @@ class HugePenalizationForWe(BaseRLAviary):
         return np.linalg.norm(state[0:3] - self.TARGET_POS[0:3]) < 0.025
 
     def _performance(self, state):
-        if self._is_closed(state) and state[7]**2 + state[8]**2 < 0.001:
+        if self._is_closed(state) and np.abs(state[7]) + np.abs(state[8]) < 0.01:
             return 2
 
-        return -(state[7]**2 + state[8]**2)
+        return -(np.abs(state[7]) + np.abs(state[8]))
 
     def _get_previous_current_we(self, current_state):
         if np.shape(self.LOG_ANGULAR_VELOCITY)[0] > 2:
