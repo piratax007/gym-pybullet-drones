@@ -22,7 +22,7 @@ def get_policy(policy_path):
     raise Exception("[ERROR]: no model under the specified path", policy_path)
 
 
-def run_simulation(policy_path, test_env, gui=True, record_video=False):
+def run_simulation(policy_path, test_env, gui=True, record_video=False, comment=""):
     policy = get_policy(policy_path)
 
     test_env = test_env(gui=gui,
@@ -39,7 +39,7 @@ def run_simulation(policy_path, test_env, gui=True, record_video=False):
 
     obs, info = test_env.reset(seed=42, options={})
     log_reward = []
-    simulation_length = (test_env.EPISODE_LEN_SEC + 22) * test_env.CTRL_FREQ
+    simulation_length = (test_env.EPISODE_LEN_SEC + 92) * test_env.CTRL_FREQ
 
     start = time.time()
 
@@ -64,9 +64,6 @@ def run_simulation(policy_path, test_env, gui=True, record_video=False):
         actions = test_env._getDroneStateVector(0)[16:20]
         actions2 = actions.squeeze()
         obs2 = obs.squeeze()
-        act2 = action.squeeze()
-        print(f"############# ACTIONS: {actions2} #############")
-        print(f"############# ACT: {act2} #############")
         print(f"""
         #################################################################
         Observation Space:
@@ -129,6 +126,12 @@ if __name__ == '__main__':
         default=False,
         type=str2bool,
         help='The name of the environment to learn, registered with gym_pybullet_drones'
+    )
+    parser.add_argument(
+        '--comment',
+        default="",
+        type=str,
+        help="A comment to describe de simulation saved data"
     )
 
     run_simulation(**vars(parser.parse_args()))
