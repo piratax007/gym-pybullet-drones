@@ -48,15 +48,17 @@ def multiple_traces(**kwargs) -> None:
 
 
 def single_3D_trace(**kwargs) -> None:
+    font = {'family': 'serif', 'weight': 'normal', 'size': 15}
+    plt.rc('font', **font)
     figure = plt.figure()
     axes = figure.add_subplot(projection='3d')
 
     x, y, z = get_data_from(kwargs['file'])
 
     axes.plot(x, y, z, kwargs['color'] if kwargs['color'] != 'auto' else '')
-    axes.set_xlabel(kwargs['x_label'])
-    axes.set_ylabel(kwargs['y_label'])
-    axes.set_zlabel(kwargs['z_label'])
+    axes.set_xlabel(kwargs['x_label'], labelpad=20)
+    axes.set_ylabel(kwargs['y_label'], labelpad=20)
+    axes.set_zlabel(kwargs['z_label'], labelpad=20)
 
     plt.show()
 
