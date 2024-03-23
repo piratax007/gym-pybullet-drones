@@ -20,11 +20,16 @@ def get_data_from(file: str) -> tuple:
 
 
 def traces_2D(**kwargs) -> None:
+    # ToDo: DRY
     _, axes = plt.subplots(1)
 
     for i, file in enumerate(kwargs['files']):
         x, y = get_data_from(file)
         axes.plot(x, y, kwargs['colors'][i] if kwargs['colors'] != 'auto' else '')
+
+    if kwargs['axes_limits']['mode'] != 'auto':
+        axes.set_xlim(*kwargs['axes_limits']['x_range'])
+        axes.set_ylim(*kwargs['axes_limits']['y_range'])
 
     axes.set_xlabel(kwargs['x_label'])
     axes.set_ylabel(kwargs['y_label'])
@@ -34,7 +39,8 @@ def traces_2D(**kwargs) -> None:
 
 
 def traces_3D(**kwargs) -> None:
-    font = {'family': 'serif', 'weight': 'normal', 'size': 15}
+    # ToDo: DRY
+    font = {'family': 'serif', 'weight': 'bold', 'size': 15}
     plt.rc('font', **font)
     figure = plt.figure()
     axes = figure.add_subplot(projection='3d')
@@ -43,9 +49,15 @@ def traces_3D(**kwargs) -> None:
         x, y, z = get_data_from(file)
         axes.plot(x, y, z, kwargs['colors'][i] if kwargs['colors'] != 'auto' else '')
 
+    if kwargs['axes_limits']['mode'] != 'auto':
+        axes.set_xlim(*kwargs['axes_limits']['x_range'])
+        axes.set_ylim(*kwargs['axes_limits']['y_range'])
+        axes.set_zlim(*kwargs['axes_limits']['z_range'])
+
     axes.set_xlabel(kwargs['x_label'], labelpad=20)
     axes.set_ylabel(kwargs['y_label'], labelpad=20)
     axes.set_zlabel(kwargs['z_label'], labelpad=20)
+    axes.set_title(kwargs['title'])
 
     plt.show()
 
@@ -61,5 +73,8 @@ if __name__ == '__main__':
         x_label='x (m)',
         y_label='y (m)',
         z_label='z (m)',
-        title='Flight Starting From [0 1 0]'
+        axes_limits=dict(
+            mode='auto'
+        ),
+        title='Trajectory From [0 1 0]'
     )
