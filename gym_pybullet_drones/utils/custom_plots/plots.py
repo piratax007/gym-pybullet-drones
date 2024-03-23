@@ -12,14 +12,13 @@ def get_data_from(file: str) -> tuple:
         data_set = list(csv.reader(f, delimiter=','))
         x = list(map(lambda row: float(row[0]), data_set))
         y = list(map(lambda row: float(row[1]), data_set))
-        z = None if len(data_set[0]) < 3 else list(map(lambda row: float(row[2]), data_set))
+        try:
+            z = list(map(lambda row: float(row[2]), data_set))
+            return x, y, z
+        except IndexError:
+            return x, y, None
 
-    if z is not None:
-        return x, y, z
 
-    return x, y
-    
-    
 def traces_2D(**kwargs) -> None:
     _, axes = plt.subplots(1)
 
