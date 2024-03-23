@@ -9,11 +9,11 @@ def get_data_from(file: str) -> tuple:
     data_file = os.path.join(GENERAL_PATH, file)
 
     with open(data_file, 'r') as f:
-        data_set = list(csv.reader(f, delimiter=','))
-        x = list(map(lambda row: float(row[0]), data_set))
-        y = list(map(lambda row: float(row[1]), data_set))
+        data_set = tuple(csv.reader(f, delimiter=','))
+        x = tuple(map(lambda row: float(row[0]), data_set))
+        y = tuple(map(lambda row: float(row[1]), data_set))
         try:
-            z = list(map(lambda row: float(row[2]), data_set))
+            z = tuple(map(lambda row: float(row[2]), data_set))
             return x, y, z
         except IndexError:
             return x, y, None
