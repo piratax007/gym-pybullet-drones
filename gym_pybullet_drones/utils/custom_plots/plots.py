@@ -18,22 +18,9 @@ def get_data_from(file: str) -> tuple:
         return x, y, z
 
     return x, y
-
-
-def single_trace(**kwargs) -> None:
-    _, axes = plt.subplots(1)
-
-    x, y = get_data_from(kwargs['file'])
-
-    axes.plot(x, y, kwargs['color'])
-    axes.set_xlabel(kwargs['x_label'])
-    axes.set_ylabel(kwargs['y_label'])
-    axes.set_title(kwargs['title'])
-
-    plt.show()
     
     
-def multiple_traces(**kwargs) -> None:
+def traces_2D(**kwargs) -> None:
     _, axes = plt.subplots(1)
 
     for i, file in enumerate(kwargs['files']):
@@ -47,15 +34,16 @@ def multiple_traces(**kwargs) -> None:
     plt.show()
 
 
-def single_3D_trace(**kwargs) -> None:
+def traces_3D(**kwargs) -> None:
     font = {'family': 'serif', 'weight': 'normal', 'size': 15}
     plt.rc('font', **font)
     figure = plt.figure()
     axes = figure.add_subplot(projection='3d')
 
-    x, y, z = get_data_from(kwargs['file'])
+    for i, file in enumerate(kwargs['files']):
+        x, y, z = get_data_from(file)
+        axes.plot(x, y, z, kwargs['colors'][i] if kwargs['colors'] != 'auto' else '')
 
-    axes.plot(x, y, z, kwargs['color'] if kwargs['color'] != 'auto' else '')
     axes.set_xlabel(kwargs['x_label'], labelpad=20)
     axes.set_ylabel(kwargs['y_label'], labelpad=20)
     axes.set_zlabel(kwargs['z_label'], labelpad=20)
@@ -68,9 +56,9 @@ if __name__ == '__main__':
         '../../experiments/results/save-TEST-WITH-0.0052RPMS-SQUARED-DIFFERENCE-2M-03.19.2024_10.08.48/'
     )
 
-    single_3D_trace(
-        file='save-flight-starting-from-x0y1z0-03.19.2024_15.26.29/test_3D.csv',
-        color='auto',
+    traces_3D(
+        files=['save-flight-starting-from-x0y1z0-03.19.2024_15.26.29/test_3D.csv'],
+        colors='auto',
         x_label='x (m)',
         y_label='y (m)',
         z_label='z (m)',
