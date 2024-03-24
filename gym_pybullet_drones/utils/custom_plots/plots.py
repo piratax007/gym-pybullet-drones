@@ -5,7 +5,7 @@ import os
 import matplotlib.pyplot as plt
 
 
-def get_data_from(file: str) -> tuple:
+def get_data_from_csv(file: str) -> tuple:
     data_file = os.path.join(GENERAL_PATH, file)
 
     with open(data_file, 'r') as f:
@@ -21,19 +21,19 @@ def get_data_from(file: str) -> tuple:
 
 def traces_2D(**kwargs) -> None:
     # ToDo: DRY
-    _, axes = plt.subplots(1)
+    _, axis = plt.subplots(1)
 
     for i, file in enumerate(kwargs['files']):
         x, y = get_data_from(file)
         axes.plot(x, y, kwargs['colors'][i] if kwargs['colors'] != 'auto' else '')
 
     if kwargs['axes_limits']['mode'] != 'auto':
-        axes.set_xlim(*kwargs['axes_limits']['x_range'])
-        axes.set_ylim(*kwargs['axes_limits']['y_range'])
+        axis.set_xlim(*kwargs['axes_limits']['x_range'])
+        axis.set_ylim(*kwargs['axes_limits']['y_range'])
 
-    axes.set_xlabel(kwargs['x_label'])
-    axes.set_ylabel(kwargs['y_label'])
-    axes.set_title(kwargs['title'])
+    axis.set_xlabel(kwargs['x_label'])
+    axis.set_ylabel(kwargs['y_label'])
+    axis.set_title(kwargs['title'])
 
     plt.show()
 
@@ -43,21 +43,21 @@ def traces_3D(**kwargs) -> None:
     font = {'family': 'serif', 'weight': 'bold', 'size': 15}
     plt.rc('font', **font)
     figure = plt.figure()
-    axes = figure.add_subplot(projection='3d')
+    axis = figure.add_subplot(projection='3d')
 
     for i, file in enumerate(kwargs['files']):
         x, y, z = get_data_from(file)
         axes.plot(x, y, z, kwargs['colors'][i] if kwargs['colors'] != 'auto' else '')
 
     if kwargs['axes_limits']['mode'] != 'auto':
-        axes.set_xlim(*kwargs['axes_limits']['x_range'])
-        axes.set_ylim(*kwargs['axes_limits']['y_range'])
-        axes.set_zlim(*kwargs['axes_limits']['z_range'])
+        axis.set_xlim(*kwargs['axes_limits']['x_range'])
+        axis.set_ylim(*kwargs['axes_limits']['y_range'])
+        axis.set_zlim(*kwargs['axes_limits']['z_range'])
 
-    axes.set_xlabel(kwargs['x_label'], labelpad=20)
-    axes.set_ylabel(kwargs['y_label'], labelpad=20)
-    axes.set_zlabel(kwargs['z_label'], labelpad=20)
-    axes.set_title(kwargs['title'])
+    axis.set_xlabel(kwargs['x_label'], labelpad=20)
+    axis.set_ylabel(kwargs['y_label'], labelpad=20)
+    axis.set_zlabel(kwargs['z_label'], labelpad=20)
+    axis.set_title(kwargs['title'])
 
     plt.show()
 
