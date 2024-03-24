@@ -19,13 +19,22 @@ def get_data_from_csv(file: str) -> tuple:
             return x, y, None
 
 
+def traces_from_csv(
+        files: list,
+        axis: plt.Axes,
+        color_mode: str = 'auto',
+        color_list: list = None
+) -> None:
+    for i, file in enumerate(files):
+        data = get_data_from_csv(file)
+        axis.plot(*data, color_list[i] if color_mode != 'auto' else '')
+
+
 def traces_2D(**kwargs) -> None:
     # ToDo: DRY
     _, axis = plt.subplots(1)
 
-    for i, file in enumerate(kwargs['files']):
-        x, y = get_data_from(file)
-        axes.plot(x, y, kwargs['colors'][i] if kwargs['colors'] != 'auto' else '')
+    traces_from_csv(kwargs['files'], axis)
 
     if kwargs['axes_limits']['mode'] != 'auto':
         axis.set_xlim(*kwargs['axes_limits']['x_range'])
@@ -45,9 +54,7 @@ def traces_3D(**kwargs) -> None:
     figure = plt.figure()
     axis = figure.add_subplot(projection='3d')
 
-    for i, file in enumerate(kwargs['files']):
-        x, y, z = get_data_from(file)
-        axes.plot(x, y, z, kwargs['colors'][i] if kwargs['colors'] != 'auto' else '')
+    traces_from_csv(kwargs['files'], axis)
 
     if kwargs['axes_limits']['mode'] != 'auto':
         axis.set_xlim(*kwargs['axes_limits']['x_range'])
