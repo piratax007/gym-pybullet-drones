@@ -3,6 +3,7 @@
 import csv
 import os
 import matplotlib.pyplot as plt
+import matplotlib.animation as animation
 
 
 def get_data_from_csv(file: str) -> tuple:
@@ -71,7 +72,7 @@ def multiple_axis_2D(
         content_specification: dict,
         colors: dict
 ) -> None:
-    fig, axis = plt.subplots(subplots['rows'], subplots['columns'])
+    _, axis = plt.subplots(subplots['rows'], subplots['columns'])
 
     for col in range(subplots['columns']):
         for row in range(subplots['rows']):
@@ -81,9 +82,30 @@ def multiple_axis_2D(
                 axis[row] if subplots['columns'] == 1 else axis[row, col],
                 **colors
             )
-            set_axis(axis[row], **content_specification[traces_key]['settings'])
+            set_axis(
+                axis[row] if subplots['columns'] == 1 else axis[row, col],
+                **content_specification[traces_key]['settings']
+            )
 
     plt.show()
+
+
+def animate(files: list, settings: dict, colors: dict) -> None:
+    figure = plt.figure(figsize=(16, 9), dpi=720/16)
+    axis = plt.gca()
+    set_axis(axis, **settings)
+
+    def update(frame_number):
+        trace.set_xdata(x[:frame_number])
+        trace.set_ydata(y[:frame_number])
+        return trace
+
+    for i, file in enumerate(files):
+        x, y = get_data_from_csv(file)
+        axis.set(xlim=[0, 15], ylim=[-1, 1])
+        trace = axis.plot(x[0], y[0], colors['color_list'][i] if colors['color_mode'] != 'auto' else '')[0]
+        anim = animation.FuncAnimation(figure, update, frames=len(x), interval=3, repeat=False)
+        anim.save('video' + str(i) + '.mp4', 'ffmpeg', fps=30, dpi=300)
 
 
 if __name__ == '__main__':
@@ -91,92 +113,117 @@ if __name__ == '__main__':
         '../../experiments/results/save-TEST-WITH-0.0052RPMS-SQUARED-DIFFERENCE-2M-03.19.2024_10.08.48/'
     )
 
-    single_axis_2D(
-        files=[
-            'save-flight-starting-from-x0y1z0-03.19.2024_15.26.29/x0.csv',
-            'save-flight-starting-from-x0y1z2-03.19.2024_15.52.13/x0.csv'
-        ],
-        colors=dict(color_mode='auto'),
-        settings=dict(
-            limits=dict(mode='auto'),
-            labels=dict(
-                x_label='t (s)',
-                y_label='x (m)',
-                title='test'
-            )
-        )
-    )
-
-    single_axis_3D(
-        files=['save-flight-starting-from-x0y1z0-03.19.2024_15.26.29/test_3D.csv'],
-        colors=dict(color_mode='auto'),
+    animate(files=[
+        'save-flight-starting-from-x0y1z0-03.19.2024_15.26.29/x0.csv',
+        'save-flight-starting-from-x0y1z2-03.19.2024_15.52.13/x0.csv'
+    ],
         settings=dict(
             limits=dict(
                 mode='custom',
                 x_range=(-1, 1),
-                y_range=(-1, 1),
-                z_range=(0, 2)
+                y_range=(-1, 1)
             ),
             labels=dict(
-                x_label='x (m)',
+                x_label='t (s)',
                 y_label='y (m)',
-                z_label='z (m)',
-                title="Trajectory From [0 1 0]"
+                title="Flight starting from random x position"
             )
-        )
+        ),
+        colors=dict(
+                    color_mode='custom',
+                    color_list=['red', 'green']
+                )
     )
 
-    multiple_axis_2D(
-        subplots=dict(rows=3, columns=1),
-        content_specification={
-            '(0, 0)': dict(files=[
-                'save-flight-starting-from-x0y1z0-03.19.2024_15.26.29/x0.csv',
-                'save-flight-starting-from-x0y1z2-03.19.2024_15.52.13/x0.csv'
-            ],
-                settings=dict(
-                    limits=dict(
-                        mode='custom',
-                        x_range=(0, 15),
-                        y_range=(-1, 1)
-                    ),
-                    labels=dict(
-                        x_label='t (s)',
-                        y_label='x (m)',
-                        title=''
-                    )
-                )),
-            '(1, 0)': dict(files=[
-                'save-flight-starting-from-x0y1z0-03.19.2024_15.26.29/y0.csv',
-                'save-flight-starting-from-x0y1z2-03.19.2024_15.52.13/y0.csv'
-            ],
-                settings=dict(
-                    limits=dict(
-                        mode='custom',
-                        x_range=(0, 15),
-                        y_range=(-1, 1)
-                    ),
-                    labels=dict(
-                        x_label='t (s)',
-                        y_label='y (m)',
-                        title=''
-                    )
-                )),
-            '(2, 0)': dict(files=[
-                'save-flight-starting-from-x0y1z0-03.19.2024_15.26.29/z0.csv',
-                'save-flight-starting-from-x0y1z2-03.19.2024_15.52.13/z0.csv'
-            ],
-                settings=dict(
-                    limits=dict(
-                        mode='custom',
-                        x_range=(0, 15),
-                        y_range=(0, 2)
-                    ),
-                    labels=dict(
-                        x_label='t (s)',
-                        y_label='z (m)',
-                        title=''
-                    )
-                )),
-        },
-        colors=dict(color_mode='auto'),
-    )
+    # single_axis_2D(
+    #     files=[
+    #         'save-flight-starting-from-x0y1z0-03.19.2024_15.26.29/x0.csv',
+    #         'save-flight-starting-from-x0y1z2-03.19.2024_15.52.13/x0.csv'
+    #     ],
+    #     colors=dict(
+    #         color_mode='custom',
+    #         color_list=['red', 'green']
+    #     ),
+    #     settings=dict(
+    #         limits=dict(mode='auto'),
+    #         labels=dict(
+    #             x_label='t (s)',
+    #             y_label='x (m)',
+    #             title='test'
+    #         )
+    #     )
+    # )
+    #
+    # single_axis_3D(
+    #     files=['save-flight-starting-from-x0y1z0-03.19.2024_15.26.29/test_3D.csv'],
+    #     colors=dict(color_mode='auto'),
+    #     settings=dict(
+    #         limits=dict(
+    #             mode='custom',
+    #             x_range=(-1, 1),
+    #             y_range=(-1, 1),
+    #             z_range=(0, 2)
+    #         ),
+    #         labels=dict(
+    #             x_label='x (m)',
+    #             y_label='y (m)',
+    #             z_label='z (m)',
+    #             title="Trajectory From [0 1 0]"
+    #         )
+    #     )
+    # )
+    #
+    # multiple_axis_2D(
+    #     subplots=dict(rows=3, columns=1),
+    #     content_specification={
+    #         '(0, 0)': dict(files=[
+    #             'save-flight-starting-from-x0y1z0-03.19.2024_15.26.29/x0.csv',
+    #             'save-flight-starting-from-x0y1z2-03.19.2024_15.52.13/x0.csv'
+    #         ],
+    #             settings=dict(
+    #                 limits=dict(
+    #                     mode='custom',
+    #                     x_range=(0, 15),
+    #                     y_range=(-1, 1)
+    #                 ),
+    #                 labels=dict(
+    #                     x_label='t (s)',
+    #                     y_label='x (m)',
+    #                     title=''
+    #                 )
+    #             )),
+    #         '(1, 0)': dict(files=[
+    #             'save-flight-starting-from-x0y1z0-03.19.2024_15.26.29/y0.csv',
+    #             'save-flight-starting-from-x0y1z2-03.19.2024_15.52.13/y0.csv'
+    #         ],
+    #             settings=dict(
+    #                 limits=dict(
+    #                     mode='custom',
+    #                     x_range=(0, 15),
+    #                     y_range=(-1, 1)
+    #                 ),
+    #                 labels=dict(
+    #                     x_label='t (s)',
+    #                     y_label='y (m)',
+    #                     title=''
+    #                 )
+    #             )),
+    #         '(2, 0)': dict(files=[
+    #             'save-flight-starting-from-x0y1z0-03.19.2024_15.26.29/z0.csv',
+    #             'save-flight-starting-from-x0y1z2-03.19.2024_15.52.13/z0.csv'
+    #         ],
+    #             settings=dict(
+    #                 limits=dict(
+    #                     mode='custom',
+    #                     x_range=(0, 15),
+    #                     y_range=(0, 2)
+    #                 ),
+    #                 labels=dict(
+    #                     x_label='t (s)',
+    #                     y_label='z (m)',
+    #                     title=''
+    #                 )
+    #             )),
+    #     },
+    #     colors=dict(color_mode='auto'),
+    # )
