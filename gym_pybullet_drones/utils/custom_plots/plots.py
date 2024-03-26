@@ -102,7 +102,6 @@ def animate(files: list, settings: dict, colors: dict, video_name: str = 'video'
 
     for i, file in enumerate(files):
         x, y = get_data_from_csv(file)
-        axis.set(xlim=[0, 15], ylim=[-1, 1])
         trace = axis.plot(x[0], y[0], colors['color_list'][i] if colors['color_mode'] != 'auto' else '')[0]
         anim = animation.FuncAnimation(figure, update, frames=len(x), interval=3, repeat=False)
         anim.save(video_name + str(i) + '.mp4', 'ffmpeg', fps=30, dpi=300)
@@ -120,7 +119,7 @@ if __name__ == '__main__':
         settings=dict(
             limits=dict(
                 mode='custom',
-                x_range=(-1, 1),
+                x_range=(0, 15),
                 y_range=(-1, 1)
             ),
             labels=dict(
