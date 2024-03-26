@@ -90,7 +90,7 @@ def multiple_axis_2D(
     plt.show()
 
 
-def animate(files: list, settings: dict, colors: dict) -> None:
+def animate(files: list, settings: dict, colors: dict, video_name: str = 'video') -> None:
     figure = plt.figure(figsize=(16, 9), dpi=720/16)
     axis = plt.gca()
     set_axis(axis, **settings)
@@ -105,7 +105,7 @@ def animate(files: list, settings: dict, colors: dict) -> None:
         axis.set(xlim=[0, 15], ylim=[-1, 1])
         trace = axis.plot(x[0], y[0], colors['color_list'][i] if colors['color_mode'] != 'auto' else '')[0]
         anim = animation.FuncAnimation(figure, update, frames=len(x), interval=3, repeat=False)
-        anim.save('video' + str(i) + '.mp4', 'ffmpeg', fps=30, dpi=300)
+        anim.save(video_name + str(i) + '.mp4', 'ffmpeg', fps=30, dpi=300)
 
 
 if __name__ == '__main__':
