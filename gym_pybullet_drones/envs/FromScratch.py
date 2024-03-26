@@ -78,14 +78,14 @@ class FromScratch(BaseRLAviary):
 
     def _is_away_from_exploration_area(self, state):
         return (np.linalg.norm(self.INIT_XYZS[0][0:2] - state[0:2]) >
-                np.linalg.norm(self.INIT_XYZS[0][0:2] - self.TARGET_POS[0:2]) + 0.05 or
-                state[2] > self.TARGET_POS[2] + 0.0125)
+                np.linalg.norm(self.INIT_XYZS[0][0:2] - self.TARGET_POS[0:2]) + 0.5 or
+                state[2] > self.TARGET_POS[2] + 0.5)
 
     def _is_closed(self, state):
-        return np.linalg.norm(state[0:3] - self.TARGET_POS[0:3]) < 0.025
+        return np.linalg.norm(state[0:3] - self.TARGET_POS[0:3]) < 0.05
 
     def _performance(self, state):
-        if self._is_closed(state) and np.abs(state[7]) + np.abs(state[8]) < 0.01:
+        if self._is_closed(state) and np.abs(state[7]) + np.abs(state[8]) < 0.1:
             return 2
 
         return -(np.abs(state[7]) + np.abs(state[8]))
@@ -133,13 +133,10 @@ class FromScratch(BaseRLAviary):
         """
         state = self._getDroneStateVector(0)
         we_differences = self._get_we_differences(state)
-        rpms_differences = self._get_rpms_differences(state)
         ret = (25 - 20 * self._target_error(state) -
                100 * (1 if self._is_away_from_exploration_area(state) else -0.2) +
                20 * self._performance(state) -
-               18 * (we_differences['roll']**2 + we_differences['pitch']**2 + we_differences['yaw']**2) -
-               0.0052 * (rpms_differences['rpm1']**2 + rpms_differences['rpm2']**2 +
-                         rpms_differences['rpm3']**2 + rpms_differences['rpm4']**2))
+               18 * (we_differences['roll']**2 + we_differences['pitch']**2 + we_differences['yaw']**2))
         return ret
 
     ################################################################################
@@ -154,7 +151,7 @@ class FromScratch(BaseRLAviary):
 
         """
         state = self._getDroneStateVector(0)
-        if np.linalg.norm(self.TARGET_POS - state[0:3]) < .02 and state[7]**2 + state[8]**2 < 0.0005:
+        if np.linalg.norm(self.TARGET_POS - state[0:3]) < .03 and np.abs(state[7]) + np.abs(state[8]) < 0.07:
             return True
 
         return False
@@ -172,9 +169,9 @@ class FromScratch(BaseRLAviary):
         """
         state = self._getDroneStateVector(0)
         if (np.linalg.norm(self.INIT_XYZS[0][0:2] - state[0:2]) >
-                np.linalg.norm(self.INIT_XYZS[0][0:2] - self.TARGET_POS[0:2]) + 0.1 or
-                state[2] > self.TARGET_POS[2] + 0.025 or
-                abs(state[7]) > .15 or abs(state[8]) > .15):
+                np.linalg.norm(self.INIT_XYZS[0][0:2] - self.TARGET_POS[0:2]) + 1 or
+                state[2] > self.TARGET_POS[2] + 1 or
+                abs(state[7]) > .25 or abs(state[8]) > .25):
             return True
 
         if self.step_counter / self.PYB_FREQ > self.EPISODE_LEN_SEC:
@@ -204,7 +201,6 @@ class FromScratch(BaseRLAviary):
         hi = np.inf
         obs_lower_bound = np.array([[lo, lo, 0, lo, lo, lo, lo, lo, lo, lo, lo, lo]])
         obs_upper_bound = np.array([[hi, hi, hi, hi, hi, hi, hi, hi, hi, hi, hi, hi]])
-        print("############# IS USING THE NEW OBSERVATION SPACE SUCCESSFULLY ################")
         return spaces.Box(low=obs_lower_bound, high=obs_upper_bound, dtype=np.float32)
 
     ################################################################################

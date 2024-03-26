@@ -6,14 +6,14 @@ import argparse
 from stable_baselines3 import PPO
 from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.callbacks import EvalCallback, StopTrainingOnMaxEpisodes
-from gym_pybullet_drones.envs.HoverAviary import HoverAviary
+from gym_pybullet_drones.envs.FromScratch import FromScratch
 from gym_pybullet_drones.utils.enums import ObservationType, ActionType
 
-DEFAULT_ENV_NAME = HoverAviary
+DEFAULT_ENV_NAME = FromScratch
 DEFAULT_OUTPUT_FOLDER = 'results'
 
-DEFAULT_OBS = ObservationType('kin')  # 'kin' or 'rgb'
-DEFAULT_ACT = ActionType('rpm')  # 'rpm' or 'pid' or 'vel' or 'one_d_rpm' or 'one_d_pid'
+DEFAULT_OBS = ObservationType('kin')
+DEFAULT_ACT = ActionType('rpm')
 
 
 def results_directory(base_directory, results_id):
