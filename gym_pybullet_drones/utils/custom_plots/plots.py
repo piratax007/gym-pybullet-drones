@@ -4,6 +4,7 @@ import csv
 import os
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+from aquarel import load_theme
 
 
 def get_data_from_csv(file: str) -> tuple:
@@ -111,28 +112,38 @@ if __name__ == '__main__':
     GENERAL_PATH = os.path.dirname(
         '../../experiments/results/save-TEST-WITH-0.0052RPMS-SQUARED-DIFFERENCE-2M-03.19.2024_10.08.48/'
     )
-
-    animate(files=[
-        'save-flight-starting-from-x0y1z0-03.19.2024_15.26.29/x0.csv',
-        'save-flight-starting-from-x0y1z2-03.19.2024_15.52.13/x0.csv'
-    ],
-        settings=dict(
-            limits=dict(
-                mode='custom',
-                x_range=(0, 15),
-                y_range=(-1, 1)
-            ),
-            labels=dict(
-                x_label='t (s)',
-                y_label='y (m)',
-                title="Flight starting from random x position"
-            )
-        ),
-        colors=dict(
-                    color_mode='custom',
-                    color_list=['red', 'green']
-                )
+    theme = (
+        load_theme('scientific')
+        .set_font(family='serif', size=20)
+        .set_title(pad=20)
+        .set_axes(bottom=True, top=True, left=True, right=True, xmargin=0, ymargin=0, zmargin=0, width=2)
+        .set_grid(style='--', width=1)
+        .set_ticks(draw_minor=False, pad_major=10)
+        .set_lines(width=2.5)
     )
+    theme.apply()
+
+    # animate(files=[
+    #     'save-flight-starting-from-x0y1z0-03.19.2024_15.26.29/x0.csv',
+    #     'save-flight-starting-from-x0y1z2-03.19.2024_15.52.13/x0.csv'
+    # ],
+    #     settings=dict(
+    #         limits=dict(
+    #             mode='custom',
+    #             x_range=(0, 15),
+    #             y_range=(-1, 1)
+    #         ),
+    #         labels=dict(
+    #             x_label='t (s)',
+    #             y_label='y (m)',
+    #             title="Flight starting from random x position"
+    #         )
+    #     ),
+    #     colors=dict(
+    #                 color_mode='custom',
+    #                 color_list=['red', 'green']
+    #             )
+    # )
 
     # single_axis_2D(
     #     files=[
@@ -148,30 +159,33 @@ if __name__ == '__main__':
     #         labels=dict(
     #             x_label='t (s)',
     #             y_label='x (m)',
-    #             title='test'
+    #             title='Multiple traces using the same axis'
     #         )
     #     )
     # )
-    #
-    # single_axis_3D(
-    #     files=['save-flight-starting-from-x0y1z0-03.19.2024_15.26.29/test_3D.csv'],
-    #     colors=dict(color_mode='auto'),
-    #     settings=dict(
-    #         limits=dict(
-    #             mode='custom',
-    #             x_range=(-1, 1),
-    #             y_range=(-1, 1),
-    #             z_range=(0, 2)
-    #         ),
-    #         labels=dict(
-    #             x_label='x (m)',
-    #             y_label='y (m)',
-    #             z_label='z (m)',
-    #             title="Trajectory From [0 1 0]"
-    #         )
-    #     )
-    # )
-    #
+
+    single_axis_3D(
+        files=[
+            'save-flight-starting-from-x0y1z0-03.19.2024_15.26.29/test_3D.csv',
+            'save-flight-starting-from-x1ym1z2-03.26.2024_16.52.52/test_3D.csv'
+        ],
+        colors=dict(color_mode='auto'),
+        settings=dict(
+            limits=dict(
+                mode='custom',
+                x_range=(-1, 1),
+                y_range=(-1, 1),
+                z_range=(0, 2)
+            ),
+            labels=dict(
+                x_label='x (m)',
+                y_label='y (m)',
+                z_label='z (m)',
+                title="Trajectory From [0 1 0]"
+            )
+        )
+    )
+
     # multiple_axis_2D(
     #     subplots=dict(rows=3, columns=1),
     #     content_specification={

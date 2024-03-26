@@ -20,8 +20,8 @@ first one with the x data and the second one with the y data.
     names ('red', 'green', 'blue', etc.), a hexadecimal string ('1f77b4') or four components tuple (RGBa) with values 
     between 0 and one. 
 - **settings:** a dictionary with two keys:
-- `limits` a dictionary with keys: `mode` (`custom` or `auto`). Whether you use `auto`, the length of each axis will be set using max and min values, with `custom` should be added the keys `x_range` and `y_range`, each one with a tuple specifying the length of the correspondent axis.
-- `labels` a dictionary with three keys: `x_label`, `y_label`, `title` each one with a string as a value. 
+  - `limits` a dictionary with keys: `mode` (`custom` or `auto`). Whether you use `auto`, the length of each axis will be set using max and min values, with `custom` should be added the keys `x_range` and `y_range`, each one with a tuple specifying the length of the correspondent axis.
+  - `labels` a dictionary with three keys: `x_label`, `y_label`, `title` each one with a string as a value. 
 
 ```python
 single_axis_2D(
@@ -46,4 +46,7 @@ single_axis_2D(
 
 ![](examples/multiple_traces_2D.png)
 
+**NOTE:** you can add more stylish themes combining `plots.py` with [aquarel][2]. All that you need to do is to import `aquarel` and put the definition of the theme at the beginning of the `init` function to be apply to all the plots.
+
 [1]: https://matplotlib.org/stable/gallery/color/named_colors.html
+[2]: https://github.com/lgienapp/aquarel?tab=readme-ov-file
