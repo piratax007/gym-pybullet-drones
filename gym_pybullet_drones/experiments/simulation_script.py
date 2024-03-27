@@ -22,7 +22,7 @@ def get_policy(policy_path):
     raise Exception("[ERROR]: no model under the specified path", policy_path)
 
 
-def run_simulation(policy_path, test_env, gui=True, record_video=False, comment=""):
+def run_simulation(policy_path, test_env, gui=True, record_video=False, save=False, comment=""):
     policy = get_policy(policy_path)
 
     test_env = test_env(gui=gui,
@@ -95,13 +95,8 @@ def run_simulation(policy_path, test_env, gui=True, record_video=False, comment=
 
     test_env.close()
 
-    # logger.save()
-    # logger.save_as_csv("changing_z")
-    logger.plot_position_and_orientation()
-    logger.plot_trajectory()
-    # logger.plot_instantaneous_reward(log_reward)
-    # logger.plot_rpms()
-    # logger.plot_angular_velocities()
+    if save:
+        logger.save_as_csv(comment)
 
 
 if __name__ == '__main__':
@@ -126,6 +121,12 @@ if __name__ == '__main__':
         default=False,
         type=str2bool,
         help='The name of the environment to learn, registered with gym_pybullet_drones'
+    )
+    parser.add_argument(
+        '--save',
+        default=False,
+        type=str2bool,
+        help='Allow to save the trained data using csv and npy files'
     )
     parser.add_argument(
         '--comment',
