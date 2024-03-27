@@ -162,11 +162,11 @@ class Logger(object):
                 np.savetxt(out_file, np.transpose(np.vstack([t, self.states[i, 2, :]])), delimiter=",")
             ####
             with open(csv_dir + "/r" + str(i) + ".csv", 'wb') as out_file:
-                np.savetxt(out_file, np.transpose(np.vstack([t, self.states[i, 6, :]])), delimiter=",")
+                np.savetxt(out_file, np.transpose(np.vstack([t, list(map(lambda angle: (angle * 180) / np.pi, self.states[i, 6, :]))])), delimiter=",")
             with open(csv_dir + "/p" + str(i) + ".csv", 'wb') as out_file:
-                np.savetxt(out_file, np.transpose(np.vstack([t, self.states[i, 7, :]])), delimiter=",")
+                np.savetxt(out_file, np.transpose(np.vstack([t, list(map(lambda angle: (angle * 180) / np.pi, self.states[i, 7, :]))])), delimiter=",")
             with open(csv_dir + "/ya" + str(i) + ".csv", 'wb') as out_file:
-                np.savetxt(out_file, np.transpose(np.vstack([t, self.states[i, 8, :]])), delimiter=",")
+                np.savetxt(out_file, np.transpose(np.vstack([t, list(map(lambda angle: (angle * 180) / np.pi, self.states[i, 8, :]))])), delimiter=",")
             ####
             with open(csv_dir + "/rr" + str(i) + ".csv", 'wb') as out_file:
                 rdot = np.hstack([0, (self.states[i, 6, 1:] - self.states[i, 6, 0:-1]) * self.LOGGING_FREQ_HZ])
