@@ -42,7 +42,7 @@ def get_ppo_model(environment, path, reuse_model=False):
 def callbacks(episodes, evaluation_environment, parallel_environments, path_to_results, stop_on_max_episodes):
     eval_callback = EvalCallback(evaluation_environment,
                                  verbose=0,
-                                 best_model_save_path=path_to_results + '/',
+                                 best_model_save_path=path_to_results + datetime.now().strftime("%m.%d.%Y_%H.%M.%S") + '/',
                                  log_path=path_to_results + '/',
                                  eval_freq=int(1000 / parallel_environments),
                                  deterministic=True,
