@@ -8,7 +8,7 @@ from stable_baselines3 import PPO
 from gym_pybullet_drones.utils.Logger import Logger
 from gym_pybullet_drones.utils.utils import sync, str2bool
 from gym_pybullet_drones.utils.enums import ObservationType, ActionType
-from gym_pybullet_drones.envs import HugePenalizationForWe
+from gym_pybullet_drones.envs import FromScratch
 
 
 def in_degrees(angles):
@@ -107,7 +107,7 @@ if __name__ == '__main__':
     )
     parser.add_argument(
         '--test_env',
-        default=HugePenalizationForWe,
+        default=FromScratch,
         help='The name of the environment to learn, registered with gym_pybullet_drones'
     )
     parser.add_argument(
