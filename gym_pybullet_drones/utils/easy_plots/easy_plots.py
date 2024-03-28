@@ -29,15 +29,17 @@ def _get_data_from_csv(file: str) -> tuple:
 def _plot_references(files: list, axis: plt.Axes) -> None:
     for i, file in enumerate(files):
         reference = _get_data_from_csv(file)
-        axis.plot(*reference, color='gray', linestyle='--', linewidth=1.5)
+        axis.plot(*reference, color='gray', linestyle='--', linewidth=1.5, label='Reference' if i == 0 else '')
+        axis.legend()
 
 
-def _traces_from_csv(files: list, axis: plt.Axes, references: dict, **colors: dict) -> None:
+def _traces_from_csv(files: list, labels:list, axis: plt.Axes, references: dict, **colors: dict) -> None:
     for i, file in enumerate(files):
         data = _get_data_from_csv(file)
-        axis.plot(*data, colors['color_list'][i] if colors['color_mode'] != 'auto' else '')
+        axis.plot(*data, colors['color_list'][i] if colors['color_mode'] != 'auto' else '', label=labels[i])
+        axis.legend()
 
-    if references['view']:
+    if references['show']:
         _plot_references(references['files'], axis)
 
 
@@ -61,22 +63,22 @@ def _set_axis(axis: plt.Axes, **settings: dict) -> None:
     axis.set_title(settings['labels']['title'])
 
 
-def single_axis_2D(files: list, references: dict, colors: dict, settings: dict) -> None:
+def single_axis_2D(files: list, labels: list, references: dict, colors: dict, settings: dict) -> None:
     _, axis = plt.subplots(1)
 
-    _traces_from_csv(files, axis, references, **colors)
+    _traces_from_csv(files, labels, axis, references, **colors)
     _set_axis(axis, **settings)
 
     plt.show()
 
 
-def single_axis_3D(files: list, colors: dict, settings: dict) -> None:
+def single_axis_3D(files: list, labels: list, colors: dict, settings: dict) -> None:
     font = {'family': 'serif', 'weight': 'bold', 'size': 15}
     plt.rc('font', **font)
     figure = plt.figure()
     axis = figure.add_subplot(projection='3d')
 
-    _traces_from_csv(files, axis, dict(view=False), **colors)
+    _traces_from_csv(files, labels, axis, dict(show=False), **colors)
     _set_axis(axis, **settings)
 
     plt.show()
@@ -94,6 +96,7 @@ def multiple_axis_2D(
             traces_key = str(f"({row}, {col})")
             _traces_from_csv(
                 content_specification[traces_key]['files'],
+                content_specification[traces_key]['labels'],
                 axis[row] if subplots['columns'] == 1 else axis[row, col],
                 content_specification[traces_key]['references'],
                 **colors
