@@ -109,7 +109,7 @@ def multiple_axis_2D(
     plt.show()
 
 
-def animate(files: list, references: dict, settings: dict, colors: dict, video_name: str = 'video') -> None:
+def animate(data: dict, references: dict, settings: dict, colors: dict, video_name: str = 'video') -> None:
     figure = plt.figure(figsize=(16, 9), dpi=720 / 16)
     axis = plt.gca()
     _set_axis(axis, **settings)
@@ -122,8 +122,10 @@ def animate(files: list, references: dict, settings: dict, colors: dict, video_n
         trace.set_ydata(y[:frame_number])
         return trace
 
-    for i, file in enumerate(files):
+    for i, file in enumerate(data['files']):
         x, y = _get_data_from_csv(file)
         trace = axis.plot(x[0], y[0], colors['color_list'][i] if colors['color_mode'] != 'auto' else '')[0]
+        trace.set_label(data['labels'][i])
+        axis.legend()
         anim = animation.FuncAnimation(figure, update, frames=len(x), interval=3, repeat=False)
         anim.save(video_name + str(i) + '.mp4', 'ffmpeg', fps=30, dpi=300)
