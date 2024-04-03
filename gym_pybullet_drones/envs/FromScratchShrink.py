@@ -11,7 +11,7 @@ class FromScratchShrink(BaseRLAviary):
     
     def __init__(self,
                  drone_model: DroneModel = DroneModel.CF2X,
-                 initial_xyzs=np.array([[np.random.rand()*2-1, np.random.rand()*2-1, np.random.rand()*2]]),
+                 initial_xyzs=np.array([[0, 0, 0]]),
                  initial_rpys=np.array([[0, 0, 0]]),
                  target_xyzs=np.array([0, 0, 1]),
                  target_rpys=np.array([0, 0, 1.5]),
@@ -136,7 +136,7 @@ class FromScratchShrink(BaseRLAviary):
         ret = (25 - 20 * self._target_error(state) -
                100 * (1 if self._is_away_from_exploration_area(state) else -0.2) +
                20 * self._performance(state) -
-               18 * (we_differences['roll']**2 + we_differences['pitch']**2 + we_differences['yaw']**2))
+               18 * (we_differences['roll'] ** 2 + we_differences['pitch'] ** 2 + we_differences['yaw'] ** 2))
         return ret
 
     ################################################################################
@@ -155,9 +155,9 @@ class FromScratchShrink(BaseRLAviary):
             return True
 
         return False
-        
+
     ################################################################################
-    
+
     def _computeTruncated(self):
         """Computes the current truncated value.
 
@@ -180,7 +180,7 @@ class FromScratchShrink(BaseRLAviary):
         return False
 
     ################################################################################
-    
+
     def _computeInfo(self):
         """Computes the current info dict(s).
 
