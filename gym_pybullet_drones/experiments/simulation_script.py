@@ -8,7 +8,7 @@ from stable_baselines3 import PPO
 from gym_pybullet_drones.utils.Logger import Logger
 from gym_pybullet_drones.utils.utils import sync, str2bool
 from gym_pybullet_drones.utils.enums import ObservationType, ActionType
-from gym_pybullet_drones.envs import FromScratch
+from gym_pybullet_drones.envs import FromScratchShrink
 
 
 def in_degrees(angles):
@@ -92,6 +92,8 @@ def run_simulation(policy_path, test_env, gui=True, record_video=False, save=Fal
         test_env.render()
         print(terminated)
         sync(i, start, test_env.CTRL_TIMESTEP)
+        if terminated:
+            obs, info = test_env.reset(seed=42, options={})
 
     test_env.close()
 
@@ -107,7 +109,7 @@ if __name__ == '__main__':
     )
     parser.add_argument(
         '--test_env',
-        default=FromScratch,
+        default=FromScratchShrink,
         help='The name of the environment to learn, registered with gym_pybullet_drones'
     )
     parser.add_argument(
