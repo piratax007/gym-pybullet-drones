@@ -169,9 +169,9 @@ class FromScratchShrink(BaseRLAviary):
         """
         state = self._getDroneStateVector(0)
         if (np.linalg.norm(self.INIT_XYZS[0][0:2] - state[0:2]) >
-                np.linalg.norm(self.INIT_XYZS[0][0:2] - self.TARGET_POS[0:2]) + 0.1 or
-                state[2] > self.TARGET_POS[2] + 0.025 or
-                abs(state[7]) > .15 or abs(state[8]) > .15):
+                np.linalg.norm(self.INIT_XYZS[0][0:2] - self.TARGET_POS[0:2]) + 1 or
+                state[2] > self.TARGET_POS[2] + 1 or
+                abs(state[7]) > .4 or abs(state[8]) > .4):
             return True
 
         if self.step_counter / self.PYB_FREQ > self.EPISODE_LEN_SEC:
