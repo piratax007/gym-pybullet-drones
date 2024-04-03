@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-from gym_pybullet_drones.envs import FromScratch, FromScratchShrink
+from gym_pybullet_drones.envs import FromScratchShrink
 from gym_pybullet_drones.experiments.learning_script import run_learning
 
 print("""######### Learning to go to a fix position from a random position #########
 R(t) = 25 - 20te - 100Bo + 20P - 18we
-Target = [0 0 1 0 0 np.pi/2]
+Target = [0 0 1 0 0 1.5]
 ##################################################
 """)
 

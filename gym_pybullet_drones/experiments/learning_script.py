@@ -6,10 +6,11 @@ import argparse
 from stable_baselines3 import PPO
 from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.callbacks import EvalCallback, StopTrainingOnMaxEpisodes
-from gym_pybullet_drones.envs.FromScratch import FromScratch
+from gym_pybullet_drones.envs import FromScratchShrink
 from gym_pybullet_drones.utils.enums import ObservationType, ActionType
 
-DEFAULT_ENV_NAME = FromScratch
+
+DEFAULT_ENV_NAME = FromScratchShrink
 DEFAULT_OUTPUT_FOLDER = 'results'
 
 DEFAULT_OBS = ObservationType('kin')
