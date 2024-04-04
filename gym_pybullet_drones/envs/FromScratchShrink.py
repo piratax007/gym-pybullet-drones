@@ -14,7 +14,7 @@ class FromScratchShrink(BaseRLAviary):
                  initial_xyzs=np.array([[0, 0, 0]]),
                  initial_rpys=np.array([[0, 0, 0]]),
                  target_xyzs=np.array([0, 0, 1]),
-                 target_rpys=np.array([0, 0, 1.5]),
+                 target_rpys=np.array([0, 0, 0]),
                  physics: Physics = Physics.PYB,
                  pyb_freq: int = 240,
                  ctrl_freq: int = 30,
@@ -151,7 +151,7 @@ class FromScratchShrink(BaseRLAviary):
 
         """
         state = self._getDroneStateVector(0)
-        if np.linalg.norm(self.TARGET_POS - state[0:3]) < .02 and np.abs(state[7]) + np.abs(state[8]) < 0.0005:
+        if np.linalg.norm(self.TARGET_POS - state[0:3]) < .025 and np.abs(state[7]) + np.abs(state[8]) < 0.0005:
             return True
 
         return False

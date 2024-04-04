@@ -2,9 +2,9 @@
 from gym_pybullet_drones.envs import FromScratchShrink
 from gym_pybullet_drones.experiments.learning_script import run_learning
 
-print("""######### Learning to go to a fix position from a random position #########
+print("""######### Learning from scratch starting from random position #########
 R(t) = 25 - 20te - 100Bo + 20P - 18we
-Target = [0 0 1 0 0 1.5]
+Target = [0 0 1 0 0 0]
 ##################################################
 """)
 
@@ -12,8 +12,8 @@ results = run_learning(environment=FromScratchShrink,
                        learning_id="CONTINUE-RANDOM-START-SECOND-ROUND",
                        continuous_learning=True,
                        stop_on_max_episodes=False,
-                       parallel_environments=4,
-                       time_steps=int(20e6)
+                       parallel_environments=10,
+                       time_steps=int(40e6)
                        )
 
 print(f"""
