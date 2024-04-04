@@ -9,7 +9,7 @@ Target = [0 0 1 0 0 0]
 """)
 
 results = run_learning(environment=FromScratchShrink,
-                       learning_id="CONTINUE-RANDOM-START-SECOND-ROUND",
+                       learning_id="FROM-SCRATCH-WITHOUT-YAW-STARTING-RANDOM",
                        continuous_learning=True,
                        stop_on_max_episodes=False,
                        parallel_environments=10,
