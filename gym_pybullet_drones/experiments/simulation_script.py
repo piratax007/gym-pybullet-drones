@@ -92,10 +92,16 @@ def run_simulation(policy_path, test_env, gui=True, record_video=False, save=Fal
         test_env.render()
         print(terminated)
         sync(i, start, test_env.CTRL_TIMESTEP)
-        if terminated:
+        if reset and terminated:
             obs, info = test_env.reset(seed=42, options={})
 
     test_env.close()
+
+    if plot:
+        logger.plot_position_and_orientation()
+        logger.plot_rpms()
+        logger.plot_trajectory()
+        logger.plot_angular_velocities()
 
     if save:
         logger.save_as_csv(comment)
@@ -125,6 +131,12 @@ if __name__ == '__main__':
         help='The name of the environment to learn, registered with gym_pybullet_drones'
     )
     parser.add_argument(
+        '--reset',
+        default=False,
+        type=str2bool,
+        help="If you want to reset the environment, every time that the drone achieve the target position"
+    )
+    parser.add_argument(
         '--save',
         default=False,
         type=str2bool,
@@ -135,6 +147,12 @@ if __name__ == '__main__':
         default="",
         type=str,
         help="A comment to describe de simulation saved data"
+    )
+    parser.add_argument(
+        '--plot',
+        default=False,
+        type=str2bool,
+        help="If are shown demo plots"
     )
 
     run_simulation(**vars(parser.parse_args()))
