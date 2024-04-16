@@ -37,6 +37,7 @@ def run_simulation(
                         obs=ObservationType('kin'),
                         act=ActionType('rpm'),
                         initial_xyzs=np.array([[0, 0, 0]]),
+                        initial_rpys=np.array([[0, 0, 0]]),
                         record=record_video)
 
     logger = Logger(
