@@ -85,7 +85,7 @@ class FromScratch(BaseRLAviary):
         return np.linalg.norm(state[0:3] - self.TARGET_POS[0:3]) < 0.05
 
     def _performance(self, state):
-        if self._is_closed(state) and np.sqrt((state[7])**2 + state[8]**2) < 0.1:
+        if self._is_closed(state) and np.sqrt(state[7]**2 + state[8]**2) < 0.1:
             return 2
 
         return -np.sqrt(state[7]**2 + state[8]**2)
