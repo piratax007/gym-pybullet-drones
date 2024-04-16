@@ -78,17 +78,17 @@ class FromScratch(BaseRLAviary):
 
     def _is_away_from_exploration_area(self, state):
         return (np.linalg.norm(self.INIT_XYZS[0][0:2] - state[0:2]) >
-                np.linalg.norm(self.INIT_XYZS[0][0:2] - self.TARGET_POS[0:2]) + 0.5 or
-                state[2] > self.TARGET_POS[2] + 0.5)
+                np.linalg.norm(self.INIT_XYZS[0][0:2] - self.TARGET_POS[0:2]) + 0.05 or
+                state[2] > self.TARGET_POS[2] + 0.0125)
 
     def _is_closed(self, state):
         return np.linalg.norm(state[0:3] - self.TARGET_POS[0:3]) < 0.05
 
     def _performance(self, state):
-        if self._is_closed(state) and np.abs(state[7]) + np.abs(state[8]) < 0.1:
+        if self._is_closed(state) and np.sqrt((state[7])**2 + state[8]**2) < 0.1:
             return 2
 
-        return -(np.abs(state[7]) + np.abs(state[8]))
+        return -np.sqrt(state[7]**2 + state[8]**2)
 
     def _get_previous_current_we(self, current_state):
         if np.shape(self.LOG_ANGULAR_VELOCITY)[0] > 2:
@@ -151,7 +151,7 @@ class FromScratch(BaseRLAviary):
 
         """
         state = self._getDroneStateVector(0)
-        if np.linalg.norm(self.TARGET_POS - state[0:3]) < .03 and np.abs(state[7]) + np.abs(state[8]) < 0.07:
+        if np.linalg.norm(self.TARGET_POS - state[0:3]) < .03 and np.sqrt(state[7]**2 + state[8]**2) < 0.05:
             return True
 
         return False

@@ -22,12 +22,21 @@ def get_policy(policy_path):
     raise Exception("[ERROR]: no model under the specified path", policy_path)
 
 
-def run_simulation(policy_path, test_env, gui=True, record_video=False, save=False, comment=""):
+def run_simulation(
+        policy_path,
+        test_env, gui=True,
+        record_video=False,
+        reset=False,
+        save=False,
+        plot=False,
+        comment=""
+):
     policy = get_policy(policy_path)
 
     test_env = test_env(gui=gui,
                         obs=ObservationType('kin'),
                         act=ActionType('rpm'),
+                        initial_xyzs=np.array([[0, 0, 0]]),
                         record=record_video)
 
     logger = Logger(
@@ -39,23 +48,41 @@ def run_simulation(policy_path, test_env, gui=True, record_video=False, save=Fal
 
     obs, info = test_env.reset(seed=42, options={})
     log_reward = []
-    simulation_length = (test_env.EPISODE_LEN_SEC + 92) * test_env.CTRL_FREQ
+    simulation_length = (test_env.EPISODE_LEN_SEC + 52) * test_env.CTRL_FREQ
 
     start = time.time()
 
     for i in range(simulation_length):
-        # if i < (simulation_length / 5):
-        #     z_target = 1
-        # elif i < 2 * (simulation_length / 5):
-        #     z_target = 0.2
-        # elif i < 3 * (simulation_length / 5):
-        #     z_target = 0.8
-        # elif i < 4 * (simulation_length / 5):
-        #     z_target = 0.4
-        # else:
-        #     z_target = 1
-        #
-        # obs[0][2] += 1 - z_target
+        if i < (simulation_length / 5):
+            x_target = 0
+            y_target = 0
+            # z_target = 1
+            # yaw_target = 0
+        elif i < 2 * (simulation_length / 5):
+            x_target = 1
+            y_target = 0
+#             z_target = 0.5
+#             yaw_target = -0.5
+        elif i < 3 * (simulation_length / 5):
+            x_target = 1
+            y_target = 1
+#             z_target = 0.5
+#             yaw_target = -1.0
+        elif i < 4 * (simulation_length / 5):
+            x_target = 0
+            y_target = 1
+#             z_target = 1
+#             yaw_target = -1.5
+        else:
+            x_target = -1
+            y_target = 1
+#             z_target = 1
+#             yaw_target = -2.0
+
+        obs[0][0] += x_target
+        obs[0][1] += y_target
+#         obs[0][2] += 1 - z_target
+#         obs[0][5] += yaw_target
         action, _states = policy.predict(obs,
                                          deterministic=True
                                          )
@@ -64,19 +91,21 @@ def run_simulation(policy_path, test_env, gui=True, record_video=False, save=Fal
         actions = test_env._getDroneStateVector(0)[16:20]
         actions2 = actions.squeeze()
         obs2 = obs.squeeze()
-        print(f"""
-        #################################################################
-        Observation Space:
-        Position: {obs[0][0:3]}
-        Orientation: {in_degrees(obs[0][3:6])}
-        Linear Velocity: {obs[0][6:9]}
-        Angular Velocity: {obs[0][9:12]}
-        -----------------------------------------------------------------
-        Action Space: {action}
-        Terminated: {terminated}
-        Truncated: {truncated}
-        #################################################################
-        """)
+        # print(f"""
+        # #################################################################
+        # Observation Space:
+        # Position: {obs[0][0:3]}
+        # Orientation: {in_degrees(obs[0][3:6])}
+        # Linear Velocity: {obs[0][6:9]}
+        # Angular Velocity: {obs[0][9:12]}
+        # -----------------------------------------------------------------
+        # Action Space: type {type(action)} value {action}
+        # Terminated: {terminated}
+        # Truncated: {truncated}
+        # -----------------------------------------------------------------
+        # Policy Architecture: {policy.policy}
+        # #################################################################
+        # """)
 
         logger.log(
             drone=0,
