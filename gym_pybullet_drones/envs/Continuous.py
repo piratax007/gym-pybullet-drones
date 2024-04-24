@@ -105,23 +105,6 @@ class Continuous(BaseRLAviary):
         }
         return differences
 
-    def _get_previous_current_rpm(self, current_state):
-        if np.shape(self.LOG_RPMS)[0] > 2:
-            self.LOG_RPMS = np.delete(self.LOG_RPMS, 0)
-
-        return np.vstack((self.LOG_RPMS, current_state[16:20]))
-
-    def _get_rpms_differences(self, state):
-        log = self._get_previous_current_rpm(state)
-        differences = {
-            'rpm1': log[0][0] - log[1][0],
-            'rpm2': log[0][1] - log[1][1],
-            'rpm3': log[0][2] - log[1][2],
-            'rpm4': log[0][3] - log[1][3]
-        }
-
-        return differences
-
     def _computeReward(self):
         """Computes the current reward value.
 
