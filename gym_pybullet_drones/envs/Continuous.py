@@ -88,7 +88,7 @@ class Continuous(BaseRLAviary):
         if self._is_closed(state) and state[7]**2 + state[8]**2 < 0.01:
             return 2
 
-        return -(state[7]**2 + state[8]**2)
+        return -2 / np.clip(state[7]**2 + state[8]**2, 1, 2)
 
     def _get_previous_current_we(self, current_state):
         if np.shape(self.LOG_ANGULAR_VELOCITY)[0] > 2:
