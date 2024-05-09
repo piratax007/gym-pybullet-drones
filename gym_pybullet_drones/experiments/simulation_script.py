@@ -8,7 +8,7 @@ from stable_baselines3 import PPO
 from gym_pybullet_drones.utils.Logger import Logger
 from gym_pybullet_drones.utils.utils import sync, str2bool
 from gym_pybullet_drones.utils.enums import ObservationType, ActionType
-from gym_pybullet_drones.envs import FromScratchShrink
+from gym_pybullet_drones.envs import ActionsFilter
 
 
 def in_degrees(angles):
@@ -49,41 +49,43 @@ def run_simulation(
 
     obs, info = test_env.reset(seed=42, options={})
     log_reward = []
-    simulation_length = (test_env.EPISODE_LEN_SEC + 52) * test_env.CTRL_FREQ
+    simulation_length = (test_env.EPISODE_LEN_SEC + 12) * test_env.CTRL_FREQ
 
     start = time.time()
 
     for i in range(simulation_length):
-        if i < (simulation_length / 5):
-            x_target = 0
-            y_target = 0
-            # z_target = 1
-            # yaw_target = 0
-        elif i < 2 * (simulation_length / 5):
-            x_target = 1
-            y_target = 0
-#             z_target = 0.5
-#             yaw_target = -0.5
-        elif i < 3 * (simulation_length / 5):
-            x_target = 1
-            y_target = 1
-#             z_target = 0.5
-#             yaw_target = -1.0
-        elif i < 4 * (simulation_length / 5):
-            x_target = 0
-            y_target = 1
-#             z_target = 1
-#             yaw_target = -1.5
-        else:
-            x_target = -1
-            y_target = 1
-#             z_target = 1
-#             yaw_target = -2.0
-
-        obs[0][0] += x_target
-        obs[0][1] += y_target
-#         obs[0][2] += 1 - z_target
-#         obs[0][5] += yaw_target
+        # if i < (simulation_length / 5):
+        #     x_target = 0
+        #     y_target = 0
+        #     z_target = 1
+        #     yaw_target = 0
+        # elif i < 2 * (simulation_length / 5):
+        #     x_target = 1
+        #     y_target = 0
+        #     z_target = 0.5
+        #     yaw_target = -0.5
+        # elif i < 3 * (simulation_length / 5):
+        #     x_target = 1
+        #     y_target = 1
+        #     z_target = 0.5
+        #     yaw_target = -1.0
+        # elif i < 4 * (simulation_length / 5):
+        #     x_target = 0
+        #     y_target = 1
+        #     z_target = 1
+        #     yaw_target = -1.5
+        # else:
+        #     x_target = -1
+        #     y_target = 1
+        #     z_target = 1
+        #     yaw_target = -2.0
+        #
+        # obs[0][0] += 1
+        # obs[0][1] -= 1
+        # obs[0][2] += 1 - z_target
+        # obs[0][5] += yaw_target
+        # obs[0][0] -= test_env.INIT_XYZS[0][0]
+        # obs[0][1] -= test_env.INIT_XYZS[0][1]
         action, _states = policy.predict(obs,
                                          deterministic=True
                                          )
@@ -128,10 +130,10 @@ def run_simulation(
     test_env.close()
 
     if plot:
-        logger.plot_position_and_orientation()
+        # logger.plot_position_and_orientation()
         logger.plot_rpms()
-        logger.plot_trajectory()
-        logger.plot_angular_velocities()
+        # logger.plot_trajectory()
+        # logger.plot_angular_velocities()
 
     if save:
         logger.save_as_csv(comment)
@@ -145,7 +147,7 @@ if __name__ == '__main__':
     )
     parser.add_argument(
         '--test_env',
-        default=FromScratchShrink,
+        default=ActionsFilter,
         help='The name of the environment to learn, registered with gym_pybullet_drones'
     )
     parser.add_argument(

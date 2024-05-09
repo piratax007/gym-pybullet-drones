@@ -6,11 +6,11 @@ import argparse
 from stable_baselines3 import PPO
 from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.callbacks import EvalCallback, StopTrainingOnMaxEpisodes
-from gym_pybullet_drones.envs import Continuous
+from gym_pybullet_drones.envs import ActionsFilter
 from gym_pybullet_drones.utils.enums import ObservationType, ActionType
 
 
-DEFAULT_ENV_NAME = Continuous
+DEFAULT_ENV_NAME = ActionsFilter
 DEFAULT_OUTPUT_FOLDER = 'results'
 
 DEFAULT_OBS = ObservationType('kin')

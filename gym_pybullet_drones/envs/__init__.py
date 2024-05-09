@@ -5,5 +5,6 @@ from gym_pybullet_drones.envs.SimBasicReward import SimBasicReward
 from gym_pybullet_drones.envs.FromScratch import FromScratch
 from gym_pybullet_drones.envs.FromScratchShrink import FromScratchShrink
 from gym_pybullet_drones.envs.Continuous import Continuous
+from gym_pybullet_drones.envs.ActionsFilter import ActionsFilter
 from gym_pybullet_drones.envs.MultiHoverAviary import MultiHoverAviary
 from gym_pybullet_drones.envs.VelocityAviary import VelocityAviary
