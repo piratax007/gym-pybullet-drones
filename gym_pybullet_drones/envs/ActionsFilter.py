@@ -283,9 +283,9 @@ class ActionsFilter(BaseRLAviary):
 
         """
         self.action_buffer.append(action)
-        print(f"############ ACTIONS: {action} #############")
+        # print(f"############ ACTIONS: {action} #############")
         action = self.apply_filter_to_actions(self.action_buffer, action[0], 14000, 30000)
-        print(f"######## FILTERED ACTIONS: {action} ###########")
+#         print(f"######## FILTERED ACTIONS: {action} ###########")
         self.filtered_action_buffer.append(action)
         rpm = np.zeros((self.NUM_DRONES, 4))
         for k in range(action.shape[0]):
