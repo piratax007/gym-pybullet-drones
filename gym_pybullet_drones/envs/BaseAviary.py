@@ -250,7 +250,6 @@ class BaseAviary(gym.Env):
         #### Start video recording #################################
         self._startVideoRecording()
         #### Return the initial observation ########################
-        # self.INIT_XYZS = np.array([[np.random.rand()*2-1, np.random.rand()*2-1, np.random.rand()*2]])
         initial_obs = self._computeObs()
         initial_info = self._computeInfo()
         return initial_obs, initial_info
