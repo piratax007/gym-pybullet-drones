@@ -2,9 +2,11 @@ import numpy as np
 from gymnasium import spaces
 from gym_pybullet_drones.envs.BaseRLAviary import BaseRLAviary
 from gym_pybullet_drones.utils.enums import DroneModel, Physics, ActionType, ObservationType
+from gym_pybullet_drones.utils.utils import FIRFilter
+import pybullet as p
 
 
-class FromScratchShrink(BaseRLAviary):
+class ObservationSpace72Filter(BaseRLAviary):
     """Single agent RL problem: hover at position."""
 
     ################################################################################
@@ -14,7 +16,7 @@ class FromScratchShrink(BaseRLAviary):
                  initial_xyzs=np.array([[0, 0, 0]]),
                  initial_rpys=np.array([[0, 0, 0]]),
                  target_xyzs=np.array([0, 0, 1]),
-                 target_rpys=np.array([0, 0, 0]),
+                 target_rpys=np.array([0, 0, 1.5]),
                  physics: Physics = Physics.PYB,
                  pyb_freq: int = 240,
                  ctrl_freq: int = 30,
@@ -54,9 +56,11 @@ class FromScratchShrink(BaseRLAviary):
         self.INIT_XYZS = initial_xyzs
         self.TARGET_POS = target_xyzs
         self.TARGET_ORIENTATION = target_rpys
-        self.EPISODE_LEN_SEC = 8
+        self.EPISODE_LEN_SEC = 5
         self.LOG_ANGULAR_VELOCITY = np.zeros((1, 3))
         self.LOG_RPMS = np.zeros((1, 4))
+        self.ACTION_BUFFER_SIZE = int(ctrl_freq // 2)
+        self.filter = FIRFilter(buffer_size=self.ACTION_BUFFER_SIZE)
         super().__init__(drone_model=drone_model,
                          num_drones=1,
                          initial_xyzs=initial_xyzs,
@@ -77,18 +81,18 @@ class FromScratchShrink(BaseRLAviary):
                 np.linalg.norm(self.TARGET_ORIENTATION - state[7:10]))
 
     def _is_away_from_exploration_area(self, state):
-        return (np.linalg.norm(self.INIT_XYZS[0][0:2] - state[0:2]) >
-                np.linalg.norm(self.INIT_XYZS[0][0:2] - self.TARGET_POS[0:2]) + 0.05 or
-                state[2] > self.TARGET_POS[2] + 0.0125)
+        return (np.linalg.norm(state[0:2] - self.TARGET_POS[0:2]) >
+                np.linalg.norm(self.INIT_XYZS[0][0:2] - self.TARGET_POS[0:2]) + 0.025 or
+                state[2] > self.TARGET_POS[2] + 0.025)
 
     def _is_closed(self, state):
-        return np.linalg.norm(state[0:3] - self.TARGET_POS[0:3]) < 0.0255
+        return np.linalg.norm(state[0:3] - self.TARGET_POS[0:3]) < 0.025
 
     def _performance(self, state):
-        if self._is_closed(state) and np.abs(state[7]) + np.abs(state[8]) < 0.01:
+        if self._is_closed(state) and state[7]**2 + state[8]**2 < 0.01:
             return 2
 
-        return -(np.abs(state[7]) + np.abs(state[8]))
+        return -(state[7]**2 + state[8]**2)
 
     def _get_previous_current_we(self, current_state):
         if np.shape(self.LOG_ANGULAR_VELOCITY)[0] > 2:
@@ -105,23 +109,6 @@ class FromScratchShrink(BaseRLAviary):
         }
         return differences
 
-    def _get_previous_current_rpm(self, current_state):
-        if np.shape(self.LOG_RPMS)[0] > 2:
-            self.LOG_RPMS = np.delete(self.LOG_RPMS, 0)
-
-        return np.vstack((self.LOG_RPMS, current_state[16:20]))
-
-    def _get_rpms_differences(self, state):
-        log = self._get_previous_current_rpm(state)
-        differences = {
-            'rpm1': log[0][0] - log[1][0],
-            'rpm2': log[0][1] - log[1][1],
-            'rpm3': log[0][2] - log[1][2],
-            'rpm4': log[0][3] - log[1][3]
-        }
-
-        return differences
-
     def _computeReward(self):
         """Computes the current reward value.
 
@@ -134,9 +121,9 @@ class FromScratchShrink(BaseRLAviary):
         state = self._getDroneStateVector(0)
         we_differences = self._get_we_differences(state)
         ret = (25 - 20 * self._target_error(state) -
-               100 * (1 if self._is_away_from_exploration_area(state) else -0.2) +
+               100 * (1 if self._is_away_from_exploration_area(state) else -0.25) +
                20 * self._performance(state) -
-               18 * (we_differences['roll'] ** 2 + we_differences['pitch'] ** 2 + we_differences['yaw'] ** 2))
+               18 * (we_differences['roll']**2 + we_differences['pitch']**2 + we_differences['yaw']**2))
         return ret
 
     ################################################################################
@@ -151,13 +138,13 @@ class FromScratchShrink(BaseRLAviary):
 
         """
         state = self._getDroneStateVector(0)
-        if np.linalg.norm(self.TARGET_POS - state[0:3]) < .02 and np.abs(state[7]) + np.abs(state[8]) < 0.0005:
+        if np.linalg.norm(self.TARGET_POS - state[0:3]) < .05 and state[7]**2 + state[8]**2 < 0.05:
             return True
 
         return False
-
+        
     ################################################################################
-
+    
     def _computeTruncated(self):
         """Computes the current truncated value.
 
@@ -169,9 +156,9 @@ class FromScratchShrink(BaseRLAviary):
         """
         state = self._getDroneStateVector(0)
         if (np.linalg.norm(self.INIT_XYZS[0][0:2] - state[0:2]) >
-                np.linalg.norm(self.INIT_XYZS[0][0:2] - self.TARGET_POS[0:2]) + 0.25 or
-                state[2] > self.TARGET_POS[2] + 0.15 or
-                abs(state[7]) > .15 or abs(state[8]) > .15):
+                np.linalg.norm(self.INIT_XYZS[0][0:2] - self.TARGET_POS[0:2]) + .1 or
+                state[2] > self.TARGET_POS[2] + .1 or
+                abs(state[7]) > .25 or abs(state[8]) > .25):
             return True
 
         if self.step_counter / self.PYB_FREQ > self.EPISODE_LEN_SEC:
@@ -180,7 +167,7 @@ class FromScratchShrink(BaseRLAviary):
         return False
 
     ################################################################################
-
+    
     def _computeInfo(self):
         """Computes the current info dict(s).
 
@@ -201,6 +188,11 @@ class FromScratchShrink(BaseRLAviary):
         hi = np.inf
         obs_lower_bound = np.array([[lo, lo, 0, lo, lo, lo, lo, lo, lo, lo, lo, lo]])
         obs_upper_bound = np.array([[hi, hi, hi, hi, hi, hi, hi, hi, hi, hi, hi, hi]])
+        act_lo = -1
+        act_hi = +1
+        for _ in range(self.ACTION_BUFFER_SIZE):
+            obs_lower_bound = np.hstack([obs_lower_bound, np.array([[act_lo, act_lo, act_lo, act_lo]])])
+            obs_upper_bound = np.hstack([obs_upper_bound, np.array([[act_hi, act_hi, act_hi, act_hi]])])
         return spaces.Box(low=obs_lower_bound, high=obs_upper_bound, dtype=np.float32)
 
     ################################################################################
@@ -211,4 +203,96 @@ class FromScratchShrink(BaseRLAviary):
             obs = self._getDroneStateVector(i)
             obs_12[i, :] = np.hstack([obs[0:3], obs[7:10], obs[10:13], obs[13:16]]).reshape(12, )
         ret = np.array([obs_12[i, :] for i in range(self.NUM_DRONES)]).astype('float32')
+        for i in range(self.ACTION_BUFFER_SIZE):
+            ret = np.hstack([ret, np.array([self.filter.buffer[i][0]])])
         return ret
+
+    ################################################################################
+
+    def _actionSpace(self):
+        """Returns the action space of the environment.
+
+        Returns
+        -------
+        spaces.Box
+            A Box of size NUM_DRONES x 4, 3, or 1, depending on the action type.
+
+        """
+        size = 4
+        act_lower_bound = np.array([-1*np.ones(size) for _ in range(self.NUM_DRONES)])
+        act_upper_bound = np.array([+1*np.ones(size) for _ in range(self.NUM_DRONES)])
+
+        for i in range(self.ACTION_BUFFER_SIZE):
+            self.filter.buffer.append(np.zeros((self.NUM_DRONES, size)))
+
+        return spaces.Box(low=act_lower_bound, high=act_upper_bound, dtype=np.float32)
+
+    ################################################################################
+
+    def _preprocessAction(self,
+                          action
+                          ):
+        """Pre-processes the action passed to `.step()` into motors' RPMs.
+
+        Parameter `action` is processed differenly for each of the different
+        action types: the input to n-th drone, `action[n]` can be of length
+        1, 3, or 4, and represent RPMs, desired thrust and torques, or the next
+        target position to reach using PID control.
+
+        Parameter `action` is processed differenly for each of the different
+        action types: `action` can be of length 1, 3, or 4 and represent
+        RPMs, desired thrust and torques, the next target position to reach
+        using PID control, a desired velocity vector, etc.
+
+        Parameters
+        ----------
+        action : ndarray
+            The input action for each drone, to be translated into RPMs.
+
+        Returns
+        -------
+        ndarray
+            (NUM_DRONES, 4)-shaped array of ints containing to clipped RPMs
+            commanded to the 4 motors of each drone.
+
+        """
+        self.filter.buffer.append(action)
+        action = self.filter.filter_actions(action)
+        rpm = np.zeros((self.NUM_DRONES, 4))
+        for k in range(action.shape[0]):
+            target = action[k, :]
+            rpm[k, :] = np.array(self.HOVER_RPM * (1+0.05*target))
+        return rpm
+
+    ################################################################################
+
+    def reset(self,
+              seed: int = None,
+              options: dict = None):
+        """Resets the environment.
+
+        Parameters
+        ----------
+        seed : int, optional
+            Random seed.
+        options : dict[..], optional
+            Additinonal options, unused
+
+        Returns
+        -------
+        ndarray | dict[..]
+            The initial observation, check the specific implementation of `_computeObs()`
+            in each subclass for its format.
+        dict[..]
+            Additional information as a dictionary, check the specific implementation of `_computeInfo()`
+            in each subclass for its format.
+
+        """
+        p.resetSimulation(physicsClientId=self.CLIENT)
+        self._housekeeping()
+        self._updateAndStoreKinematicInformation()
+        self.INIT_XYZS = np.array([[(np.random.rand()*4)-2, (np.random.rand()*4)-2, np.random.rand()*2]])
+        self.INIT_RPYS = np.array([[0, 0, np.random.rand()*1.7]])
+        initial_obs = self._computeObs()
+        initial_info = self._computeInfo()
+        return initial_obs, initial_info

@@ -2,9 +2,10 @@ import numpy as np
 from gymnasium import spaces
 from gym_pybullet_drones.envs.BaseRLAviary import BaseRLAviary
 from gym_pybullet_drones.utils.enums import DroneModel, Physics, ActionType, ObservationType
+import pybullet as p
 
 
-class Continuous(BaseRLAviary):
+class ObservationSpace12(BaseRLAviary):
     """Single agent RL problem: hover at position."""
 
     ################################################################################
@@ -54,7 +55,7 @@ class Continuous(BaseRLAviary):
         self.INIT_XYZS = initial_xyzs
         self.TARGET_POS = target_xyzs
         self.TARGET_ORIENTATION = target_rpys
-        self.EPISODE_LEN_SEC = 8
+        self.EPISODE_LEN_SEC = 5
         self.LOG_ANGULAR_VELOCITY = np.zeros((1, 3))
         self.LOG_RPMS = np.zeros((1, 4))
         super().__init__(drone_model=drone_model,
@@ -77,7 +78,7 @@ class Continuous(BaseRLAviary):
                 np.linalg.norm(self.TARGET_ORIENTATION - state[7:10]))
 
     def _is_away_from_exploration_area(self, state):
-        return (np.linalg.norm(self.INIT_XYZS[0][0:2] - state[0:2]) >
+        return (np.linalg.norm(state[0:2] - self.TARGET_POS[0:2]) >
                 np.linalg.norm(self.INIT_XYZS[0][0:2] - self.TARGET_POS[0:2]) + 0.025 or
                 state[2] > self.TARGET_POS[2] + 0.025)
 
@@ -134,7 +135,7 @@ class Continuous(BaseRLAviary):
 
         """
         state = self._getDroneStateVector(0)
-        if np.linalg.norm(self.TARGET_POS - state[0:3]) < .03 and np.sqrt(state[7]**2 + state[8]**2) < 0.05:
+        if np.linalg.norm(self.TARGET_POS - state[0:3]) < .05 and state[7]**2 + state[8]**2 < 0.05:
             return True
 
         return False
@@ -151,9 +152,9 @@ class Continuous(BaseRLAviary):
 
         """
         state = self._getDroneStateVector(0)
-        if (np.linalg.norm(self.INIT_XYZS[0][0:2] - state[0:2]) >
-                np.linalg.norm(self.INIT_XYZS[0][0:2] - self.TARGET_POS[0:2]) + 1 or
-                state[2] > self.TARGET_POS[2] + 1 or
+        if (np.linalg.norm(state[0:2] - self.TARGET_POS[0:2]) >
+                np.linalg.norm(self.INIT_XYZS[0][0:2] - self.TARGET_POS[0:2]) + .1 or
+                state[2] > self.TARGET_POS[2] + .1 or
                 abs(state[7]) > .25 or abs(state[8]) > .25):
             return True
 
@@ -195,3 +196,36 @@ class Continuous(BaseRLAviary):
             obs_12[i, :] = np.hstack([obs[0:3], obs[7:10], obs[10:13], obs[13:16]]).reshape(12, )
         ret = np.array([obs_12[i, :] for i in range(self.NUM_DRONES)]).astype('float32')
         return ret
+
+    ###############################################################################
+
+    def reset(self,
+              seed: int = None,
+              options: dict = None):
+        """Resets the environment.
+
+        Parameters
+        ----------
+        seed : int, optional
+            Random seed.
+        options : dict[..], optional
+            Additinonal options, unused
+
+        Returns
+        -------
+        ndarray | dict[..]
+            The initial observation, check the specific implementation of `_computeObs()`
+            in each subclass for its format.
+        dict[..]
+            Additional information as a dictionary, check the specific implementation of `_computeInfo()`
+            in each subclass for its format.
+
+        """
+        p.resetSimulation(physicsClientId=self.CLIENT)
+        self._housekeeping()
+        self._updateAndStoreKinematicInformation()
+        self.INIT_XYZS = np.array([[(np.random.rand()*4)-2, (np.random.rand()*4)-2, np.random.rand()*2]])
+        self.INIT_RPYS = np.array([[0, 0, np.random.rand()*1.7]])
+        initial_obs = self._computeObs()
+        initial_info = self._computeInfo()
+        return initial_obs, initial_info
