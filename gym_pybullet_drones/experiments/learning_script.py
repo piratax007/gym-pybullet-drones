@@ -6,11 +6,8 @@ import argparse
 from stable_baselines3 import PPO
 from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.callbacks import EvalCallback, StopTrainingOnMaxEpisodes
-from gym_pybullet_drones.envs import ActionsFilter
 from gym_pybullet_drones.utils.enums import ObservationType, ActionType
 
-
-DEFAULT_ENV_NAME = ActionsFilter
 DEFAULT_OUTPUT_FOLDER = 'results'
 
 DEFAULT_OBS = ObservationType('kin')
@@ -36,6 +33,7 @@ def get_ppo_model(environment, path, reuse_model=False):
     return PPO('MlpPolicy',
                environment,
                tensorboard_log=path+'/tb/',
+               batch_size=128,
                verbose=0,
                device='auto')
 
@@ -70,7 +68,9 @@ def run_learning(environment,
                                         n_envs=parallel_environments,
                                         seed=0
                                         )
-    evaluation_environment = environment(obs=DEFAULT_OBS, act=DEFAULT_ACT)
+    evaluation_environment = make_vec_env(environment,
+                                          n_envs=parallel_environments,
+                                          )
 
     model = get_ppo_model(learning_environment,
                           'continuous_learning/best_model.zip' if continuous_learning else path_to_results,
@@ -93,7 +93,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Single agent RL learning")
     parser.add_argument(
         '--env_name',
-        default=DEFAULT_ENV_NAME,
         help='The name of the environment to learn, registered with gym_pybullet_drones'
     )
     parser.add_argument(
