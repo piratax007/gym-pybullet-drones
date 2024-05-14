@@ -225,7 +225,7 @@ class ObservationSpace12(BaseRLAviary):
         self._housekeeping()
         self._updateAndStoreKinematicInformation()
         self.INIT_XYZS = np.array([[(np.random.rand()*4)-2, (np.random.rand()*4)-2, np.random.rand()*2]])
-        self.INIT_RPYS = np.array([[0, 0, np.random.rand()*1.5]])
+        self.TARGET_ORIENTATION = np.array([[0, 0, np.random.rand()*1.5]])
         initial_obs = self._computeObs()
         initial_info = self._computeInfo()
         return initial_obs, initial_info
