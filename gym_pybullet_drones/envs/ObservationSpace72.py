@@ -114,11 +114,11 @@ class ObservationSpace72(BaseRLAviary):
 
         """
         state = self._getDroneStateVector(0)
-        we_differences = self._get_we_differences(state)
+        # we_differences = self._get_we_differences(state)
         ret = (25 - 20 * self._target_error(state) -
-               100 * (1 if self._is_away_from_exploration_area(state) else -0.25) +
-               20 * self._performance(state) -
-               18 * (we_differences['roll']**2 + we_differences['pitch']**2 + we_differences['yaw']**2))
+               100 * (1 if self._is_away_from_exploration_area(state) else -0.25))  # +
+               # 20 * self._performance(state) -
+               # 18 * (we_differences['roll']**2 + we_differences['pitch']**2 + we_differences['yaw']**2))
         return ret
 
     ################################################################################
