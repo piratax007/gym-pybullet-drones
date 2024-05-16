@@ -7,7 +7,7 @@ from stable_baselines3 import PPO
 from gym_pybullet_drones.utils.Logger import Logger
 from gym_pybullet_drones.utils.utils import sync, str2bool, FIRFilter
 from gym_pybullet_drones.utils.enums import ObservationType, ActionType
-from gym_pybullet_drones.envs import ObservationSpace12
+from gym_pybullet_drones.envs import ObS12Rw3
 
 
 def in_degrees(angles):
@@ -153,7 +153,7 @@ if __name__ == '__main__':
     )
     parser.add_argument(
         '--test_env',
-        default=ObservationSpace12,
+        default=ObS12Rw3,
         help='The name of the environment to learn, registered with gym_pybullet_drones'
     )
     parser.add_argument(

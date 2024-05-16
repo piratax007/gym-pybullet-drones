@@ -5,7 +5,7 @@ from gym_pybullet_drones.utils.enums import DroneModel, Physics, ActionType, Obs
 import pybullet as p
 
 
-class ObservationSpace12(BaseRLAviary):
+class ObS12Rw5(BaseRLAviary):
     """Single agent RL problem: hover at position."""
 
     ################################################################################
@@ -83,7 +83,7 @@ class ObservationSpace12(BaseRLAviary):
                 state[2] > self.TARGET_POS[2] + 0.025)
 
     def _is_closed(self, state):
-        return np.linalg.norm(state[0:3] - self.TARGET_POS[0:3]) < 0.0125
+        return np.linalg.norm(state[0:3] - self.TARGET_POS[0:3]) < 0.025
 
     def _performance(self, state):
         if self._is_closed(state) and state[7]**2 + state[8]**2 < 0.001:
@@ -135,7 +135,7 @@ class ObservationSpace12(BaseRLAviary):
 
         """
         state = self._getDroneStateVector(0)
-        if np.linalg.norm(self.TARGET_POS - state[0:3]) < .03 and state[7]**2 + state[8]**2 < 0.01:
+        if np.linalg.norm(self.TARGET_POS - state[0:3]) < .02 and state[7]**2 + state[8]**2 < 0.001:
             return True
 
         return False
@@ -224,8 +224,11 @@ class ObservationSpace12(BaseRLAviary):
         p.resetSimulation(physicsClientId=self.CLIENT)
         self._housekeeping()
         self._updateAndStoreKinematicInformation()
-        self.INIT_XYZS = np.array([[(np.random.rand()*4)-2, (np.random.rand()*4)-2, np.random.rand()*2]])
-        self.TARGET_ORIENTATION = np.array([[0, 0, np.random.rand()*1.5]])
+        self.INIT_XYZS = np.array([[
+            np.random.uniform(-2, 2 + 1e-10, 1)[0],
+            np.random.uniform(-2, 2 + 1e-10, 1)[0],
+            np.random.uniform(0, 2 + 1e-10, 1)[0]]])
+        self.TARGET_ORIENTATION = np.array([[0, 0, np.random.uniform(0, 1.5 + 1e-10, 1)[0]]])
         initial_obs = self._computeObs()
         initial_info = self._computeInfo()
         return initial_obs, initial_info

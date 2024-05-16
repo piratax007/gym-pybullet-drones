@@ -1,19 +1,41 @@
 #!/usr/bin/env python3
-from gym_pybullet_drones.envs import ObservationSpace12
+from gym_pybullet_drones.envs import ObS12Rw3
 from gym_pybullet_drones.experiments.learning_script import run_learning
 
-print("""######### Continuos with random starting position and random target yaw #########
-R(t) = 25 - 20te - 100Bo + 20P - 18we
+print("""############# From scratch #############
+R(t) = 25 - 20te - 100Bo
+Starting = [0 0 0 0 0 0]
 Target = [0 0 1 0 0 random]
 ##################################################
 """)
 
-results = run_learning(environment=ObservationSpace12,
-                       learning_id="CONTINUOUS_OBS-SIZE-12_RANDOM-STARTING_TARGET-[0 0 1 0 0 rand]",
-                       continuous_learning=True,
+results = run_learning(environment=ObS12Rw3,
+                       learning_id="FROM-SCRATCH_STAGE-1",
+                       continuous_learning=False,
                        stop_on_max_episodes=False,
                        parallel_environments=4,
                        time_steps=int(15e6)
+                       )
+
+print(f"""
+################# Learning End ########################
+Results: {results}
+#######################################################
+""")
+
+print("""############# From scratch #############
+R(t) = 25 - 20te - 100Bo + 20P - 18W
+Starting = [0 0 0 0 0 0]
+Target = [0 0 1 0 0 random]
+##################################################
+""")
+
+results = run_learning(environment=ObS12Rw3,
+                       learning_id="FROM-SCRATCH_STAGE-1",
+                       continuous_learning=False,
+                       stop_on_max_episodes=False,
+                       parallel_environments=4,
+                       time_steps=int(25e6)
                        )
 
 print(f"""
