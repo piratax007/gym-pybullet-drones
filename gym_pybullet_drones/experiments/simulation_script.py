@@ -4,11 +4,10 @@ import os
 import time
 import numpy as np
 from stable_baselines3 import PPO
-
 from gym_pybullet_drones.utils.Logger import Logger
-from gym_pybullet_drones.utils.utils import sync, str2bool
+from gym_pybullet_drones.utils.utils import sync, str2bool, FIRFilter
 from gym_pybullet_drones.utils.enums import ObservationType, ActionType
-from gym_pybullet_drones.envs import ActionsFilter
+from gym_pybullet_drones.envs import ObservationSpace12
 
 
 def in_degrees(angles):
@@ -53,6 +52,10 @@ def run_simulation(
 
     start = time.time()
 
+    firfilter = FIRFilter()
+    for _ in range(firfilter.buffer_size):
+        firfilter.buffer.append(np.zeros((1, 4)))
+
     for i in range(simulation_length):
         # if i < (simulation_length / 5):
         #     x_target = 0
@@ -89,6 +92,9 @@ def run_simulation(
         action, _states = policy.predict(obs,
                                          deterministic=True
                                          )
+
+        # action = firfilter.filter_actions(action)
+
         obs, reward, terminated, truncated, info = test_env.step(action)
         log_reward.append(reward)
         actions = test_env._getDroneStateVector(0)[16:20]
@@ -130,10 +136,10 @@ def run_simulation(
     test_env.close()
 
     if plot:
-        # logger.plot_position_and_orientation()
+        logger.plot_position_and_orientation()
         logger.plot_rpms()
-        # logger.plot_trajectory()
-        # logger.plot_angular_velocities()
+        logger.plot_trajectory()
+#         logger.plot_angular_velocities()
 
     if save:
         logger.save_as_csv(comment)
@@ -147,7 +153,7 @@ if __name__ == '__main__':
     )
     parser.add_argument(
         '--test_env',
-        default=ActionsFilter,
+        default=ObservationSpace12,
         help='The name of the environment to learn, registered with gym_pybullet_drones'
     )
     parser.add_argument(

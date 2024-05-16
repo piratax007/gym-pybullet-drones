@@ -83,10 +83,10 @@ class ObservationSpace12(BaseRLAviary):
                 state[2] > self.TARGET_POS[2] + 0.025)
 
     def _is_closed(self, state):
-        return np.linalg.norm(state[0:3] - self.TARGET_POS[0:3]) < 0.025
+        return np.linalg.norm(state[0:3] - self.TARGET_POS[0:3]) < 0.0125
 
     def _performance(self, state):
-        if self._is_closed(state) and state[7]**2 + state[8]**2 < 0.01:
+        if self._is_closed(state) and state[7]**2 + state[8]**2 < 0.001:
             return 2
 
         return -(state[7]**2 + state[8]**2)
@@ -118,7 +118,7 @@ class ObservationSpace12(BaseRLAviary):
         state = self._getDroneStateVector(0)
         we_differences = self._get_we_differences(state)
         ret = (25 - 20 * self._target_error(state) -
-               100 * (1 if self._is_away_from_exploration_area(state) else -0.25) +
+               100 * (1 if self._is_away_from_exploration_area(state) else -0.2) +
                20 * self._performance(state) -
                18 * (we_differences['roll']**2 + we_differences['pitch']**2 + we_differences['yaw']**2))
         return ret
@@ -135,7 +135,7 @@ class ObservationSpace12(BaseRLAviary):
 
         """
         state = self._getDroneStateVector(0)
-        if np.linalg.norm(self.TARGET_POS - state[0:3]) < .05 and state[7]**2 + state[8]**2 < 0.05:
+        if np.linalg.norm(self.TARGET_POS - state[0:3]) < .03 and state[7]**2 + state[8]**2 < 0.01:
             return True
 
         return False
@@ -153,8 +153,8 @@ class ObservationSpace12(BaseRLAviary):
         """
         state = self._getDroneStateVector(0)
         if (np.linalg.norm(state[0:2] - self.TARGET_POS[0:2]) >
-                np.linalg.norm(self.INIT_XYZS[0][0:2] - self.TARGET_POS[0:2]) + .1 or
-                state[2] > self.TARGET_POS[2] + .1 or
+                np.linalg.norm(self.INIT_XYZS[0][0:2] - self.TARGET_POS[0:2]) + .05 or
+                state[2] > self.TARGET_POS[2] + .05 or
                 abs(state[7]) > .25 or abs(state[8]) > .25):
             return True
 
