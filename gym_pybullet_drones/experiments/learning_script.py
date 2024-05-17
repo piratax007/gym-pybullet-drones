@@ -68,9 +68,7 @@ def run_learning(environment,
                                         n_envs=parallel_environments,
                                         seed=0
                                         )
-    evaluation_environment = make_vec_env(environment,
-                                          n_envs=parallel_environments,
-                                          )
+    evaluation_environment = environment(obs=DEFAULT_OBS, acts=DEFAULT_ACT)
 
     model = get_ppo_model(learning_environment,
                           'continuous_learning/best_model.zip' if continuous_learning else path_to_results,
