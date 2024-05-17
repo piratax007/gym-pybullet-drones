@@ -5,17 +5,17 @@ from gym_pybullet_drones.utils.enums import DroneModel, Physics, ActionType, Obs
 import pybullet as p
 
 
-class ObS12Rw5(BaseRLAviary):
+class ObS12Stage3(BaseRLAviary):
     """Single agent RL problem: hover at position."""
 
     ################################################################################
-    
+
     def __init__(self,
                  drone_model: DroneModel = DroneModel.CF2X,
                  initial_xyzs=np.array([[0, 0, 0]]),
                  initial_rpys=np.array([[0, 0, 0]]),
                  target_xyzs=np.array([0, 0, 1]),
-                 target_rpys=np.array([0, 0, 0]),
+                 target_rpys=np.array([[0, 0, 0]]),
                  physics: Physics = Physics.PYB,
                  pyb_freq: int = 240,
                  ctrl_freq: int = 30,
@@ -86,10 +86,10 @@ class ObS12Rw5(BaseRLAviary):
         return np.linalg.norm(state[0:3] - self.TARGET_POS[0:3]) < 0.025
 
     def _performance(self, state):
-        if self._is_closed(state) and state[7]**2 + state[8]**2 < 0.001:
+        if self._is_closed(state) and state[7] ** 2 + state[8] ** 2 < 0.001:
             return 2
 
-        return -(state[7]**2 + state[8]**2)
+        return -(state[7] ** 2 + state[8] ** 2)
 
     def _get_previous_current_we(self, current_state):
         if np.shape(self.LOG_ANGULAR_VELOCITY)[0] > 2:
@@ -120,7 +120,7 @@ class ObS12Rw5(BaseRLAviary):
         ret = (25 - 20 * self._target_error(state) -
                100 * (1 if self._is_away_from_exploration_area(state) else -0.2) +
                20 * self._performance(state) -
-               18 * (we_differences['roll']**2 + we_differences['pitch']**2 + we_differences['yaw']**2))
+               18 * (we_differences['roll'] ** 2 + we_differences['pitch'] ** 2 + we_differences['yaw'] ** 2))
         return ret
 
     ################################################################################
@@ -135,13 +135,13 @@ class ObS12Rw5(BaseRLAviary):
 
         """
         state = self._getDroneStateVector(0)
-        if np.linalg.norm(self.TARGET_POS - state[0:3]) < .02 and state[7]**2 + state[8]**2 < 0.001:
+        if np.linalg.norm(self.TARGET_POS - state[0:3]) < .02 and state[7] ** 2 + state[8] ** 2 < 0.001:
             return True
 
         return False
-        
+
     ################################################################################
-    
+
     def _computeTruncated(self):
         """Computes the current truncated value.
 
@@ -164,7 +164,7 @@ class ObS12Rw5(BaseRLAviary):
         return False
 
     ################################################################################
-    
+
     def _computeInfo(self):
         """Computes the current info dict(s).
 
