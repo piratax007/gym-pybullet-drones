@@ -3,6 +3,7 @@ from gymnasium import spaces
 from gym_pybullet_drones.envs.BaseRLAviary import BaseRLAviary
 from gym_pybullet_drones.utils.enums import DroneModel, Physics, ActionType, ObservationType
 
+
 class ObS12Stage1(BaseRLAviary):
     """Single agent RL problem: hover at position."""
 
