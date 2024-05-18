@@ -57,7 +57,6 @@ class ObS12Stage3(BaseRLAviary):
         self.TARGET_ORIENTATION = target_rpys
         self.EPISODE_LEN_SEC = 5
         self.LOG_ANGULAR_VELOCITY = np.zeros((1, 3))
-        self.LOG_RPMS = np.zeros((1, 4))
         super().__init__(drone_model=drone_model,
                          num_drones=1,
                          initial_xyzs=initial_xyzs,

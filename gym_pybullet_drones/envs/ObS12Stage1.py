@@ -15,6 +15,7 @@ class ObS12Stage1(BaseRLAviary):
                  initial_xyzs=np.array([[0, 0, 0]]),
                  initial_rpys=np.array([[0, 0, 0]]),
                  target_xyzs=np.array([0, 0, 1]),
+                 target_rpys=np.array([0, 0, 0]),
                  physics: Physics = Physics.PYB,
                  pyb_freq: int = 240,
                  ctrl_freq: int = 30,
@@ -53,9 +54,9 @@ class ObS12Stage1(BaseRLAviary):
         """
         self.INIT_XYZS = initial_xyzs
         self.TARGET_POS = target_xyzs
+        self.TARGET_ORIENTATION = target_rpys
         self.EPISODE_LEN_SEC = 8
         self.LOG_ANGULAR_VELOCITY = np.zeros((1, 3))
-        self.LOG_RPMS = np.zeros((1, 4))
         super().__init__(drone_model=drone_model,
                          num_drones=1,
                          initial_xyzs=initial_xyzs,
@@ -72,7 +73,8 @@ class ObS12Stage1(BaseRLAviary):
     ################################################################################
 
     def _target_error(self, state):
-        return np.linalg.norm(self.TARGET_POS - state[0:3])
+        return (np.linalg.norm(self.TARGET_POS - state[0:3]) +
+                np.linalg.norm(self.TARGET_ORIENTATION - state[7:10]))
 
     def _is_away_from_exploration_area(self, state):
         return (np.linalg.norm(state[0:2] - self.TARGET_POS[0:2]) >
@@ -83,10 +85,10 @@ class ObS12Stage1(BaseRLAviary):
         return np.linalg.norm(state[0:3] - self.TARGET_POS[0:3]) < 0.025
 
     def _performance(self, state):
-        if self._is_closed(state) and state[7] ** 2 + state[8] ** 2 < 0.001:
+        if self._is_closed(state) and state[7]**2 + state[8]**2 < 0.001:
             return 2
 
-        return -(state[7] ** 2 + state[8] ** 2)
+        return -(state[7]**2 + state[8]**2)
 
     def _get_previous_current_we(self, current_state):
         if np.shape(self.LOG_ANGULAR_VELOCITY)[0] > 2:
@@ -132,7 +134,7 @@ class ObS12Stage1(BaseRLAviary):
 
         """
         state = self._getDroneStateVector(0)
-        if np.linalg.norm(self.TARGET_POS - state[0:3]) < .02 and state[7] ** 2 + state[8] ** 2 < 0.001:
+        if np.linalg.norm(self.TARGET_POS - state[0:3]) < .02 and state[7]**2 + state[8]**2 < 0.001:
             return True
 
         return False
@@ -193,34 +195,3 @@ class ObS12Stage1(BaseRLAviary):
             obs_12[i, :] = np.hstack([obs[0:3], obs[7:10], obs[10:13], obs[13:16]]).reshape(12, )
         ret = np.array([obs_12[i, :] for i in range(self.NUM_DRONES)]).astype('float32')
         return ret
-
-    ###############################################################################
-
-    def reset(self,
-              seed: int = None,
-              options: dict = None):
-        """Resets the environment.
-
-        Parameters
-        ----------
-        seed : int, optional
-            Random seed.
-        options : dict[..], optional
-            Additinonal options, unused
-
-        Returns
-        -------
-        ndarray | dict[..]
-            The initial observation, check the specific implementation of `_computeObs()`
-            in each subclass for its format.
-        dict[..]
-            Additional information as a dictionary, check the specific implementation of `_computeInfo()`
-            in each subclass for its format.
-
-        """
-        p.resetSimulation(physicsClientId=self.CLIENT)
-        self._housekeeping()
-        self._updateAndStoreKinematicInformation()
-        initial_obs = self._computeObs()
-        initial_info = self._computeInfo()
-        return initial_obs, initial_info
