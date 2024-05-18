@@ -32,7 +32,7 @@ def get_ppo_model(environment, path, reuse_model=False):
 
     return PPO('MlpPolicy',
                environment,
-               tensorboard_log=path+'/tb/',
+               tensorboard_log=path + '/tb/',
                batch_size=128,
                verbose=0,
                device='auto')
@@ -65,10 +65,11 @@ def run_learning(environment,
     path_to_results = results_directory(output_directory, learning_id)
 
     learning_environment = make_vec_env(environment,
-                                        n_envs=parallel_environments,
-                                        seed=0
+                                        n_envs=parallel_environments
                                         )
-    evaluation_environment = environment(obs=DEFAULT_OBS, act=DEFAULT_ACT)
+    evaluation_environment = make_vec_env(environment,
+                                          n_envs=parallel_environments
+                                          )
 
     model = get_ppo_model(learning_environment,
                           'continuous_learning/best_model.zip' if continuous_learning else path_to_results,
