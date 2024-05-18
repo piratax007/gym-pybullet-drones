@@ -43,7 +43,7 @@ def callbacks(episodes, evaluation_environment, parallel_environments, path_to_r
                                  verbose=0,
                                  best_model_save_path=path_to_results + '/',
                                  log_path=path_to_results + '/',
-                                 eval_freq=int(1000 / parallel_environments),
+                                 eval_freq=int(8000 / parallel_environments),
                                  deterministic=True,
                                  render=False)
     if stop_on_max_episodes:
