@@ -15,6 +15,7 @@ class ObS12Stage2(BaseRLAviary):
                  initial_xyzs=np.array([[0, 0, 0]]),
                  initial_rpys=np.array([[0, 0, 0]]),
                  target_xyzs=np.array([0, 0, 1]),
+                 target_rpys=np.array([0, 0, 0]),
                  physics: Physics = Physics.PYB,
                  pyb_freq: int = 240,
                  ctrl_freq: int = 30,
@@ -53,6 +54,7 @@ class ObS12Stage2(BaseRLAviary):
         """
         self.INIT_XYZS = initial_xyzs
         self.TARGET_POS = target_xyzs
+        self.TARGET_ORIENTATION = target_rpys
         self.EPISODE_LEN_SEC = 5
         self.LOG_ANGULAR_VELOCITY = np.zeros((1, 3))
         super().__init__(drone_model=drone_model,
@@ -71,7 +73,8 @@ class ObS12Stage2(BaseRLAviary):
     ################################################################################
 
     def _target_error(self, state):
-        return np.linalg.norm(self.TARGET_POS - state[0:3])
+        return (np.linalg.norm(self.TARGET_POS - state[0:3]) +
+                np.linalg.norm(self.TARGET_ORIENTATION - state[7:10]))
 
     def _is_away_from_exploration_area(self, state):
         return (np.linalg.norm(state[0:2] - self.TARGET_POS[0:2]) >
@@ -79,7 +82,7 @@ class ObS12Stage2(BaseRLAviary):
                 state[2] > self.TARGET_POS[2] + 0.025)
 
     def _is_closed(self, state):
-        return np.linalg.norm(state[0:3] - self.TARGET_POS[0:3]) < 0.025
+        return np.linalg.norm(state[0:3] - self.TARGET_POS[0:3]) < 0.02
 
     def _performance(self, state):
         if self._is_closed(state) and state[7] ** 2 + state[8] ** 2 < 0.001:

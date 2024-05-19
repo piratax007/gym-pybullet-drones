@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from gym_pybullet_drones.envs import ObS12Stage1
+from gym_pybullet_drones.envs import ObS12Stage2
 from gym_pybullet_drones.experiments.learning_script import run_learning
 
 print("""############# From scratch STAGE 1 #############
@@ -8,8 +8,8 @@ Target = [0 0 1 0 0 0]
 ##################################################
 """)
 
-results = run_learning(environment=ObS12Stage1,
-                       learning_id="FROM-SCRATCH_STAGE-1-HOVER",
+results = run_learning(environment=ObS12Stage2,
+                       learning_id="FROM-SCRATCH_STAGE-2_HOVER-STARTING-RANDOM-POSITION",
                        continuous_learning=False,
                        stop_on_max_episodes=False,
                        parallel_environments=4,
