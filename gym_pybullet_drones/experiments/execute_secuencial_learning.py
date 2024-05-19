@@ -10,7 +10,7 @@ Target = [0 0 1 0 0 0]
 
 results = run_learning(environment=ObS12Stage2,
                        learning_id="FROM-SCRATCH_STAGE-2_HOVER-STARTING-RANDOM-POSITION",
-                       continuous_learning=False,
+                       continuous_learning=True,
                        stop_on_max_episodes=False,
                        parallel_environments=4,
                        time_steps=int(20e6)
