@@ -7,7 +7,7 @@ from stable_baselines3 import PPO
 from gym_pybullet_drones.utils.Logger import Logger
 from gym_pybullet_drones.utils.utils import sync, str2bool, FIRFilter
 from gym_pybullet_drones.utils.enums import ObservationType, ActionType
-from gym_pybullet_drones.envs import ObS12Stage1
+from gym_pybullet_drones.envs import ObS12Stage2
 
 
 def in_degrees(angles):
@@ -35,8 +35,8 @@ def run_simulation(
     test_env = test_env(gui=gui,
                         obs=ObservationType('kin'),
                         act=ActionType('rpm'),
-                        initial_xyzs=np.array([[0, 0, 0]]),
-                        initial_rpys=np.array([[0, 0, 0]]),
+                        initial_xyzs=np.array([[1, 1, 0]]),
+                        initial_rpys=np.array([[0, 0, 0.4]]),
                         record=record_video)
 
     logger = Logger(
@@ -153,7 +153,7 @@ if __name__ == '__main__':
     )
     parser.add_argument(
         '--test_env',
-        default=ObS12Stage1,
+        default=ObS12Stage2,
         help='The name of the environment to learn, registered with gym_pybullet_drones'
     )
     parser.add_argument(
