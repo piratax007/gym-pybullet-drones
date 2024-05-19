@@ -2,8 +2,8 @@
 from gym_pybullet_drones.envs import ObS12Stage2
 from gym_pybullet_drones.experiments.learning_script import run_learning
 
-print("""############# From scratch STAGE 1 #############
-Starting = [0 0 0 0 0 0]
+print("""############# From scratch STAGE 2 #############
+Starting = [rand rand rand 0 0 0]
 Target = [0 0 1 0 0 0]
 ##################################################
 """)
