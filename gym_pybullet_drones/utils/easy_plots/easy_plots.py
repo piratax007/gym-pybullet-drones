@@ -29,7 +29,7 @@ def _get_data_from_csv(file: str) -> tuple:
 def _plot_references(files: list, axis: plt.Axes) -> None:
     for i, file in enumerate(files):
         reference = _get_data_from_csv(file)
-        axis.plot(*reference, color='gray', linestyle='--', linewidth=1.5, label='Reference' if i == 0 else '')
+        axis.plot(*reference, color='black', linestyle='--', linewidth=1.5, label='Reference' if i == 0 else '')
         axis.legend()
 
 
