@@ -4,10 +4,10 @@ import os
 import time
 import numpy as np
 from stable_baselines3 import PPO
+from gym_pybullet_drones.envs import ObS12Stage3
 from gym_pybullet_drones.utils.Logger import Logger
-from gym_pybullet_drones.utils.utils import sync, str2bool, FIRFilter
 from gym_pybullet_drones.utils.enums import ObservationType, ActionType
-from gym_pybullet_drones.envs import ObS12Stage2
+from gym_pybullet_drones.utils.utils import sync, str2bool, FIRFilter
 
 
 def in_degrees(angles):
@@ -21,6 +21,18 @@ def get_policy(policy_path):
     raise Exception("[ERROR]: no model under the specified path", policy_path)
 
 
+def circular_trajectory(number_of_points: int = 50) -> tuple:
+    angles = np.linspace(0, 4 * np.pi, number_of_points)
+    x_coordinates = 2 * np.cos(angles)
+    y_coordinates = 2 * np.sin(angles)
+    z_coordinates = np.linspace(0, 1, number_of_points)
+    return x_coordinates, y_coordinates, z_coordinates
+
+
+def target_angles(number_of_points: int = 50) -> tuple:
+    return tuple(np.linspace(0, 1.3, number_of_points))
+
+
 def run_simulation(
         policy_path,
         test_env, gui=True,
@@ -28,6 +40,8 @@ def run_simulation(
         reset=False,
         save=False,
         plot=False,
+        debug=False,
+        apply_filter=False,
         comment=""
 ):
     policy = get_policy(policy_path)
@@ -35,8 +49,8 @@ def run_simulation(
     test_env = test_env(gui=gui,
                         obs=ObservationType('kin'),
                         act=ActionType('rpm'),
-                        initial_xyzs=np.array([[1, 1, 0]]),
-                        initial_rpys=np.array([[0, 0, 0.4]]),
+                        initial_xyzs=np.array([[0, 0, 0]]),
+                        initial_rpys=np.array([[0, 0, 0]]),
                         record=record_video)
 
     logger = Logger(
@@ -48,73 +62,52 @@ def run_simulation(
 
     obs, info = test_env.reset(seed=42, options={})
     log_reward = []
-    simulation_length = (test_env.EPISODE_LEN_SEC + 12) * test_env.CTRL_FREQ
+    simulation_length = (test_env.EPISODE_LEN_SEC + 62) * test_env.CTRL_FREQ
 
     start = time.time()
 
     firfilter = FIRFilter()
+
     for _ in range(firfilter.buffer_size):
         firfilter.buffer.append(np.zeros((1, 4)))
 
     for i in range(simulation_length):
-        # if i < (simulation_length / 5):
-        #     x_target = 0
-        #     y_target = 0
-        #     z_target = 1
-        #     yaw_target = 0
-        # elif i < 2 * (simulation_length / 5):
-        #     x_target = 1
-        #     y_target = 0
-        #     z_target = 0.5
-        #     yaw_target = -0.5
-        # elif i < 3 * (simulation_length / 5):
-        #     x_target = 1
-        #     y_target = 1
-        #     z_target = 0.5
-        #     yaw_target = -1.0
-        # elif i < 4 * (simulation_length / 5):
-        #     x_target = 0
-        #     y_target = 1
-        #     z_target = 1
-        #     yaw_target = -1.5
-        # else:
-        #     x_target = -1
-        #     y_target = 1
-        #     z_target = 1
-        #     yaw_target = -2.0
-        #
-        # obs[0][0] += 1
-        # obs[0][1] -= 1
-        # obs[0][2] += 1 - z_target
-        # obs[0][5] += yaw_target
-        # obs[0][0] -= test_env.INIT_XYZS[0][0]
-        # obs[0][1] -= test_env.INIT_XYZS[0][1]
+        x_target, y_target, z_target = circular_trajectory(simulation_length)
+
+        obs[0][0] += x_target[i]
+        obs[0][1] += y_target[i]
+        obs[0][2] += (0.25 - z_target[i])
+        obs[0][5] += target_angles(simulation_length)[i]
+
         action, _states = policy.predict(obs,
                                          deterministic=True
                                          )
 
-        # action = firfilter.filter_actions(action)
+        if apply_filter:
+            action = firfilter.filter_actions(action)
 
         obs, reward, terminated, truncated, info = test_env.step(action)
         log_reward.append(reward)
         actions = test_env._getDroneStateVector(0)[16:20]
         actions2 = actions.squeeze()
         obs2 = obs.squeeze()
-        # print(f"""
-        # #################################################################
-        # Observation Space:
-        # Position: {obs[0][0:3]}
-        # Orientation: {in_degrees(obs[0][3:6])}
-        # Linear Velocity: {obs[0][6:9]}
-        # Angular Velocity: {obs[0][9:12]}
-        # -----------------------------------------------------------------
-        # Action Space: type {type(action)} value {action}
-        # Terminated: {terminated}
-        # Truncated: {truncated}
-        # -----------------------------------------------------------------
-        # Policy Architecture: {policy.policy}
-        # #################################################################
-        # """)
+
+        if debug:
+            print(f"""
+            #################################################################
+            Observation Space:
+            Position: {obs[0][0:3]}
+            Orientation: {in_degrees(obs[0][3:6])}
+            Linear Velocity: {obs[0][6:9]}
+            Angular Velocity: {obs[0][9:12]}
+            -----------------------------------------------------------------
+            Action Space: type {type(action)} value {action}
+            Terminated: {terminated}
+            Truncated: {truncated}
+            -----------------------------------------------------------------
+            Policy Architecture: {policy.policy}
+            #################################################################
+            """)
 
         logger.log(
             drone=0,
@@ -139,7 +132,6 @@ def run_simulation(
         logger.plot_position_and_orientation()
         logger.plot_rpms()
         logger.plot_trajectory()
-#         logger.plot_angular_velocities()
 
     if save:
         logger.save_as_csv(comment)
@@ -153,7 +145,7 @@ if __name__ == '__main__':
     )
     parser.add_argument(
         '--test_env',
-        default=ObS12Stage2,
+        default=ObS12Stage3,
         help='The name of the environment to learn, registered with gym_pybullet_drones'
     )
     parser.add_argument(
@@ -191,6 +183,18 @@ if __name__ == '__main__':
         default=False,
         type=str2bool,
         help="If are shown demo plots"
+    )
+    parser.add_argument(
+        '--debug',
+        default=False,
+        type=str2bool,
+        help="Prints debug information"
+    )
+    parser.add_argument(
+        '--filter',
+        default=False,
+        type=str2bool,
+        help="Applies a low pass to the actions coming from the policy"
     )
 
     run_simulation(**vars(parser.parse_args()))
