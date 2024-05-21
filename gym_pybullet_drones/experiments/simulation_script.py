@@ -191,7 +191,7 @@ if __name__ == '__main__':
         help="Prints debug information"
     )
     parser.add_argument(
-        '--filter',
+        '--apply_filter',
         default=False,
         type=str2bool,
         help="Applies a low pass to the actions coming from the policy"
