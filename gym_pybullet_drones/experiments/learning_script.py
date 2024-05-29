@@ -5,8 +5,9 @@ from datetime import datetime
 import argparse
 from stable_baselines3 import PPO
 from stable_baselines3.common.env_util import make_vec_env
-from stable_baselines3.common.callbacks import EvalCallback, StopTrainingOnMaxEpisodes
+from stable_baselines3.common.callbacks import EvalCallback, StopTrainingOnMaxEpisodes, BaseCallback
 from gym_pybullet_drones.utils.enums import ObservationType, ActionType
+from torch.utils.tensorboard import SummaryWriter
 
 DEFAULT_OUTPUT_FOLDER = 'results'
 
@@ -38,19 +39,37 @@ def get_ppo_model(environment, path, reuse_model=False):
                device='auto')
 
 
+class TensorboardCallback(BaseCallback):
+    def __init__(self, log_dir, verbose=0):
+        super(TensorboardCallback, self).__init__(verbose)
+        self.writer = SummaryWriter(log_dir=log_dir)
+
+    def _on_step(self) -> bool:
+        rewards = self.locals['rewards']
+        for i, reward in enumerate(rewards):
+            self.writer.add_scalar('train/instantaneous_reward', reward, self.num_timesteps)
+        return True
+
+    def _on_training_end(self) -> None:
+        self.writer.close()
+
+
 def callbacks(episodes, evaluation_environment, parallel_environments, path_to_results, stop_on_max_episodes):
     eval_callback = EvalCallback(evaluation_environment,
                                  verbose=0,
                                  best_model_save_path=path_to_results + '/',
                                  log_path=path_to_results + '/',
-                                 eval_freq=int(8000 / parallel_environments),
+                                 eval_freq=int(10000 / parallel_environments),
                                  deterministic=True,
                                  render=False)
+
+    tensorboard_callback = TensorboardCallback(path_to_results + '/tb', verbose=0)
+
     if stop_on_max_episodes:
         stop_on_max_episodes = StopTrainingOnMaxEpisodes(int(episodes / parallel_environments), verbose=1)
-        callback_list = [stop_on_max_episodes, eval_callback]
+        callback_list = [stop_on_max_episodes, eval_callback, tensorboard_callback]
     else:
-        callback_list = [eval_callback]
+        callback_list = [eval_callback, tensorboard_callback]
     return callback_list
 
 
