@@ -87,7 +87,7 @@ class ObS12Stage1(BaseRLAviary):
         if self._is_closed(state) and state[7]**2 + state[8]**2 < 0.001:
             return 2
 
-        return -0.5
+        return -0.15
 
     def _get_previous_current_we(self, current_state):
         if np.shape(self.LOG_ANGULAR_VELOCITY)[0] > 2:
