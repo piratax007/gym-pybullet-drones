@@ -63,13 +63,11 @@ def callbacks(episodes, evaluation_environment, parallel_environments, path_to_r
                                  deterministic=True,
                                  render=False)
 
-    tensorboard_callback = TensorboardCallback(path_to_results + '/tb', verbose=0)
-
     if stop_on_max_episodes:
         stop_on_max_episodes = StopTrainingOnMaxEpisodes(int(episodes / parallel_environments), verbose=1)
-        callback_list = [stop_on_max_episodes, eval_callback, tensorboard_callback]
+        callback_list = [stop_on_max_episodes, eval_callback]
     else:
-        callback_list = [eval_callback, tensorboard_callback]
+        callback_list = [eval_callback]
     return callback_list
 
 
