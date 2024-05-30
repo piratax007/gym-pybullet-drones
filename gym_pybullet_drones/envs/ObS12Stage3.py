@@ -227,7 +227,12 @@ class ObS12Stage3(BaseRLAviary):
             np.random.uniform(-2, 2 + 1e-10, 1)[0],
             np.random.uniform(-2, 2 + 1e-10, 1)[0],
             np.random.uniform(0, 2 + 1e-10, 1)[0]]])
-        self.TARGET_ORIENTATION = np.array([[0, 0, np.random.uniform(0, 1.5 + 1e-10, 1)[0]]])
+        self.INIT_RPYS = np.array([[
+            np.random.uniform(-0.2, 0.2 + 1e-10, 1)[0],
+            np.random.uniform(-0.2, 0.2 + 1e-10, 1)[0],
+            np.random.uniform(-1.5, 1.5 + 1e-10, 1)[0]
+        ]])
+        self.TARGET_ORIENTATION = np.array([[0, 0, np.random.uniform(-1.5, 1.5 + 1e-10, 1)[0]]])
         initial_obs = self._computeObs()
         initial_info = self._computeInfo()
         return initial_obs, initial_info
