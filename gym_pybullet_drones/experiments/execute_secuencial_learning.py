@@ -13,7 +13,7 @@ results = run_learning(environment=ObS12Stage1,
                        continuous_learning=False,
                        stop_on_max_episodes=False,
                        parallel_environments=4,
-                       time_steps=int(16e6)
+                       time_steps=int(20e6)
                        )
 
 print(f"""
