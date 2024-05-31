@@ -15,7 +15,7 @@ class ObS12Rw5(BaseRLAviary):
                  initial_xyzs=np.array([[0, 0, 0]]),
                  initial_rpys=np.array([[0, 0, 0]]),
                  target_xyzs=np.array([0, 0, 1]),
-                 target_rpys=np.array([0, 0, 0]),
+                 target_rpys=np.array([[0, 0, np.random.uniform(0, 1.5 + 1e-10, 1)[0]]]),
                  physics: Physics = Physics.PYB,
                  pyb_freq: int = 240,
                  ctrl_freq: int = 30,
@@ -78,11 +78,11 @@ class ObS12Rw5(BaseRLAviary):
 
     def _is_away_from_exploration_area(self, state):
         return (np.linalg.norm(state[0:2] - self.TARGET_POS[0:2]) >
-                np.linalg.norm(self.INIT_XYZS[0][0:2] - self.TARGET_POS[0:2]) + 0.025 or
-                state[2] > self.TARGET_POS[2] + 0.025)
+                np.linalg.norm(self.INIT_XYZS[0][0:2] - self.TARGET_POS[0:2]) + 0.0125 or
+                state[2] > self.TARGET_POS[2] + 0.0125)
 
     def _is_closed(self, state):
-        return np.linalg.norm(state[0:3] - self.TARGET_POS[0:3]) < 0.025
+        return np.linalg.norm(state[0:3] - self.TARGET_POS[0:3]) < 0.02
 
     def _performance(self, state):
         if self._is_closed(state) and state[7]**2 + state[8]**2 < 0.001:
@@ -152,8 +152,8 @@ class ObS12Rw5(BaseRLAviary):
         """
         state = self._getDroneStateVector(0)
         if (np.linalg.norm(state[0:2] - self.TARGET_POS[0:2]) >
-                np.linalg.norm(self.INIT_XYZS[0][0:2] - self.TARGET_POS[0:2]) + .05 or
-                state[2] > self.TARGET_POS[2] + .05 or
+                np.linalg.norm(self.INIT_XYZS[0][0:2] - self.TARGET_POS[0:2]) + .025 or
+                state[2] > self.TARGET_POS[2] + .025 or
                 abs(state[7]) > .25 or abs(state[8]) > .25):
             return True
 
@@ -227,7 +227,12 @@ class ObS12Rw5(BaseRLAviary):
             np.random.uniform(-2, 2 + 1e-10, 1)[0],
             np.random.uniform(-2, 2 + 1e-10, 1)[0],
             np.random.uniform(0, 2 + 1e-10, 1)[0]]])
-        self.TARGET_ORIENTATION = np.array([[0, 0, np.random.uniform(0, 1.5 + 1e-10, 1)[0]]])
+        self.INIT_RPYS = np.array([[
+            np.random.uniform(-0.2, 0.2 + 1e-10, 1)[0],
+            np.random.uniform(-0.2, 0.2 + 1e-10, 1)[0],
+            np.random.uniform(-1.5, 1.5 + 1e-10, 1)[0]
+        ]])
+        self.TARGET_ORIENTATION = np.array([[0, 0, np.random.uniform(-1.5, 1.5 + 1e-10, 1)[0]]])
         initial_obs = self._computeObs()
         initial_info = self._computeInfo()
         return initial_obs, initial_info
