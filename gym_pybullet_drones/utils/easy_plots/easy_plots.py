@@ -26,11 +26,27 @@ def _get_data_from_csv(file: str) -> tuple:
             return x, y
 
 
-def _plot_references(files: list, axis: plt.Axes) -> None:
+def _plot_references(
+        files: list,
+        axis: plt.Axes,
+        labeled: bool = True,
+        label: str = 'Reference',
+        style: str = '--'
+) -> None:
     for i, file in enumerate(files):
         reference = _get_data_from_csv(file)
         axis.plot(*reference, color='black', linestyle='--', linewidth=1.5, label='Reference' if i == 0 else '')
         axis.legend()
+        if style == "point" and len(reference) == 3:
+            axis.scatter(reference[0], reference[1], reference[2], color='black', label=label, s=100)
+        else:
+            axis.plot(
+                *reference,
+                color='black',
+                linestyle=style,
+                linewidth=1.5,
+                label=label if (i == 0 and labeled) else ''
+            )
 
 
 def _traces_from_csv(files: list, labels:list, axis: plt.Axes, references: dict, **colors: dict) -> None:
@@ -112,6 +128,7 @@ def multiple_axis_2D(
 def animate(data: dict, references: dict, settings: dict, colors: dict, video_name: str = 'video') -> None:
     figure = plt.figure(figsize=(16, 9), dpi=720 / 16)
     axis = plt.gca()
+    figure.subplots_adjust(left=0.13, right=0.87, top=0.85, bottom=0.15)
     _set_axis(axis, **settings)
 
     if references['view']:
