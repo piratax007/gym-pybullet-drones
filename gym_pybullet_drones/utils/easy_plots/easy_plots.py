@@ -80,14 +80,33 @@ def _parse_references(references: dict) -> dict:
     return references
 
 
-def _traces_from_csv(files: list, labels:list, axis: plt.Axes, references: dict, **colors: dict) -> None:
+def _traces_from_csv(files: list, labels: list, axis: plt.Axes, references: dict, **colors: dict) -> None:
+    parsed_references = _parse_references(references)
+
+    interior_axes = _interior_axes(
+        parsed_references['interior_detail'],
+        axis,
+        parsed_references['interior_detail_settings']
+    )
     for i, file in enumerate(files):
         data = _get_data_from_csv(file)
+        if interior_axes is not None:
+            interior_axes.plot(*data, colors['color_list'][i] if colors['color_mode'] != 'auto' else '')
+            axis.indicate_inset_zoom(interior_axes, edgecolor='black', alpha=0.25)
         axis.plot(*data, colors['color_list'][i] if colors['color_mode'] != 'auto' else '', label=labels[i])
         axis.legend()
 
     if references['show']:
         _plot_references(references['files'], axis)
+    if parsed_references['show']:
+        _plot_references(
+            parsed_references['files'],
+            axis,
+            parsed_references['labeled'],
+            parsed_references['label'],
+            parsed_references['style']
+        )
+
 
 
 def _set_axis(axis: plt.Axes, **settings: dict) -> None:
