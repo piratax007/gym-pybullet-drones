@@ -96,8 +96,6 @@ def _traces_from_csv(files: list, labels: list, axis: plt.Axes, references: dict
         axis.plot(*data, colors['color_list'][i] if colors['color_mode'] != 'auto' else '', label=labels[i])
         axis.legend()
 
-    if references['show']:
-        _plot_references(references['files'], axis)
     if parsed_references['show']:
         _plot_references(
             parsed_references['files'],
