@@ -35,8 +35,6 @@ def _plot_references(
 ) -> None:
     for i, file in enumerate(files):
         reference = _get_data_from_csv(file)
-        axis.plot(*reference, color='black', linestyle='--', linewidth=1.5, label='Reference' if i == 0 else '')
-        axis.legend()
         if style == "point" and len(reference) == 3:
             axis.scatter(reference[0], reference[1], reference[2], color='black', label=label, s=100)
         else:
@@ -47,6 +45,39 @@ def _plot_references(
                 linewidth=1.5,
                 label=label if (i == 0 and labeled) else ''
             )
+
+
+def _interior_axes(create: bool, axes: plt.Axes, settings: dict):
+    if create:
+        interior_axes = axes.inset_axes(
+            settings['x_y_width_height'],
+            xlim=settings['x_portion'],
+            ylim=settings['y_portion'],
+        )
+        interior_axes.set_xticklabels([])
+        interior_axes.set_yticklabels([])
+
+        return interior_axes
+
+    return None
+
+
+def _parse_references(references: dict) -> dict:
+    if not references['show']:
+        references['labeled'] = False
+        references['label'] = ''
+        references['files'] = []
+
+    if references['show'] and not references['labeled']:
+        references['label'] = ''
+
+    if 'style' not in references.keys():
+        references['style'] = '--'
+
+    if not references['interior_detail']:
+        references['interior_detail_settings'] = dict()
+
+    return references
 
 
 def _traces_from_csv(files: list, labels:list, axis: plt.Axes, references: dict, **colors: dict) -> None:
