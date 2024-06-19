@@ -136,13 +136,18 @@ def single_axis_2D(files: list, labels: list, references: dict, colors: dict, se
     plt.show()
 
 
-def single_axis_3D(files: list, labels: list, colors: dict, settings: dict) -> None:
-    font = {'family': 'serif', 'weight': 'bold', 'size': 15}
-    plt.rc('font', **font)
+def single_axis_3D(files: list, labels: list, references: dict, colors: dict, settings: dict) -> None:
+    plt.rcParams['text.usetex'] = True
     figure = plt.figure()
     axis = figure.add_subplot(projection='3d')
 
-    _traces_from_csv(files, labels, axis, dict(show=False), **colors)
+    _traces_from_csv(
+        files,
+        labels,
+        axis,
+        references,
+        **colors
+    )
     _set_axis(axis, **settings)
 
     plt.show()
@@ -178,9 +183,10 @@ def animate(data: dict, references: dict, settings: dict, colors: dict, video_na
     axis = plt.gca()
     figure.subplots_adjust(left=0.13, right=0.87, top=0.85, bottom=0.15)
     _set_axis(axis, **settings)
+    parsed_references = _parse_references(references)
 
-    if references['view']:
-        _plot_references(references['files'], axis)
+    if parsed_references['show']:
+        _plot_references(parsed_references['files'], axis)
 
     def update(frame_number):
         trace.set_xdata(x[:frame_number])
