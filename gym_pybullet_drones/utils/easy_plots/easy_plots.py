@@ -200,3 +200,31 @@ def animate(data: dict, references: dict, settings: dict, colors: dict, video_na
         axis.legend()
         anim = animation.FuncAnimation(figure, update, frames=len(x), interval=3, repeat=False)
         anim.save(video_name + str(i) + '.mp4', 'ffmpeg', fps=30, dpi=300)
+
+
+def animation_3D(data: dict, references: dict, settings: dict, color: str = 'red', video_name: str = 'video') -> None:
+    figure = plt.figure(figsize=(16, 9), dpi=720 / 16)
+    axis = figure.add_subplot(111, projection='3d')
+    axis.view_init(elev=30, azim=45, roll=0)
+    _set_axis(axis, **settings)
+
+    x, y, z = _get_data_from_csv(data['files'][0])
+
+    if references['show']:
+        _traces_from_csv(
+            references['files'],
+            ['Reference'],
+            axis,
+            dict(show=False),
+            **dict(color_mode='custom', color_list=['black'])
+        )
+
+    def update(frame_number):
+        trace.set_data(x[:frame_number], y[:frame_number])
+        trace.set_3d_properties(z[:frame_number])
+        return axis
+
+    trace, = axis.plot3D([], [], [], color)
+    trace.set_label('Actual Trajectory')
+    anim = animation.FuncAnimation(figure, update, frames=len(x), interval=3, repeat=False)
+    anim.save(video_name + '.mp4', 'ffmpeg', fps=30, dpi=300)
