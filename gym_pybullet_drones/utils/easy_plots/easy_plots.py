@@ -1,5 +1,6 @@
 import csv
 import os
+import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
@@ -24,6 +25,21 @@ def _get_data_from_csv(file: str) -> tuple:
             return x, y, z
         except IndexError:
             return x, y
+
+
+def _export_tuple_to_csv(data: tuple, path: os.path, file_name: str) -> None:
+    array_data = np.array(data)
+    with open(path + file_name + ".csv", 'wb') as csv_file:
+        np.savetxt(csv_file, np.transpose(array_data), delimiter=",")
+
+
+def combine_data_from(files: list, **kwargs) -> tuple:
+    combined_data = tuple(map(lambda file: _get_data_from_csv(file)[1], files))
+
+    if kwargs['save_to_csv']:
+        _export_tuple_to_csv(combined_data, kwargs['path'], kwargs['file_name'])
+
+    return combined_data
 
 
 def _plot_references(
