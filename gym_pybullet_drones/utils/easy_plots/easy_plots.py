@@ -32,12 +32,11 @@ def _export_tuple_to_csv(data: tuple, path: os.path, file_name: str) -> None:
     with open(path + file_name + ".csv", 'wb') as csv_file:
         np.savetxt(csv_file, np.transpose(array_data), delimiter=",")
 
-
-def combine_data_from(files: list, **kwargs) -> tuple:
+def combine_data_from(files: list, save_to_csv: bool = False, path: str = '', file_name: str = '') -> tuple:
     combined_data = tuple(map(lambda file: _get_data_from_csv(file)[1], files))
 
-    if kwargs['save_to_csv']:
-        _export_tuple_to_csv(combined_data, kwargs['path'], kwargs['file_name'])
+    if save_to_csv:
+        _export_tuple_to_csv(combined_data, path, file_name)
 
     return combined_data
 
@@ -63,7 +62,7 @@ def _plot_references(
             )
 
 
-def _interior_axes(create: bool, axes: plt.Axes, settings: dict):
+def _interior_axes(create: bool, axes: plt.Axes, settings: dict) -> any:
     if create:
         interior_axes = axes.inset_axes(
             settings['x_y_width_height'],
@@ -152,7 +151,20 @@ def single_axis_2D(files: list, labels: list, references: dict, colors: dict, se
     plt.show()
 
 
-def single_axis_3D(files: list, labels: list, references: dict, colors: dict, settings: dict) -> None:
+def _select_equally_spaced_sample(data: tuple, sample_size: int) -> tuple:
+    step = len(data[0]) // sample_size
+    r = tuple(tuple(inner_tuple[i * step] for i in range(sample_size)) for inner_tuple in data)
+    return r
+
+
+def single_axis_3D(
+        files: list,
+        labels: list,
+        references: dict,
+        colors: dict,
+        settings: dict,
+        decorations: dict = None,
+) -> None:
     plt.rcParams['text.usetex'] = True
     figure = plt.figure()
     axis = figure.add_subplot(projection='3d')
@@ -164,6 +176,18 @@ def single_axis_3D(files: list, labels: list, references: dict, colors: dict, se
         references,
         **colors
     )
+
+    if decorations['show']:
+        positions = _select_equally_spaced_sample(
+            combine_data_from(decorations['position_files']),
+            decorations['samples']
+        )
+        euler_angles = _select_equally_spaced_sample(
+            combine_data_from(decorations['euler_angles_files']),
+            decorations['samples']
+        )
+        add_body_frame(positions, euler_angles, axis)
+
     _set_axis(axis, **settings)
 
     plt.show()
@@ -244,3 +268,49 @@ def animation_3D(data: dict, references: dict, settings: dict, color: str = 'red
     trace.set_label('Actual Trajectory')
     anim = animation.FuncAnimation(figure, update, frames=len(x), interval=3, repeat=False)
     anim.save(video_name + '.mp4', 'ffmpeg', fps=30, dpi=300)
+
+
+def _euler_to_rotation_matrix(euler_angles: tuple) -> np.ndarray:
+    angles_in_radians= tuple(np.deg2rad(euler_angles))
+    rotation_x = np.array([
+        [1, 0, 0],
+        [0, np.cos(angles_in_radians[0]), -np.sin(angles_in_radians[0])],
+        [0, np.sin(angles_in_radians[0]), np.cos(angles_in_radians[0])]
+    ])
+
+    rotation_y = np.array([
+        [np.cos(angles_in_radians[1]), 0, np.sin(angles_in_radians[1])],
+        [0, 1, 0],
+        [-np.sin(angles_in_radians[1]), 0, np.cos(angles_in_radians[1])]
+    ])
+
+    rotation_z = np.array([
+        [np.cos(angles_in_radians[2]), -np.sin(angles_in_radians[2]), 0],
+        [np.sin(angles_in_radians[2]), np.cos(angles_in_radians[2]), 0],
+        [0, 0, 1]
+    ])
+
+    rotation_matrix = np.dot(rotation_z, np.dot(rotation_y, rotation_x))
+    return rotation_matrix
+
+
+def add_body_frame(positions: tuple, attitudes: tuple, axes: plt.Axes) -> None:
+    def arrange(data: tuple):
+        arranged_data = []
+        for row in range(len(data[0])):
+            arranged_data.append((data[0][row], data[1][row], data[2][row]))
+
+        return tuple(arranged_data)
+
+    rotation_matrix = tuple(map(lambda a: _euler_to_rotation_matrix(a), arrange(attitudes)))
+    arranged_positions = arrange(positions)
+
+    for i in range(len(arranged_positions)):
+        origin = np.array(arranged_positions[i])
+        body_frame_x = rotation_matrix[i] @ np.array([1, 0, 0])
+        body_frame_y = rotation_matrix[i] @ np.array([0, 1, 0])
+        body_frame_z = rotation_matrix[i] @ np.array([0, 0, 1])
+
+        axes.quiver(*origin, *body_frame_x, color='r', length=0.2, normalize=True)
+        axes.quiver(*origin, *body_frame_y, color='g', length=0.2, normalize=True)
+        axes.quiver(*origin, *body_frame_z, color='b', length=0.2, normalize=True)
