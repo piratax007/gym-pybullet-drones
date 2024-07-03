@@ -70,6 +70,10 @@ class ObS12Stage3(ObS12Stage2):
 
     ################################################################################
 
+    def _target_error(self, state):
+        return (np.linalg.norm(self.TARGET_POS - state[0:3]) +
+                np.linalg.norm(self.TARGET_ORIENTATION - state[7:10]))
+
     def reset(self,
               seed: int = None,
               options: dict = None):

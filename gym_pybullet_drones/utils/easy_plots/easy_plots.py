@@ -32,6 +32,7 @@ def _export_tuple_to_csv(data: tuple, path: os.path, file_name: str) -> None:
     with open(path + file_name + ".csv", 'wb') as csv_file:
         np.savetxt(csv_file, np.transpose(array_data), delimiter=",")
 
+
 def combine_data_from(files: list, save_to_csv: bool = False, path: str = '', file_name: str = '') -> tuple:
     combined_data = tuple(map(lambda file: _get_data_from_csv(file)[1], files))
 
@@ -107,7 +108,7 @@ def _traces_from_csv(files: list, labels: list, axis: plt.Axes, references: dict
         data = _get_data_from_csv(file)
         if interior_axes is not None:
             interior_axes.plot(*data, colors['color_list'][i] if colors['color_mode'] != 'auto' else '')
-            axis.indicate_inset_zoom(interior_axes, edgecolor='black', alpha=0.25)
+            axis.indicate_inset_zoom(interior_axes, edgecolor='gray', alpha=0.25)
         axis.plot(*data, colors['color_list'][i] if colors['color_mode'] != 'auto' else '', label=labels[i])
         axis.legend()
 
@@ -120,6 +121,8 @@ def _traces_from_csv(files: list, labels: list, axis: plt.Axes, references: dict
             parsed_references['style']
         )
 
+    # axis.legend()
+    axis.legend(bbox_to_anchor=(0, 1, 1, 0.75), loc="lower left", borderaxespad=0, ncol=4)
 
 
 def _set_axis(axis: plt.Axes, **settings: dict) -> None:
@@ -140,6 +143,15 @@ def _set_axis(axis: plt.Axes, **settings: dict) -> None:
         pass
 
     axis.set_title(settings['labels']['title'])
+    # axis.ticklabel_format(axis='y', style='sci', scilimits=(0, 0))
+    axis.set_aspect('equal')
+
+
+def _add_vertical_lines(axes: plt.Axes, x_positions: list, y_min: float = 0, y_max: float = 1, label: str = '') -> None:
+    for i in range(len(x_positions)):
+        axes.axvline(x_positions[i], y_min, y_max, ls='-.', color='gray', label=label if (i == 0) else '')
+
+    # axes.legend()
 
 
 def single_axis_2D(files: list, labels: list, references: dict, colors: dict, settings: dict) -> None:
@@ -147,6 +159,9 @@ def single_axis_2D(files: list, labels: list, references: dict, colors: dict, se
 
     _traces_from_csv(files, labels, axis, references, **colors)
     _set_axis(axis, **settings)
+
+    # _add_vertical_lines(axis, x_positions=[6000000, 6200000, 7000000], y_min=0.0, y_max=1.0, label='Training stopped')
+    # _add_vertical_lines(axis, x_positions=[17950000], y_min=0.0, y_max=0.5)
 
     plt.show()
 
@@ -178,15 +193,31 @@ def single_axis_3D(
     )
 
     if decorations['show']:
-        positions = _select_equally_spaced_sample(
-            combine_data_from(decorations['position_files']),
-            decorations['samples']
-        )
-        euler_angles = _select_equally_spaced_sample(
-            combine_data_from(decorations['euler_angles_files']),
-            decorations['samples']
-        )
-        add_body_frame(positions, euler_angles, axis)
+        for i in range(len(decorations['position_files'])):
+            positions = _select_equally_spaced_sample(
+                combine_data_from(decorations['position_files'][i]),
+                decorations['samples']
+            )
+            euler_angles = _select_equally_spaced_sample(
+                combine_data_from(decorations['euler_angles_files'][i]),
+                decorations['samples']
+            )
+            add_body_frame(positions, euler_angles, axis)
+
+    # WAY POINT TRACKER CYLINDERS
+    # add_cylinder(axis, center=(0, 1, 0.5))
+    # add_cylinder(axis, center=(-1, 0, 1))
+    # add_cylinder(axis, center=(-2, 1, 1.25))
+    # add_cylinder(axis, center=(-3, 0, 1.5))
+
+    # REWARD FUNCTION DIAGRAM
+    add_cylinder(axis, center=(0, 0, 1))
+    add_cylinder(axis, radius=2.1, center=(0, 0, 1), color='black')
+    add_sphere(axis)
+    add_double_arrow_annotation(axis, start=(-0.6489, -1.9971, 2), end=(-0.618, -1.902, 2), label='$\delta_R$')
+    add_double_arrow_annotation(axis, start=(0, 0, 1), end=(0, 0, 2), label='$\delta_H$')
+    add_double_arrow_annotation(axis, start=(0.24, -0.35, 0.36), end=(0, 0, 1), label='$T_e$')
+    add_double_arrow_annotation(axis, start=(0, 0, 1), end=(0.058, 0.080, 1.030), label='$\Delta_p$', label_position='end')
 
     _set_axis(axis, **settings)
 
@@ -198,11 +229,14 @@ def multiple_axis_2D(
         content_specification: dict,
         colors: dict
 ) -> None:
-    _, axis = plt.subplots(subplots['rows'], subplots['columns'])
+    plt.rcParams['text.usetex'] = True
+    fig, axis = plt.subplots(subplots['rows'], subplots['columns'])
+    fig.align_labels()
 
     for col in range(subplots['columns']):
         for row in range(subplots['rows']):
             traces_key = str(f"({row}, {col})")
+            # _add_vertical_lines(axis[row], x_positions=[8.3, 18.4, 29.5], label='Disturbances' if row == 0 else '')
             _traces_from_csv(
                 content_specification[traces_key]['files'],
                 content_specification[traces_key]['labels'],
@@ -311,6 +345,64 @@ def add_body_frame(positions: tuple, attitudes: tuple, axes: plt.Axes) -> None:
         body_frame_y = rotation_matrix[i] @ np.array([0, 1, 0])
         body_frame_z = rotation_matrix[i] @ np.array([0, 0, 1])
 
-        axes.quiver(*origin, *body_frame_x, color='r', length=0.2, normalize=True)
-        axes.quiver(*origin, *body_frame_y, color='g', length=0.2, normalize=True)
-        axes.quiver(*origin, *body_frame_z, color='b', length=0.2, normalize=True)
+        axes.quiver(*origin, *body_frame_x, color='green', length=0.2, normalize=True)
+        axes.quiver(*origin, *body_frame_y, color='red', length=0.2, normalize=True)
+        axes.quiver(*origin, *body_frame_z, color='blue', length=0.2, normalize=True)
+
+
+def add_cylinder(
+        axes: plt.Axes,
+        radius: float = 2.0,
+        height: float = 2.0,
+        center: tuple = (0, 0, 1),
+        color: str = 'blue'
+) -> None:
+    z = np.linspace(0, height, 100)
+    theta = np.linspace(0, 2 * np.pi, 100)
+    theta_grid, z_grid = np.meshgrid(theta, z)
+    x_grid = radius * np.cos(theta_grid) + center[0]
+    y_grid = radius * np.sin(theta_grid) + center[1]
+    z_grid = z_grid + center[2] - height / 2
+
+    axes.plot_surface(x_grid, y_grid, z_grid, alpha=0.1, rstride=5, cstride=5, color=color)
+
+
+def add_sphere(axes: plt.Axes, center: tuple = (0, 0, 0.978), radius: float = 0.1) -> None:
+    phi = np.linspace(0, np.pi, 100)
+    theta = np.linspace(0, 2 * np.pi, 100)
+    phi_grid, theta_grid = np.meshgrid(phi, theta)
+
+    x_grid = radius * np.sin(phi_grid) * np.cos(theta_grid) + center[0]
+    y_grid = radius * np.sin(phi_grid) * np.sin(theta_grid) + center[1]
+    z_grid = radius * np.cos(phi_grid) + center[2]
+
+    axes.plot_surface(x_grid, y_grid, z_grid, alpha=0.25, rstride=5, cstride=5, color='red')
+
+
+def add_double_arrow_annotation(
+        axes: plt.Axes,
+        start: tuple,
+        end: tuple,
+        label: str = '',
+        label_position: str = 'mid',
+        color: str = 'black'
+) -> None:
+    axes.quiver(
+        start[0], start[1], start[2],
+        end[0] - start[0], end[1] - start[1], end[2] - start[2],
+        color=color, arrow_length_ratio=0.1, linewidth=1
+    )
+
+    axes.quiver(
+        end[0], end[1], end[2],
+        start[0] - end[0], start[1] - end[1], start[2] - end[2],
+        color=color, arrow_length_ratio=0.1, linewidth=1.25
+    )
+
+    if label_position == 'mid':
+        mid_point = ((start[0] + end[0]) / 2, (start[1] + end[1]) / 2, (start[2] + end[2]) / 2)
+        axes.text(mid_point[0], mid_point[1], mid_point[2], label, color=color, fontsize=28)
+    elif label_position == 'start':
+        axes.text(start[0], start[1], start[2], label, color=color, fontsize=28)
+    elif label_position == 'end':
+        axes.text(end[0], end[1], end[2], label, color=color, fontsize=28)
