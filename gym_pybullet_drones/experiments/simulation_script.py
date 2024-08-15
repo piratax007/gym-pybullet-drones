@@ -3,6 +3,8 @@ import argparse
 import os
 import time
 import numpy as np
+from scipy.interpolate import splprep, splev
+from scipy.spatial.transform import Rotation as R
 from stable_baselines3 import PPO
 from gym_pybullet_drones.envs import ObS12Stage3
 from gym_pybullet_drones.utils.Logger import Logger
@@ -21,22 +23,67 @@ def get_policy(policy_path):
     raise Exception("[ERROR]: no model under the specified path", policy_path)
 
 
-def circular_trajectory(number_of_points: int = 50) -> tuple:
+def spiral_trajectory(number_of_points: int = 50, radius: int = 2, angle_range: float = 30.0) -> tuple:
     angles = np.linspace(0, 4 * np.pi, number_of_points)
-    x_coordinates = 2 * np.cos(angles)
-    y_coordinates = 2 * np.sin(angles)
+    x_coordinates = radius * np.cos(angles)
+    y_coordinates = radius * np.sin(angles)
     z_coordinates = np.linspace(0, 1, number_of_points)
-    return x_coordinates, y_coordinates, z_coordinates
+
+    yaw_angles = np.arctan2(y_coordinates, x_coordinates)
+
+    angle_range_rad = np.radians(angle_range)
+
+    oscillation = angle_range_rad * np.sin(np.linspace(0, 4 * np.pi, number_of_points))
+
+    yaw_angles += oscillation
+
+    yaw_angles = np.clip(yaw_angles, -angle_range_rad, angle_range_rad)
+
+    return x_coordinates, y_coordinates, z_coordinates, yaw_angles
 
 
-def target_angles(number_of_points: int = 50) -> tuple:
-    return tuple(np.linspace(0, 1.3, number_of_points))
+def smooth_trajectory(points, num_points=100):
+    points = np.array(points)
+    tck, u = splprep([points[:,0], points[:,1], points[:,2]], s=0)
+    u_fine = np.linspace(0, 1, num_points)
+    x_fine, y_fine, z_fine = splev(u_fine, tck)
+    smooth_points = np.vstack((x_fine, y_fine, z_fine)).T
+
+    tangents = np.diff(smooth_points, axis=0)
+    tangents /= np.linalg.norm(tangents, axis=1)[:, None]
+    tangents = np.vstack((tangents, tangents[-1]))
+
+    roll_pitch_yaw = []
+
+    for i in range(len(smooth_points)):
+        t = tangents[i]
+        y_axis = t
+        z_axis = np.array([0, 0, 1])
+        if np.allclose(y_axis, z_axis):
+            z_axis = np.array([0, 1, 0])
+        x_axis = np.cross(y_axis, z_axis)
+        x_axis /= np.linalg.norm(x_axis)
+        z_axis = np.cross(x_axis, y_axis)
+        z_axis /= np.linalg.norm(z_axis)
+
+        rotation_matrix = np.array([x_axis, y_axis, z_axis]).T
+        r = R.from_matrix(rotation_matrix)
+        roll, pitch, yaw = r.as_euler('xyz', degrees=False)
+
+        roll_pitch_yaw.append((roll, pitch, yaw))
+
+    x_tuple = tuple(smooth_points[:, 0])
+    y_tuple = tuple(smooth_points[:, 1])
+    z_tuple = tuple(smooth_points[:, 2])
+    yaw_tuple = tuple([yaw for _, _, yaw in roll_pitch_yaw])
+
+    return x_tuple, y_tuple, z_tuple, yaw_tuple
 
 
 def run_simulation(
         policy_path,
         test_env, gui=True,
-        record_video=False,
+        record_video=True,
         reset=False,
         save=False,
         plot=False,
@@ -49,7 +96,7 @@ def run_simulation(
     test_env = test_env(gui=gui,
                         obs=ObservationType('kin'),
                         act=ActionType('rpm'),
-                        initial_xyzs=np.array([[0, 0, 0]]),
+                        initial_xyzs=np.array([[2, 0, 0]]),
                         initial_rpys=np.array([[0, 0, 0]]),
                         record=record_video)
 
@@ -61,23 +108,66 @@ def run_simulation(
     )
 
     obs, info = test_env.reset(seed=42, options={})
-    log_reward = []
-    simulation_length = (test_env.EPISODE_LEN_SEC + 62) * test_env.CTRL_FREQ
+    simulation_length = (test_env.EPISODE_LEN_SEC + 55) * test_env.CTRL_FREQ
 
     start = time.time()
 
     firfilter = FIRFilter()
-
+    #
     for _ in range(firfilter.buffer_size):
         firfilter.buffer.append(np.zeros((1, 4)))
 
-    for i in range(simulation_length):
-        x_target, y_target, z_target = circular_trajectory(simulation_length)
+    # x_straight = np.linspace(-2, 2, simulation_length)
+    # y_straight = np.linspace(-2, 2, simulation_length)
+    x_target, y_target, z_target, yaw_target = spiral_trajectory(simulation_length, 2)
+    # points = [
+    #     [-4, 0, 0],
+    #     [-2, 1, 0.75],
+    #     [-1, -2, 1.5],
+    #     [1, 0, 2],
+    #     [4, 1, 1],
+    #     [6, -1, 0.5]
+    # ]
+    # x_target, y_target, z_target, yaw_target = smooth_trajectory(points, num_points=simulation_length)
 
-        obs[0][0] += x_target[i]
-        obs[0][1] += y_target[i]
-        obs[0][2] += (0.25 - z_target[i])
-        obs[0][5] += target_angles(simulation_length)[i]
+    for i in range(simulation_length):
+        # WAY-POINT TRACKING
+        # if i < simulation_length / 5:
+        #     x_target = -1
+        #     y_target = 1
+        #     z_target = 0
+        #     yaw_target = -0.52
+        # elif simulation_length / 5 < i < 2 * simulation_length / 5:
+        #     x_target = -2
+        #     y_target = 0
+        #     z_target = 0.5
+        #     yaw_target = 0
+        # elif 2 * simulation_length / 5 < i < 3 * simulation_length / 5:
+        #     x_target = -2
+        #     y_target = -2
+        #     z_target = 1.5
+        #     yaw_target = 0.35
+        # elif 3 * simulation_length / 5 < i < 4 * simulation_length / 5:
+        #     x_target = -1
+        #     y_target = -3
+        #     z_target = 0
+        #     yaw_target = 0.7
+        # else:
+        #     x_target = -2.8
+        #     y_target = -3.8
+        #     z_target = 1
+        #     yaw_target = 0
+        #
+        # obs[0][0] -= x_target
+        # obs[0][1] -= y_target
+        # obs[0][2] -= z_target
+        # obs[0][5] -= yaw_target
+
+        # TRAJECTORY TRACKING
+        obs[0][0] -= x_target[i]
+        obs[0][1] -= y_target[i]
+        obs[0][2] -= z_target[i]
+        obs[0][5] -= yaw_target[i]
 
         action, _states = policy.predict(obs,
                                          deterministic=True
@@ -87,7 +177,6 @@ def run_simulation(
             action = firfilter.filter_actions(action)
 
         obs, reward, terminated, truncated, info = test_env.step(action)
-        log_reward.append(reward)
         actions = test_env._getDroneStateVector(0)[16:20]
         actions2 = actions.squeeze()
         obs2 = obs.squeeze()
@@ -117,6 +206,7 @@ def run_simulation(
                              obs2[3:12],
                              actions2
                              ]),
+            reward=reward,
             control=np.zeros(12)
         )
 
@@ -132,9 +222,12 @@ def run_simulation(
         logger.plot_position_and_orientation()
         logger.plot_rpms()
         logger.plot_trajectory()
+        # logger.plot_instantaneous_reward(log_reward)
 
     if save:
-        logger.save_as_csv(comment)
+        logger.save(comment)
+
+    # save_to_csv(tuple([log_timestamp, log_reward]), policy_path, 'instantaneous_reward', 'full-task')
 
 
 if __name__ == '__main__':

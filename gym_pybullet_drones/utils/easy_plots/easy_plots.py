@@ -58,7 +58,7 @@ def _plot_references(
                 *reference,
                 color='black',
                 linestyle=style,
-                linewidth=1.5,
+                linewidth=2.5,
                 label=label if (i == 0 and labeled) else ''
             )
 
@@ -104,6 +104,7 @@ def _traces_from_csv(files: list, labels: list, axis: plt.Axes, references: dict
         axis,
         parsed_references['interior_detail_settings']
     )
+
     for i, file in enumerate(files):
         data = _get_data_from_csv(file)
         if interior_axes is not None:
@@ -121,8 +122,11 @@ def _traces_from_csv(files: list, labels: list, axis: plt.Axes, references: dict
             parsed_references['style']
         )
 
-    # axis.legend()
+    axis.legend()
+    # 2D
     axis.legend(bbox_to_anchor=(0, 1, 1, 0.75), loc="lower left", borderaxespad=0, ncol=4)
+    # 3D
+    # axis.legend(bbox_to_anchor=(0, 0.8, 1, 0.75), loc="lower left", borderaxespad=0, ncol=4)
 
 
 def _set_axis(axis: plt.Axes, **settings: dict) -> None:
@@ -135,8 +139,8 @@ def _set_axis(axis: plt.Axes, **settings: dict) -> None:
         except:
             pass
 
-    axis.set_xlabel(settings['labels']['x_label'], labelpad=20)
-    axis.set_ylabel(settings['labels']['y_label'], labelpad=20)
+    axis.set_xlabel(settings['labels']['x_label'], labelpad=30)
+    axis.set_ylabel(settings['labels']['y_label'], labelpad=30)
     try:
         axis.set_zlabel(settings['labels']['z_label'], labelpad=20)
     except:
@@ -144,14 +148,35 @@ def _set_axis(axis: plt.Axes, **settings: dict) -> None:
 
     axis.set_title(settings['labels']['title'])
     # axis.ticklabel_format(axis='y', style='sci', scilimits=(0, 0))
-    axis.set_aspect('equal')
+    # axis.set_aspect('equal')
 
 
 def _add_vertical_lines(axes: plt.Axes, x_positions: list, y_min: float = 0, y_max: float = 1, label: str = '') -> None:
     for i in range(len(x_positions)):
         axes.axvline(x_positions[i], y_min, y_max, ls='-.', color='gray', label=label if (i == 0) else '')
 
-    # axes.legend()
+    axes.legend()
+
+
+def add_double_arrow_with_label_2D(
+        axes: plt.Axes,
+        start: tuple[float, float],
+        end: tuple[float, float],
+        label: str = '',
+        label_position: tuple[float, float] = (0, 0),
+        horizontal_offset: float = 0.1,
+        vertical_offset: float = 0.1
+) -> None:
+    axes.annotate('', xy=end, xytext=start, arrowprops=dict(arrowstyle='<->', color='black', linewidth=2))
+
+    mid_point = ((start[0] + end[0]) / 2, (start[1] + end[1]) / 2)
+    axes.text(
+        label_position[0] - horizontal_offset,
+        label_position[1] - vertical_offset,
+        label, color='black',
+        ha='left',
+        va='top'
+    )
 
 
 def single_axis_2D(files: list, labels: list, references: dict, colors: dict, settings: dict) -> None:
@@ -160,8 +185,12 @@ def single_axis_2D(files: list, labels: list, references: dict, colors: dict, se
     _traces_from_csv(files, labels, axis, references, **colors)
     _set_axis(axis, **settings)
 
-    # _add_vertical_lines(axis, x_positions=[6000000, 6200000, 7000000], y_min=0.0, y_max=1.0, label='Training stopped')
-    # _add_vertical_lines(axis, x_positions=[17950000], y_min=0.0, y_max=0.5)
+    # TRAINING METRICS
+    # _add_vertical_lines(axis, x_positions=[6000000, 6200000, 7000000, 17950000], y_min=0.0, y_max=1.0, label='Training stopped')
+    # _add_vertical_lines(axis, x_positions=[17950000], y_min=0.0, y_max=1.0)
+    #  TRANSFERENCE KNOWLEDGE
+    # add_double_arrow_with_label_2D(axis, (73, 35), (146, 35), 'Time to Threshold', label_position=(75.4, 35.5), vertical_offset=2.7)
+    # add_double_arrow_with_label_2D(axis, (588, 36.86), (588, 42.4), 'Asymptotic Performance', label_position=(410, 39), vertical_offset=-1)
 
     plt.show()
 
@@ -204,20 +233,84 @@ def single_axis_3D(
             )
             add_body_frame(positions, euler_angles, axis)
 
-    # WAY POINT TRACKER CYLINDERS
-    # add_cylinder(axis, center=(0, 1, 0.5))
-    # add_cylinder(axis, center=(-1, 0, 1))
-    # add_cylinder(axis, center=(-2, 1, 1.25))
-    # add_cylinder(axis, center=(-3, 0, 1.5))
+    # WAY POINT TRACKER
+    # axis.text(-1, 0.5, 0, '$P_0$', color='black', fontsize=20)
+    # axis.text(-1.25, 1, 1.25, '$P_1$', color='black', fontsize=20)
+    # axis.text(-2.25, 0, 1.75, '$P_2$', color='black', fontsize=20)
+    # axis.text(-2.25, -2, 2.75, '$P_3$', color='black', fontsize=20)
+    # axis.text(-1.25, -3, 1.25, '$P_4$', color='black', fontsize=20)
+    # axis.text(-3.05, -3.8, 2.25, '$P_5$', color='black', fontsize=20)
+    # add_cylinder(axis, center=(-1, 1, 1))
+    # add_cylinder(axis, center=(-2, 0, 1.5), color='red')
+    # add_cylinder(axis, center=(-2, -2, 2.5), color='green')
+    # add_cylinder(axis, center=(-1, -3, 1), color='orange'),
+    # add_cylinder(axis, center=(-2.8, -3.8, 2), color='gray')
+    # add_inertial_frame((-5, -6, 0), axis)
+
+    # TRAJECTORY TRACKING
+    # add_inertial_frame((-2, -2, 0), axis)
 
     # REWARD FUNCTION DIAGRAM
-    add_cylinder(axis, center=(0, 0, 1))
-    add_cylinder(axis, radius=2.1, center=(0, 0, 1), color='black')
-    add_sphere(axis)
-    add_double_arrow_annotation(axis, start=(-0.6489, -1.9971, 2), end=(-0.618, -1.902, 2), label='$\delta_R$')
-    add_double_arrow_annotation(axis, start=(0, 0, 1), end=(0, 0, 2), label='$\delta_H$')
-    add_double_arrow_annotation(axis, start=(0.24, -0.35, 0.36), end=(0, 0, 1), label='$T_e$')
-    add_double_arrow_annotation(axis, start=(0, 0, 1), end=(0.058, 0.080, 1.030), label='$\Delta_p$', label_position='end')
+    # add_inertial_frame((-2, -2, 0), axis)
+    # add_cylinder(axis, height=1, center=(0, 0, 0.5))
+    # add_cylinder(axis, radius=2.1, height=1.1, center=(0, 0, 0.55), color='gray')
+    # axis.scatter(-0.6165, -1.9004, 0.24961, color='black', s=100, marker='o')
+    # axis.scatter(1.5998, 1.1824, 0.0093, color='black', s=100, marker='o')
+    # axis.scatter(2.25, 0.75, 0.9, color='black', s=150, marker='x')
+    # axis.scatter(0.5982, 1.8946, 0.0017, color='black', s=100, marker='o')
+    # axis.scatter(0.25, 0.75, 1.5, color='black', s=150, marker='x')
+    # add_sphere(axis)
+    # add_double_arrow_annotation(
+    #     axis,
+    #     start=(-0.6489, -1.9971, 1),
+    #     end=(-0.618, -1.902, 1),
+    #     label='$\delta_R$',
+    #     color='red'
+    # )
+    # add_double_arrow_annotation(
+    #     axis,
+    #     start=(-2, 0, 1),
+    #     end=(-2, 0, 1.1),
+    #     label='$\delta_H$',
+    #     color='red'
+    # )
+    # add_double_arrow_annotation(
+    #     axis,
+    #     start=(-2, 0, 1.1),
+    #     end=(-2.1, 0, 1.1),
+    #     label='',
+    #     color='gray'
+    # )
+    # add_double_arrow_annotation(
+    #     axis,
+    #     start=(0.185, -0.65, 0.27),
+    #     end=(0, 0, 1),
+    #     label='$T_e$',
+    #     label_relative_position='left'
+    # )
+    # add_double_arrow_annotation(
+    #     axis,
+    #     start=(0, 0, 1),
+    #     end=(0.058, 0.080, 1.030),
+    #     label='$\Delta_p$', label_position='end',
+    # )
+
+    # SUB-TASK 1
+    # add_inertial_frame((-0.6, -0.6, 0), axis)
+    # add_cylinder(axis, radius=0.025, height=1, center=(0, 0, 0.5))
+
+    # SUB-TASK 2
+    # add_inertial_frame((-2, -1.85, 0), axis)
+    # add_cylinder(axis, radius=2, height=2, center=(0, 0, 1))
+
+    # SUB-TASK3
+    # add_inertial_frame((-1.85, -1.85, 0), axis)
+    # add_cylinder(axis, radius=2, height=2, center=(0, 0, 1))
+
+    # SUB-TASKS COMPARISON
+    # add_inertial_frame((-1, -4, 0), axis)
+    # axis.scatter(2, 1, 0.5, color='black', s=100, marker='o')
+    # axis.scatter(0, 0, 1, color='black', s=150, marker='x')
 
     _set_axis(axis, **settings)
 
@@ -260,7 +353,12 @@ def animate(data: dict, references: dict, settings: dict, colors: dict, video_na
     parsed_references = _parse_references(references)
 
     if parsed_references['show']:
-        _plot_references(parsed_references['files'], axis)
+        _plot_references(
+            parsed_references['files'],
+            axis,
+            labeled=parsed_references['labeled'],
+            label=parsed_references['label']
+        )
 
     def update(frame_number):
         trace.set_xdata(x[:frame_number])
@@ -279,17 +377,30 @@ def animate(data: dict, references: dict, settings: dict, colors: dict, video_na
 def animation_3D(data: dict, references: dict, settings: dict, color: str = 'red', video_name: str = 'video') -> None:
     figure = plt.figure(figsize=(16, 9), dpi=720 / 16)
     axis = figure.add_subplot(111, projection='3d')
-    axis.view_init(elev=30, azim=45, roll=0)
+    axis.view_init(elev=30, azim=0, roll=0)
     _set_axis(axis, **settings)
 
     x, y, z = _get_data_from_csv(data['files'][0])
 
+    axis.text(-1, 0.65, 0, '$P_0$', color='black', fontsize=18)
+    axis.text(-1, 1.2, 1, '$P_1$', color='black', fontsize=18)
+    axis.text(-2, 0, 1.6, '$P_2$', color='black', fontsize=18)
+    axis.text(-2, -2, 2.6, '$P_3$', color='black', fontsize=18)
+    axis.text(-1, -3.35, 1, '$P_4$', color='black', fontsize=18)
+    axis.text(-2.8, -3.8, 2, '$P_5$', color='black', fontsize=18)
+    add_cylinder(axis, center=(-1, 1, 1))
+    add_cylinder(axis, center=(-2, 0, 1.5), color='red')
+    add_cylinder(axis, center=(-2, -2, 2.5), color='green')
+    add_cylinder(axis, center=(-1, -3, 1), color='orange'),
+    add_cylinder(axis, center=(-2.8, -3.8, 2), color='gray')
+    add_inertial_frame((-5, -6, 0), axis)
+
     if references['show']:
         _traces_from_csv(
-            references['files'],
-            ['Reference'],
+            [],
+            [''],
             axis,
-            dict(show=False),
+            references,
             **dict(color_mode='custom', color_list=['black'])
         )
 
@@ -345,9 +456,9 @@ def add_body_frame(positions: tuple, attitudes: tuple, axes: plt.Axes) -> None:
         body_frame_y = rotation_matrix[i] @ np.array([0, 1, 0])
         body_frame_z = rotation_matrix[i] @ np.array([0, 0, 1])
 
-        axes.quiver(*origin, *body_frame_x, color='green', length=0.2, normalize=True)
-        axes.quiver(*origin, *body_frame_y, color='red', length=0.2, normalize=True)
-        axes.quiver(*origin, *body_frame_z, color='blue', length=0.2, normalize=True)
+        axes.quiver(*origin, *body_frame_x, color='green', length=0.25, normalize=True)
+        axes.quiver(*origin, *body_frame_y, color='red', length=0.25, normalize=True)
+        axes.quiver(*origin, *body_frame_z, color='blue', length=0.25, normalize=True)
 
 
 def add_cylinder(
@@ -364,7 +475,7 @@ def add_cylinder(
     y_grid = radius * np.sin(theta_grid) + center[1]
     z_grid = z_grid + center[2] - height / 2
 
-    axes.plot_surface(x_grid, y_grid, z_grid, alpha=0.1, rstride=5, cstride=5, color=color)
+    axes.plot_surface(x_grid, y_grid, z_grid, alpha=0.07, rstride=5, cstride=5, color=color)
 
 
 def add_sphere(axes: plt.Axes, center: tuple = (0, 0, 0.978), radius: float = 0.1) -> None:
@@ -385,8 +496,16 @@ def add_double_arrow_annotation(
         end: tuple,
         label: str = '',
         label_position: str = 'mid',
+        label_relative_position: str = 'none',
         color: str = 'black'
 ) -> None:
+    relative_position = dict(
+        none=(0.0, 0.0, 0.0),
+        left=(-0.15, -0.1, 0),
+        right=(0.15, 0, 0),
+        bottom=(0, -0.15, 0),
+        top=(0, 0, 0.15),
+    )
     axes.quiver(
         start[0], start[1], start[2],
         end[0] - start[0], end[1] - start[1], end[2] - start[2],
@@ -400,9 +519,35 @@ def add_double_arrow_annotation(
     )
 
     if label_position == 'mid':
-        mid_point = ((start[0] + end[0]) / 2, (start[1] + end[1]) / 2, (start[2] + end[2]) / 2)
-        axes.text(mid_point[0], mid_point[1], mid_point[2], label, color=color, fontsize=28)
+        mid_point = (
+            (start[0] + end[0]) / 2 + relative_position[label_relative_position][0],
+            (start[1] + end[1]) / 2 + relative_position[label_relative_position][1],
+            (start[2] + end[2]) / 2 + relative_position[label_relative_position][2]
+        )
+        axes.text(mid_point[0], mid_point[1], mid_point[2], label, color='black', fontsize=20)
     elif label_position == 'start':
-        axes.text(start[0], start[1], start[2], label, color=color, fontsize=28)
+        axes.text(start[0], start[1], start[2], label, color='black', fontsize=20)
     elif label_position == 'end':
-        axes.text(end[0], end[1], end[2], label, color=color, fontsize=28)
+        axes.text(end[0], end[1], end[2], label, color='black', fontsize=20)
+
+
+def add_inertial_frame(position: tuple, axes: plt.Axes, label_offset: tuple = (0.1, 0.1, 0.1)) -> None:
+    rotation_matrix = _euler_to_rotation_matrix((0, 0, 0))
+
+    origin = np.array(position)
+    inertial_frame_x = rotation_matrix @ np.array([1, 0, 0])
+    inertial_frame_y = rotation_matrix @ np.array([0, 1, 0])
+    inertial_frame_z = rotation_matrix @ np.array([0, 0, 1])
+
+    axes.quiver(*origin, *inertial_frame_x, color='green', length=0.35, normalize=True)
+    axes.quiver(*origin, *inertial_frame_y, color='red', length=0.35, normalize=True)
+    axes.quiver(*origin, *inertial_frame_z, color='blue', length=0.35, normalize=True)
+
+    axes.text(
+        position[0] + label_offset[0],
+        position[1] + label_offset[1],
+        position[2] + label_offset[2],
+        r'$\mathcal{I}$',
+        color='black',
+        fontsize=18
+    )

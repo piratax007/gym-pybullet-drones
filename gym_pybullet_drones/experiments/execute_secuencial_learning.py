@@ -9,11 +9,11 @@ Target = [0 0 1 0 0 rand]
 """)
 
 results = run_learning(environment=ObS12Stage3,
-                       learning_id="CL-new_TASK3",
+                       learning_id="TEST-USING-STAGE-1-AS-SUPER-CLASS",
                        continuous_learning=True,
                        stop_on_max_episodes=False,
                        parallel_environments=4,
-                       time_steps=int(16e6)
+                       time_steps=int(1e3)
                        )
 
 print(f"""

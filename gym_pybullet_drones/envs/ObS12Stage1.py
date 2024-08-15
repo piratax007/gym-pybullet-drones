@@ -17,8 +17,8 @@ class ObS12Stage1(BaseRLAviary):
                  physics: Physics = Physics.PYB,
                  pyb_freq: int = 240,
                  ctrl_freq: int = 30,
-                 gui=False,
-                 record=False,
+                 gui=True,
+                 record=True,
                  obs: ObservationType = ObservationType.KIN,
                  act: ActionType = ActionType.RPM
                  ):
