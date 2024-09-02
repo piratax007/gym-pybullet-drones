@@ -13,7 +13,7 @@ results = run_learning(environment=HoverSim2Real,
                        continuous_learning=False,
                        stop_on_max_episodes=False,
                        parallel_environments=4,
-                       time_steps=int(10e4)
+                       time_steps=int(10e6)
                        )
 
 print(f"""
