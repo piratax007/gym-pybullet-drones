@@ -34,7 +34,7 @@ def get_ppo_model(environment, path, reuse_model=False):
     return PPO('MlpPolicy',
                environment,
                tensorboard_log=path + '/tb/',
-               batch_size=128,
+               batch_size=64,
                verbose=0,
                device='auto')
 
