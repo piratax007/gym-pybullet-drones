@@ -59,7 +59,7 @@ class HoverSim2Real(BaseRLAviary):
         self.LOG_ANGULAR_VELOCITY = np.zeros((1, 3))
         self.BUFFER_SIZE = 5
         self.action_buffer = deque(maxlen=self.BUFFER_SIZE)
-        self.sigma = 0.1
+        self.sigma = 1e-4
         super().__init__(drone_model=drone_model,
                          num_drones=1,
                          initial_xyzs=initial_xyzs,

@@ -8,6 +8,7 @@ from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.callbacks import EvalCallback, StopTrainingOnMaxEpisodes, BaseCallback
 from gym_pybullet_drones.utils.enums import ObservationType, ActionType
 from torch.utils.tensorboard import SummaryWriter
+import torch
 
 DEFAULT_OUTPUT_FOLDER = 'results'
 
@@ -27,16 +28,18 @@ def results_directory(base_directory, results_id):
 def get_ppo_model(environment, path, reuse_model=False):
     if reuse_model:
         return PPO.load(path=path,
-                        device='auto',
+                        device='cuda',
                         env=environment,
                         force_reset=True)
 
     return PPO('MlpPolicy',
                environment,
+               learning_rate=1e-4,
                tensorboard_log=path + '/tb/',
-               batch_size=64,
+               policy_kwargs=dict(activation_fn=torch.nn.Tanh,
+                                  net_arch=dict(pi=[400, 400], vf=[400, 400])),
                verbose=0,
-               device='auto')
+               device='cuda')
 
 
 class TensorboardCallback(BaseCallback):
