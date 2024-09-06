@@ -9,11 +9,11 @@ Target = [0 0 1 0 0 Nan]
 """)
 
 results = run_learning(environment=HoverSim2Real,
-                       learning_id="HOVER_NOISE_SIGMA1e-4_ACTION_BUFFER_400-NEURONS",
+                       learning_id="HOVER_DIFFERENT_NOISE_ACTION_BUFFER_128-NEURONS",
                        continuous_learning=False,
                        stop_on_max_episodes=False,
-                       parallel_environments=10,
-                       time_steps=int(10e6)
+                       parallel_environments=100,
+                       time_steps=int(20e4)
                        )
 
 print(f"""
