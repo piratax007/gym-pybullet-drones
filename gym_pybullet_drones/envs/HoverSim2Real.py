@@ -59,7 +59,9 @@ class HoverSim2Real(BaseRLAviary):
         self.LOG_ANGULAR_VELOCITY = np.zeros((1, 3))
         self.BUFFER_SIZE = 5
         self.action_buffer = deque(maxlen=self.BUFFER_SIZE)
-        self.sigma = 1e-4
+        self.noise_sigma_position_vel = 0.01
+        self.noise_sigma_euler = 1e-4
+        self.noise_sigma_actions = 0.1
         super().__init__(drone_model=drone_model,
                          num_drones=1,
                          initial_xyzs=initial_xyzs,
@@ -199,20 +201,20 @@ class HoverSim2Real(BaseRLAviary):
                           ):
         self.action_buffer.append(action)
         rpm = np.zeros((self.NUM_DRONES, 4))
-        noise = np.random.normal(loc=0.0, scale=self.sigma, size=rpm.shape)
+        noise_actions = np.random.normal(loc=0.0, scale=self.noise_sigma_actions, size=rpm.shape)
         for k in range(action.shape[0]):
             target = action[k, :]
             rpm[k, :] = np.array(self.HOVER_RPM * (1 + 0.05 * target))
 
-        return rpm + noise
+        return rpm + noise_actions
 
     ################################################################################
 
     def _observationSpace(self):
         lo = -np.inf
         hi = np.inf
-        obs_lower_bound = np.array([[lo, lo, 0, lo, lo, lo, lo, lo, lo, lo, lo, lo, lo]])
-        obs_upper_bound = np.array([[hi, hi, hi, hi, hi, hi, hi, hi, hi, hi, hi, hi, hi]])
+        obs_lower_bound = np.array([[lo, lo, 0, lo, lo, lo, lo, lo, lo, lo, lo, lo]])
+        obs_upper_bound = np.array([[hi, hi, hi, hi, hi, hi, hi, hi, hi, hi, hi, hi]])
         act_lo = -1
         act_hi = +1
         for i in range(self.BUFFER_SIZE):
@@ -225,12 +227,13 @@ class HoverSim2Real(BaseRLAviary):
     ################################################################################
 
     def _computeObs(self):
-        obs_13 = np.zeros((self.NUM_DRONES, 13))
-        noise = np.random.normal(loc=0.0, scale=self.sigma, size=obs_13.shape)
+        obs_12 = np.zeros((self.NUM_DRONES, 12))
+        noise_position_vel = np.random.normal(loc=0.0, scale=self.noise_sigma_position_vel, size=3)
+        noise_euler = np.random.normal(loc=0.0, scale=self.noise_sigma_euler, size=3)
         for i in range(self.NUM_DRONES):
             obs = self._getDroneStateVector(i)
-            obs_13[i, :] = np.hstack([obs[0:3], obs[3:7], obs[10:13], obs[13:16]]).reshape(13, ) + noise
-        ret = np.array([obs_13[i, :] for i in range(self.NUM_DRONES)]).astype('float32')
+            obs_12[i, :] = np.hstack([obs[0:3]+noise_position_vel, obs[7:10]+noise_euler, obs[10:13]+noise_position_vel, obs[13:16]+noise_position_vel]).reshape(12, )
+        ret = np.array([obs_12[i, :] for i in range(self.NUM_DRONES)]).astype('float32')
         for i in range(self.BUFFER_SIZE):
             ret = np.hstack([ret, np.array([self.action_buffer[i][j, :] for j in range(self.NUM_DRONES)])])
         return ret
