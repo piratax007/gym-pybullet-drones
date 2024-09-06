@@ -18,7 +18,7 @@ class ObS12Stage1(BaseRLAviary):
                  pyb_freq: int = 200,
                  ctrl_freq: int = 200,
                  gui=True,
-                 record=True,
+                 record=False,
                  obs: ObservationType = ObservationType.KIN,
                  act: ActionType = ActionType.RPM
                  ):
