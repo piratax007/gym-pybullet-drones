@@ -34,10 +34,8 @@ def get_ppo_model(environment, path, reuse_model=False):
 
     return PPO('MlpPolicy',
                environment,
-               # learning_rate=2e-4,
                tensorboard_log=path + '/tb/',
-               # policy_kwargs=dict(activation_fn=torch.nn.Tanh,
-               #                    net_arch=dict(pi=[128, 128], vf=[128, 128])),
+               batch_size=128,
                verbose=0,
                device='cuda')
 
