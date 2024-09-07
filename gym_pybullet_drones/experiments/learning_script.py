@@ -5,10 +5,8 @@ from datetime import datetime
 import argparse
 from stable_baselines3 import PPO
 from stable_baselines3.common.env_util import make_vec_env
-from stable_baselines3.common.callbacks import EvalCallback, StopTrainingOnMaxEpisodes, BaseCallback
+from stable_baselines3.common.callbacks import EvalCallback, StopTrainingOnMaxEpisodes
 from gym_pybullet_drones.utils.enums import ObservationType, ActionType
-from torch.utils.tensorboard import SummaryWriter
-import torch
 
 DEFAULT_OUTPUT_FOLDER = 'results'
 
@@ -38,21 +36,6 @@ def get_ppo_model(environment, path, reuse_model=False):
                batch_size=128,
                verbose=0,
                device='cuda')
-
-
-class TensorboardCallback(BaseCallback):
-    def __init__(self, log_dir, verbose=0):
-        super(TensorboardCallback, self).__init__(verbose)
-        self.writer = SummaryWriter(log_dir=log_dir)
-
-    def _on_step(self) -> bool:
-        rewards = self.locals['rewards']
-        for i, reward in enumerate(rewards):
-            self.writer.add_scalar('train/instantaneous_reward', reward, self.num_timesteps)
-        return True
-
-    def _on_training_end(self) -> None:
-        self.writer.close()
 
 
 def callbacks(episodes, evaluation_environment, parallel_environments, path_to_results, stop_on_max_episodes):
