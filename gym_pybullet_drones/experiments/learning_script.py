@@ -33,7 +33,7 @@ def get_ppo_model(environment, path, reuse_model=False):
     return PPO('MlpPolicy',
                environment,
                tensorboard_log=path + '/tb/',
-               batch_size=128,
+               batch_size=64,
                verbose=0,
                device='cuda')
 
@@ -43,7 +43,7 @@ def callbacks(episodes, evaluation_environment, parallel_environments, path_to_r
                                  verbose=0,
                                  best_model_save_path=path_to_results + '/',
                                  log_path=path_to_results + '/',
-                                 eval_freq=int(10000 / parallel_environments),
+                                 eval_freq=int(1000 / parallel_environments),
                                  deterministic=True,
                                  render=False)
 

@@ -6,5 +6,6 @@ from gym_pybullet_drones.envs.ObS12Stage1 import ObS12Stage1
 from gym_pybullet_drones.envs.ObS12Stage2 import ObS12Stage2
 from gym_pybullet_drones.envs.ObS12Stage3 import ObS12Stage3
 from gym_pybullet_drones.envs.HoverSim2Real import HoverSim2Real
+from gym_pybullet_drones.envs.ObS12VelControl import ObS12VelControl
 from gym_pybullet_drones.envs.MultiHoverAviary import MultiHoverAviary
 from gym_pybullet_drones.envs.VelocityAviary import VelocityAviary
