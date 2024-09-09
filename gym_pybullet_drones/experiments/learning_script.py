@@ -34,6 +34,7 @@ def get_ppo_model(environment, path, reuse_model=False):
                environment,
                tensorboard_log=path + '/tb/',
                batch_size=128,
+               learning_rate=1.5e-4,
                verbose=0,
                device='cuda')
 
