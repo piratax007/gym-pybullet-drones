@@ -1,3 +1,5 @@
+from functools import reduce
+
 import numpy as np
 from gymnasium import spaces
 from gym_pybullet_drones.envs.BaseRLAviary import BaseRLAviary
@@ -92,6 +94,11 @@ class ObS12Stage1(BaseRLAviary):
         }
         return differences
 
+    def _evaluate_actions(self, state):
+        evaluation = tuple(map(lambda rpm: self.HOVER_RPM*0.97 < rpm < self.HOVER_RPM*1.03, state[16:]))
+
+        return 0 if any(evaluation) else 1
+
     def _computeReward(self):
         """Computes the current reward value.
 
@@ -103,9 +110,9 @@ class ObS12Stage1(BaseRLAviary):
         """
         state = self._getDroneStateVector(0)
         we_differences = self._get_we_differences(state)
-        ret = (2 - 20 * self._target_error(state) -
-               100 * (1 if self._is_away_from_exploration_area(state) else -0.02) -
-               30 * ((state[7]**2 + state[8]**2) + (we_differences['roll'] ** 2 + we_differences['pitch'] ** 2 + we_differences['yaw'] ** 2)))
+        ret = (5 - 20 * self._target_error(state) -
+               100 * (1 if self._is_away_from_exploration_area(state) else -0.05) - 30 * self._evaluate_actions(state) -
+               20 * ((state[7]**2 + state[8]**2) + (we_differences['roll'] ** 2 + we_differences['pitch'] ** 2 + we_differences['yaw'] ** 2)))
         return ret
 
     ################################################################################
