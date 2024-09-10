@@ -14,7 +14,6 @@ class ObS12Stage1(BaseRLAviary):
                  initial_xyzs=np.array([[0, 0, 0]]),
                  initial_rpys=np.array([[0, 0, 0]]),
                  target_xyzs=np.array([0, 0, 1]),
-                 target_rpys=np.array([[0, 0, 0]]),
                  physics: Physics = Physics.PYB,
                  pyb_freq: int = 240,
                  ctrl_freq: int = 30,
@@ -53,8 +52,6 @@ class ObS12Stage1(BaseRLAviary):
         """
         self.INIT_XYZS = initial_xyzs
         self.TARGET_POS = target_xyzs
-        self.TARGET_ = target_rpys
-        self.TARGET_ORIENTATION = target_rpys
         self.EPISODE_LEN_SEC = 5
         self.LOG_ANGULAR_VELOCITY = np.zeros((1, 3))
         super().__init__(drone_model=drone_model,
@@ -151,8 +148,8 @@ class ObS12Stage1(BaseRLAviary):
         """
         state = self._getDroneStateVector(0)
         if (np.linalg.norm(state[0:2] - self.TARGET_POS[0:2]) >
-                np.linalg.norm(self.INIT_XYZS[0][0:2] - self.TARGET_POS[0:2]) + .1 or
-                state[2] > self.TARGET_POS[2] + .1 or
+                np.linalg.norm(self.INIT_XYZS[0][0:2] - self.TARGET_POS[0:2]) + .05 or
+                state[2] > self.TARGET_POS[2] + .05 or
                 abs(state[7]) > .25 or abs(state[8]) > .25):
             return True
 
