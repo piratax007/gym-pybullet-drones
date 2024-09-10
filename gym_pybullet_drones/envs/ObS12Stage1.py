@@ -111,8 +111,8 @@ class ObS12Stage1(BaseRLAviary):
         state = self._getDroneStateVector(0)
         we_differences = self._get_we_differences(state)
         ret = (5 - 20 * self._target_error(state) -
-               100 * (1 if self._is_away_from_exploration_area(state) else -0.05) - 30 * self._evaluate_actions(state) -
-               20 * ((state[7]**2 + state[8]**2) + (we_differences['roll'] ** 2 + we_differences['pitch'] ** 2 + we_differences['yaw'] ** 2)))
+               100 * (1 if self._is_away_from_exploration_area(state) else -0.2) - 30 * self._evaluate_actions(state) -
+               18 * ((state[7]**2 + state[8]**2) + (we_differences['roll'] ** 2 + we_differences['pitch'] ** 2 + we_differences['yaw'] ** 2)))
         return ret
 
     ################################################################################

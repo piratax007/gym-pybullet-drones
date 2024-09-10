@@ -9,7 +9,7 @@ Target = [0 0 1 Nan Nan Nan]
 """)
 
 results = run_learning(environment=ObS12Stage1,
-                       learning_id="HOVER_BASE_TRAINING-10",
+                       learning_id="HOVER_BASE_TRAINING-11",
                        continuous_learning=False,
                        stop_on_max_episodes=False,
                        parallel_environments=4,
