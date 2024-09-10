@@ -34,12 +34,10 @@ def get_ppo_model(environment, path, reuse_model=False):
                environment,
                tensorboard_log=path + '/tb/',
                batch_size=128,
-               learning_rate=5e-5,
-               n_steps=3072,
-               n_epochs=6,
-               clip_range=0.12,
-               ent_coef=0.01,
-               vf_coef=0.6,
+               learning_rate=1e-4,
+               n_steps=4096,
+               n_epochs=8,
+               clip_range=0.15,
                verbose=0,
                device='auto')
 
