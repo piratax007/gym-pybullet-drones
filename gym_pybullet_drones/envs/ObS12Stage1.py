@@ -95,9 +95,9 @@ class ObS12Stage1(BaseRLAviary):
         return differences
 
     def _evaluate_actions(self, state):
-        evaluation = tuple(map(lambda rpm: self.HOVER_RPM*0.97 < rpm < self.HOVER_RPM*1.03, state[16:]))
+        evaluation = tuple(map(lambda rpm: self.HOVER_RPM*0.98 < rpm < self.HOVER_RPM*1.02, state[16:]))
 
-        return 0 if any(evaluation) else 1
+        return 0 if len(tuple(filter(lambda rpm_i: rpm_i == True, evaluation))) == 4 else 1
 
     def _computeReward(self):
         """Computes the current reward value.
