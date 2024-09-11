@@ -52,7 +52,7 @@ class ObS12Stage1(BaseRLAviary):
         """
         self.INIT_XYZS = initial_xyzs
         self.TARGET_POS = target_xyzs
-        self.EPISODE_LEN_SEC = 2
+        self.EPISODE_LEN_SEC = 5
         self.LOG_ANGULAR_VELOCITY = np.zeros((1, 3))
         super().__init__(drone_model=drone_model,
                          num_drones=1,
@@ -101,11 +101,6 @@ class ObS12Stage1(BaseRLAviary):
         }
         return differences
 
-    def _evaluate_actions(self, state):
-        evaluation = tuple(map(lambda rpm: self.HOVER_RPM*0.98 < rpm < self.HOVER_RPM*1.02, state[16:]))
-
-        return 0 if len(tuple(filter(lambda rpm_i: rpm_i == True, evaluation))) == 4 else 1
-
     def _computeReward(self):
         """Computes the current reward value.
 
@@ -117,11 +112,10 @@ class ObS12Stage1(BaseRLAviary):
         """
         state = self._getDroneStateVector(0)
         we_differences = self._get_we_differences(state)
-        ret = (5 - 20 * self._target_error(state) -
+        ret = (25 - 20 * self._target_error(state) -
                100 * (1 if self._is_away_from_exploration_area(state) else -0.2) +
                20 * self._performance(state) -
-               30 * self._evaluate_actions(state) -
-               18 * ((state[7]**2 + state[8]**2) + (we_differences['roll'] ** 2 + we_differences['pitch'] ** 2 + we_differences['yaw'] ** 2)))
+               18 * (we_differences['roll'] ** 2 + we_differences['pitch'] ** 2 + we_differences['yaw'] ** 2))
         return ret
 
     ################################################################################
