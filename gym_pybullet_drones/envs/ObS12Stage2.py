@@ -1,10 +1,10 @@
 import numpy as np
-from gym_pybullet_drones.envs.ObS12Stage1 import ObS12Stage1
+from gym_pybullet_drones.envs.HoverCrazyflieSim2Real import HoverCrazyflieSim2Real
 from gym_pybullet_drones.utils.enums import DroneModel, Physics, ActionType, ObservationType
 import pybullet as p
 
 
-class ObS12Stage2(ObS12Stage1):
+class ObS12Stage2(HoverCrazyflieSim2Real):
     def __init__(self,
                  drone_model: DroneModel = DroneModel.CF2X,
                  initial_xyzs=np.array([[0, 0, 0]]),
