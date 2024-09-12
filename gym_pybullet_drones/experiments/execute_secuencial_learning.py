@@ -13,7 +13,7 @@ results = run_learning(environment=HoverCrazyflieSim2Real,
                        continuous_learning=False,
                        stop_on_max_episodes=False,
                        parallel_environments=4,
-                       time_steps=int(80e6)
+                       time_steps=int(100e6)
                        )
 
 print(f"""
