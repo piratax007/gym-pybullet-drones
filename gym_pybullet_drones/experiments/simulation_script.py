@@ -6,7 +6,7 @@ import numpy as np
 from scipy.interpolate import splprep, splev
 from scipy.spatial.transform import Rotation as R
 from stable_baselines3 import PPO
-from gym_pybullet_drones.envs import ObS12Stage3
+from gym_pybullet_drones.envs import HoverCrazyflieSim2Real
 from gym_pybullet_drones.utils.Logger import Logger
 from gym_pybullet_drones.utils.enums import ObservationType, ActionType
 from gym_pybullet_drones.utils.utils import sync, str2bool, FIRFilter
@@ -96,8 +96,7 @@ def run_simulation(
     test_env = test_env(gui=gui,
                         obs=ObservationType('kin'),
                         act=ActionType('rpm'),
-                        initial_xyzs=np.array([[2, 0, 0]]),
-                        initial_rpys=np.array([[0, 0, 0]]),
+                        initial_xyzs=np.array([[0, 0, 0]]),
                         record=record_video)
 
     logger = Logger(
@@ -108,7 +107,7 @@ def run_simulation(
     )
 
     obs, info = test_env.reset(seed=42, options={})
-    simulation_length = (test_env.EPISODE_LEN_SEC + 55) * test_env.CTRL_FREQ
+    simulation_length = (test_env.EPISODE_LEN_SEC + 15) * test_env.CTRL_FREQ
 
     start = time.time()
 
@@ -164,10 +163,10 @@ def run_simulation(
         # obs[0][5] -= yaw_target
 
         # TRAJECTORY TRACKING
-        obs[0][0] -= x_target[i]
-        obs[0][1] -= y_target[i]
-        obs[0][2] -= z_target[i]
-        obs[0][5] -= yaw_target[i]
+        # obs[0][0] -= x_target[i]
+        # obs[0][1] -= y_target[i]
+        # obs[0][2] -= z_target[i]
+        # obs[0][5] -= yaw_target[i]
 
         action, _states = policy.predict(obs,
                                          deterministic=True
@@ -206,7 +205,7 @@ def run_simulation(
                              obs2[3:12],
                              actions2
                              ]),
-            reward=reward,
+            # reward=reward,
             control=np.zeros(12)
         )
 
@@ -222,12 +221,10 @@ def run_simulation(
         logger.plot_position_and_orientation()
         logger.plot_rpms()
         logger.plot_trajectory()
-        # logger.plot_instantaneous_reward(log_reward)
 
     if save:
-        logger.save(comment)
-
-    # save_to_csv(tuple([log_timestamp, log_reward]), policy_path, 'instantaneous_reward', 'full-task')
+        logger.save_as_csv(comment)
+        # save_to_csv(tuple([log_timestamp, log_reward]), policy_path, 'instantaneous_reward', 'full-task')
 
 
 if __name__ == '__main__':
@@ -238,7 +235,7 @@ if __name__ == '__main__':
     )
     parser.add_argument(
         '--test_env',
-        default=ObS12Stage3,
+        default=HoverCrazyflieSim2Real,
         help='The name of the environment to learn, registered with gym_pybullet_drones'
     )
     parser.add_argument(
