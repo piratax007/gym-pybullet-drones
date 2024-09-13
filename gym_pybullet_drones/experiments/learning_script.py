@@ -5,7 +5,9 @@ from datetime import datetime
 import argparse
 from stable_baselines3 import PPO
 from stable_baselines3.common.env_util import make_vec_env
-from stable_baselines3.common.callbacks import EvalCallback, StopTrainingOnMaxEpisodes
+from stable_baselines3.common.callbacks import EvalCallback, StopTrainingOnMaxEpisodes, StopTrainingOnRewardThreshold, CheckpointCallback
+from torch.ao.nn.quantized.functional import threshold
+
 from gym_pybullet_drones.utils.enums import ObservationType, ActionType
 
 DEFAULT_OUTPUT_FOLDER = 'results'
@@ -34,7 +36,7 @@ def get_ppo_model(environment, path, reuse_model=False):
                environment,
                tensorboard_log=path + '/tb/',
                batch_size=128,
-               learning_rate=2e-4,
+               learning_rate=1.5e-4,
                n_steps=4096,
                n_epochs=10,
                clip_range=0.15,
@@ -42,7 +44,7 @@ def get_ppo_model(environment, path, reuse_model=False):
                device='auto')
 
 
-def callbacks(episodes, evaluation_environment, parallel_environments, path_to_results, stop_on_max_episodes):
+def callbacks(evaluation_environment, parallel_environments, path_to_results, stop_on_max_episodes:dict, stop_on_reward_threshold:dict, save_checkpoints:dict):
     eval_callback = EvalCallback(evaluation_environment,
                                  verbose=0,
                                  best_model_save_path=path_to_results + '/',
@@ -51,22 +53,39 @@ def callbacks(episodes, evaluation_environment, parallel_environments, path_to_r
                                  deterministic=True,
                                  render=False)
 
-    if stop_on_max_episodes:
-        stop_on_max_episodes = StopTrainingOnMaxEpisodes(int(episodes / parallel_environments), verbose=1)
-        callback_list = [stop_on_max_episodes, eval_callback]
-    else:
-        callback_list = [eval_callback]
-    return callback_list
+    callback_list = []
+
+    if stop_on_reward_threshold['stop']:
+        stop_on_reward_threshold_callback = StopTrainingOnRewardThreshold(stop_on_reward_threshold['threshold'], verbose=0)
+        eval_callback.callback_on_new_best=stop_on_reward_threshold_callback
+    elif stop_on_max_episodes['stop']:
+        stop_on_max_episodes_callback = StopTrainingOnMaxEpisodes(int(stop_on_max_episodes['episodes'] / parallel_environments), verbose=1)
+        callback_list.append(stop_on_max_episodes_callback)
+
+    if save_checkpoints['save']:
+        checkpoint_callback = CheckpointCallback(
+            save_freq=save_checkpoints['save_frequency'],
+            save_path=path_to_results + '/checkpoints/',
+            name_prefix='checkpoint',
+            save_replay_buffer=True,
+            save_vecnormalize=True
+        )
+        callback_list.append(checkpoint_callback)
+
+    return callback_list.append(eval_callback)
 
 
 def run_learning(environment,
                  learning_id,
                  continuous_learning=False,
-                 stop_on_max_episodes=True,
                  parallel_environments=4,
                  time_steps=10e7,
-                 episodes=int(1e6),
-                 output_directory=DEFAULT_OUTPUT_FOLDER):
+                 stop_on_max_episodes=None,
+                 stop_on_reward_threshold=None,
+                 save_checkpoints=None,
+                 output_directory=DEFAULT_OUTPUT_FOLDER
+                 ):
+
     path_to_results = results_directory(output_directory, learning_id)
 
     learning_environment = make_vec_env(environment,
@@ -80,8 +99,8 @@ def run_learning(environment,
                           'continuous_learning/best_model.zip' if continuous_learning else path_to_results,
                           continuous_learning)
 
-    callback_list = callbacks(episodes, evaluation_environment, parallel_environments, path_to_results,
-                              stop_on_max_episodes)
+    callback_list = callbacks(evaluation_environment, parallel_environments, path_to_results,
+                              stop_on_max_episodes, stop_on_reward_threshold, save_checkpoints)
 
     model.learn(total_timesteps=int(time_steps),
                 callback=callback_list,
