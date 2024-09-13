@@ -14,7 +14,7 @@ results = run_learning(environment=HoverCrazyflieSim2Real,
                        parallel_environments=4,
                        time_steps=int(100e6),
                        stop_on_max_episodes=dict(stop=False, episodes=0),
-                       stop_on_reward_threshold=dict(stop=True, threshold=700),
+                       stop_on_reward_threshold=dict(stop=True, threshold=700.),
                        save_checkpoints=dict(save=True, save_frequency=10000)
                        )
 

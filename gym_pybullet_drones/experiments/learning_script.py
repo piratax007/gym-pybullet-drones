@@ -57,7 +57,14 @@ def callbacks(evaluation_environment, parallel_environments, path_to_results, st
 
     if stop_on_reward_threshold['stop']:
         stop_on_reward_threshold_callback = StopTrainingOnRewardThreshold(stop_on_reward_threshold['threshold'], verbose=0)
-        eval_callback.callback_on_new_best=stop_on_reward_threshold_callback
+        eval_callback = EvalCallback(evaluation_environment,
+                                     callback_on_new_best=stop_on_reward_threshold_callback,
+                                 verbose=0,
+                                 best_model_save_path=path_to_results + '/',
+                                 log_path=path_to_results + '/',
+                                 eval_freq=int(10000 / parallel_environments),
+                                 deterministic=True,
+                                 render=False)
     elif stop_on_max_episodes['stop']:
         stop_on_max_episodes_callback = StopTrainingOnMaxEpisodes(int(stop_on_max_episodes['episodes'] / parallel_environments), verbose=1)
         callback_list.append(stop_on_max_episodes_callback)
@@ -72,7 +79,9 @@ def callbacks(evaluation_environment, parallel_environments, path_to_results, st
         )
         callback_list.append(checkpoint_callback)
 
-    return callback_list.append(eval_callback)
+    callback_list.append(eval_callback)
+
+    return callback_list
 
 
 def run_learning(environment,
