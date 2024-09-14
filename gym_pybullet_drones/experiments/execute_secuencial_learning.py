@@ -9,13 +9,13 @@ Target = [0 0 1 Nan Nan Nan]
 """)
 
 results = run_learning(environment=HoverCrazyflieSim2Real,
-                       learning_id="HOVER_BASE_TRAINING-20",
+                       learning_id="HOVER_BASE_TRAINING-21",
                        continuous_learning=False,
                        parallel_environments=4,
                        time_steps=int(100e6),
                        stop_on_max_episodes=dict(stop=False, episodes=0),
                        stop_on_reward_threshold=dict(stop=True, threshold=700.),
-                       save_checkpoints=dict(save=True, save_frequency=10000)
+                       save_checkpoints=dict(save=True, save_frequency=25000)
                        )
 
 print(f"""

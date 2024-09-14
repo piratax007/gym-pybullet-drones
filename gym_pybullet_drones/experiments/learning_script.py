@@ -6,7 +6,6 @@ import argparse
 from stable_baselines3 import PPO
 from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.callbacks import EvalCallback, StopTrainingOnMaxEpisodes, StopTrainingOnRewardThreshold, CheckpointCallback
-from torch.ao.nn.quantized.functional import threshold
 
 from gym_pybullet_drones.utils.enums import ObservationType, ActionType
 
@@ -36,10 +35,11 @@ def get_ppo_model(environment, path, reuse_model=False):
                environment,
                tensorboard_log=path + '/tb/',
                batch_size=128,
-               learning_rate=2e-4,
-               n_steps=4096,
-               n_epochs=12,
-               clip_range=0.18,
+               learning_rate=1.5e-4,
+               n_steps=6144,
+               n_epochs=8,
+               clip_range=0.15,
+               ent_coef=0.001,
                verbose=0,
                device='auto')
 
