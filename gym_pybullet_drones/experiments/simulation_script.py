@@ -6,7 +6,7 @@ import numpy as np
 from scipy.interpolate import splprep, splev
 from scipy.spatial.transform import Rotation as R
 from stable_baselines3 import PPO
-from gym_pybullet_drones.envs import HoverCrazyflieSim2Real
+from gym_pybullet_drones.envs import HoverCrazyflieSim2Real, ObS12Stage1
 from gym_pybullet_drones.utils.Logger import Logger
 from gym_pybullet_drones.utils.enums import ObservationType, ActionType
 from gym_pybullet_drones.utils.utils import sync, str2bool, FIRFilter
@@ -16,9 +16,11 @@ def in_degrees(angles):
     return list(map(lambda angle: angle * 180 / np.pi, angles))
 
 
-def get_policy(policy_path):
-    if os.path.isfile(policy_path + '/best_model.zip'):
-        return PPO.load(policy_path + '/best_model.zip')
+def get_policy(policy_path, model):
+    # if os.path.isfile(policy_path + '/best_model.zip'):
+    if os.path.isfile(policy_path + '/' + model):
+        # return PPO.load(policy_path + '/best_model.zip')
+        return PPO.load(policy_path + '/' + model)
 
     raise Exception("[ERROR]: no model under the specified path", policy_path)
 
@@ -81,8 +83,10 @@ def smooth_trajectory(points, num_points=100):
 
 
 def run_simulation(
+        test_env,
         policy_path,
-        test_env, gui=True,
+        model='best_model.zip',
+        gui=True,
         record_video=True,
         reset=False,
         save=False,
@@ -91,7 +95,7 @@ def run_simulation(
         apply_filter=False,
         comment=""
 ):
-    policy = get_policy(policy_path)
+    policy = get_policy(policy_path, model)
 
     test_env = test_env(gui=gui,
                         obs=ObservationType('kin'),
@@ -234,8 +238,12 @@ if __name__ == '__main__':
         help='The path to a zip file containing the trained policy'
     )
     parser.add_argument(
+        '--model',
+        help='The zip file containing the trained policy'
+    )
+    parser.add_argument(
         '--test_env',
-        default=HoverCrazyflieSim2Real,
+        default=HoverCrazyflieSim2Real, #ObS12Stage1,
         help='The name of the environment to learn, registered with gym_pybullet_drones'
     )
     parser.add_argument(

@@ -4,7 +4,7 @@ from gym_pybullet_drones.envs.BaseRLAviary import BaseRLAviary
 from gym_pybullet_drones.utils.enums import DroneModel, Physics, ActionType, ObservationType
 
 
-class HoverCrazyflieSim2Real(BaseRLAviary):
+class ObS12Stage1(BaseRLAviary):
     """Single agent RL problem: hover at position."""
 
     ################################################################################
@@ -14,9 +14,10 @@ class HoverCrazyflieSim2Real(BaseRLAviary):
                  initial_xyzs=np.array([[0, 0, 0]]),
                  initial_rpys=np.array([[0, 0, 0]]),
                  target_xyzs=np.array([0, 0, 1]),
+                 target_rpys=np.array([0, 0, 0]),
                  physics: Physics = Physics.PYB,
-                 pyb_freq: int = 400,
-                 ctrl_freq: int = 200,
+                 pyb_freq: int = 240,
+                 ctrl_freq: int = 30,
                  gui=False,
                  record=False,
                  obs: ObservationType = ObservationType.KIN,
@@ -52,7 +53,8 @@ class HoverCrazyflieSim2Real(BaseRLAviary):
         """
         self.INIT_XYZS = initial_xyzs
         self.TARGET_POS = target_xyzs
-        self.EPISODE_LEN_SEC = 5
+        self.TARGET_ORIENTATION = target_rpys
+        self.EPISODE_LEN_SEC = 8
         self.LOG_ANGULAR_VELOCITY = np.zeros((1, 3))
         super().__init__(drone_model=drone_model,
                          num_drones=1,
@@ -70,7 +72,8 @@ class HoverCrazyflieSim2Real(BaseRLAviary):
     ################################################################################
 
     def _target_error(self, state):
-        return np.linalg.norm(self.TARGET_POS - state[0:3])
+        return (np.linalg.norm(self.TARGET_POS - state[0:3]) +
+                np.linalg.norm(self.TARGET_ORIENTATION - state[7:10]))
 
     def _is_away_from_exploration_area(self, state):
         return (np.linalg.norm(state[0:2] - self.TARGET_POS[0:2]) >
@@ -84,7 +87,7 @@ class HoverCrazyflieSim2Real(BaseRLAviary):
         if self._is_closed(state) and state[7]**2 + state[8]**2 < 0.001:
             return 2
 
-        return -(state[7] ** 2 + state[8] ** 2)
+        return -(state[7]**2 + state[8]**2)
 
     def _get_previous_current_we(self, current_state):
         if np.shape(self.LOG_ANGULAR_VELOCITY)[0] > 2:
@@ -112,10 +115,10 @@ class HoverCrazyflieSim2Real(BaseRLAviary):
         """
         state = self._getDroneStateVector(0)
         we_differences = self._get_we_differences(state)
-        ret = (0.25 - 0.20 * self._target_error(state) -
-               1 * (1 if self._is_away_from_exploration_area(state) else -0.2) +
-               0.20 * self._performance(state) -
-               0.18 * (we_differences['roll'] ** 2 + we_differences['pitch'] ** 2 + we_differences['yaw'] ** 2))
+        ret = (25 - 20 * self._target_error(state) -
+               100 * (1 if self._is_away_from_exploration_area(state) else -0.2) +
+               20 * self._performance(state) -
+               18 * (we_differences['roll'] ** 2 + we_differences['pitch'] ** 2 + we_differences['yaw'] ** 2))
         return ret
 
     ################################################################################
@@ -188,11 +191,6 @@ class HoverCrazyflieSim2Real(BaseRLAviary):
         obs_12 = np.zeros((self.NUM_DRONES, 12))
         for i in range(self.NUM_DRONES):
             obs = self._getDroneStateVector(i)
-            obs_12[i, :] = np.hstack([
-                obs[0:3] + np.random.normal(0.0, 0.001, 3),
-                obs[7:10] + np.random.normal(0.0, 0.001, 3),
-                obs[10:13] + np.random.normal(0.0, 0.002, 3),
-                obs[13:16] + np.random.normal(0.0, 0.002, 3),
-            ]).reshape(12, )
+            obs_12[i, :] = np.hstack([obs[0:3], obs[7:10], obs[10:13], obs[13:16]]).reshape(12, )
         ret = np.array([obs_12[i, :] for i in range(self.NUM_DRONES)]).astype('float32')
         return ret
