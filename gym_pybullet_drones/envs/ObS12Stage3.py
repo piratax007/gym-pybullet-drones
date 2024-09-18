@@ -14,7 +14,7 @@ class ObS12Stage3(ObS12Stage2):
                  initial_xyzs=np.array([[0, 0, 0]]),
                  initial_rpys=np.array([[0, 0, 0]]),
                  target_xyzs=np.array([0, 0, 1]),
-                 target_rpys=np.array([[0, 0, np.random.uniform(0, 1.5 + 1e-10, 1)[0]]]),
+                 target_rpys=np.array([[0, 0, 0]]),
                  physics: Physics = Physics.PYB,
                  pyb_freq: int = 240,
                  ctrl_freq: int = 30,
@@ -108,7 +108,17 @@ class ObS12Stage3(ObS12Stage2):
             np.random.uniform(-0.2, 0.2 + 1e-10, 1)[0],
             np.random.uniform(-1.5, 1.5 + 1e-10, 1)[0]
         ]])
-        self.TARGET_ORIENTATION = np.array([[0, 0, np.random.uniform(-1.5, 1.5 + 1e-10, 1)[0]]])
+        initial_linear_velocity = [
+            np.random.uniform(-1, 1 + 1e-10, 1)[0],
+            np.random.uniform(-1, 1 + 1e-10, 1)[0],
+            np.random.uniform(-1, 1 + 1e-10, 1)[0]
+        ]
+        initial_anguler_velocity = [
+            np.random.uniform(-1, 1 + 1e-10, 1)[0],
+            np.random.uniform(-1, 1 + 1e-10, 1)[0],
+            np.random.uniform(-1, 1 + 1e-10, 1)[0]
+        ]
+        p.resetBaseVelocity(self.DRONE_IDS[0], initial_linear_velocity, initial_anguler_velocity)
         initial_obs = self._computeObs()
         initial_info = self._computeInfo()
         return initial_obs, initial_info

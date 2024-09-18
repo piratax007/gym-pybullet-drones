@@ -133,7 +133,7 @@ class ObS12Stage1(BaseRLAviary):
 
         """
         state = self._getDroneStateVector(0)
-        if np.linalg.norm(self.TARGET_POS - state[0:3]) < .02 and state[7]**2 + state[8]**2 < 0.001:
+        if np.linalg.norm(self.TARGET_POS - state[0:3]) < .05 and state[7]**2 + state[8]**2 < 0.01:
             return True
 
         return False
