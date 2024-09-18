@@ -9,7 +9,7 @@ Target = [0 0 1 Nan Nan Nan]
 """)
 
 results = run_learning(environment=HoverCrazyflieSim2Real,
-                       learning_id="HOVER_NOISED_TRAINING-01",
+                       learning_id="HOVER_NOISED_TRAINING-02",
                        continuous_learning=False,
                        parallel_environments=4,
                        time_steps=int(100e6),
