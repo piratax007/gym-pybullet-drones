@@ -10,7 +10,7 @@ Target = [0 0 1 Nan Nan Nan]
 
 results = run_learning(environment=ObS12Stage3,
                        learning_id="CL-TASK3-RANDOM-VELOCITIES",
-                       continuous_learning=False,
+                       continuous_learning=True,
                        parallel_environments=4,
                        time_steps=int(20e6),
                        stop_on_max_episodes=dict(stop=False, episodes=0),
