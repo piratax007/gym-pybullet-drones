@@ -29,6 +29,7 @@ class BaseAviary(gym.Env):
                  initial_xyzs=None,
                  initial_rpys=None,
                  physics: Physics=Physics.PYB,
+                 wind=False,
                  pyb_freq: int = 240,
                  ctrl_freq: int = 240,
                  gui=False,
@@ -89,6 +90,7 @@ class BaseAviary(gym.Env):
         self.GUI = gui
         self.RECORD = record
         self.PHYSICS = physics
+        self.wind = wind
         self.OBSTACLES = obstacles
         self.USER_DEBUG = user_debug_gui
         self.URDF = self.DRONE_MODEL.value + ".urdf"
@@ -368,6 +370,9 @@ class BaseAviary(gym.Env):
             #### PyBullet computes the new state, unless Physics.DYN ###
             if self.PHYSICS != Physics.DYN:
                 p.stepSimulation(physicsClientId=self.CLIENT)
+
+            if self.wind:
+                self._wind()
             #### Save the last applied action (e.g. to compute drag) ###
             self.last_clipped_action = clipped_action
         #### Update and store the drones kinematic information #####
@@ -811,6 +816,24 @@ class BaseAviary(gym.Env):
                                      flags=p.LINK_FRAME,
                                      physicsClientId=self.CLIENT
                                      )
+
+    ################################################################################
+
+    def _wind(self):
+        wind_speed = 0.00025
+        wind_direction = np.array([1.0, 0.0, 0.0])
+        wind_variability = np.random.normal(0, 0.0025, size=3)
+
+        wind_force = wind_speed * wind_direction + wind_variability
+
+        for drone_id in self.DRONE_IDS:
+            p.applyExternalForce(
+                objectUniqueId=drone_id,
+                linkIndex=-1,
+                forceObj=wind_force.tolist(),
+                posObj=[0, 0, 0],
+                flags=p.WORLD_FRAME
+            )
 
     ################################################################################
 
