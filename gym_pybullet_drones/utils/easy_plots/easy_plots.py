@@ -59,7 +59,7 @@ def _plot_references(
                 color='black',
                 linestyle=style,
                 linewidth=2.5,
-                label=label if (i == 0 and labeled) else ''
+                label=label if (i == 0 and labeled) else None
             )
 
 
@@ -110,8 +110,7 @@ def _traces_from_csv(files: list, labels: list, axis: plt.Axes, references: dict
         if interior_axes is not None:
             interior_axes.plot(*data, colors['color_list'][i] if colors['color_mode'] != 'auto' else '')
             axis.indicate_inset_zoom(interior_axes, edgecolor='gray', alpha=0.25)
-        axis.plot(*data, colors['color_list'][i] if colors['color_mode'] != 'auto' else '', label=labels[i])
-        axis.legend()
+        axis.plot(*data, colors['color_list'][i] if colors['color_mode'] != 'auto' else '', label=labels[i] if labels[i] != '' else None)
 
     if parsed_references['show']:
         _plot_references(
@@ -129,26 +128,38 @@ def _traces_from_csv(files: list, labels: list, axis: plt.Axes, references: dict
     # axis.legend(bbox_to_anchor=(0, 0.8, 1, 0.75), loc="lower left", borderaxespad=0, ncol=4)
 
 
-def _set_axis(axis: plt.Axes, **settings: dict) -> None:
+def _parse_settings(settings: dict) -> dict:
+    if 'axes_format' not in settings:
+        settings['axes_format'] = 'plain'
+
+    if 'axes_aspect' not in settings:
+        settings['axes_aspect'] = 'auto'
+
+    return settings
+
+
+def _set_axis(axis: plt.Axes, settings: dict) -> None:
     # ToDo: Improve exceptions
-    if settings['limits']['mode'] != 'auto':
-        axis.set_xlim(*settings['limits']['x_range'])
-        axis.set_ylim(*settings['limits']['y_range'])
+    parsed_settings = _parse_settings(settings)
+
+    if parsed_settings['limits']['mode'] != 'auto':
+        axis.set_xlim(parsed_settings['limits']['x_range'])
+        axis.set_ylim(parsed_settings['limits']['y_range'])
         try:
-            axis.set_zlim(*settings['limits']['z_range'])
+            axis.set_zlim(parsed_settings['limits']['z_range'])
         except:
             pass
 
-    axis.set_xlabel(settings['labels']['x_label'], labelpad=30)
-    axis.set_ylabel(settings['labels']['y_label'], labelpad=30)
+    axis.set_xlabel(parsed_settings['labels']['x_label'], labelpad=15)
+    axis.set_ylabel(parsed_settings['labels']['y_label'], labelpad=15)
     try:
-        axis.set_zlabel(settings['labels']['z_label'], labelpad=20)
+        axis.set_zlabel(parsed_settings['labels']['z_label'], labelpad=20)
     except:
         pass
 
-    axis.set_title(settings['labels']['title'])
-    # axis.ticklabel_format(axis='y', style='sci', scilimits=(0, 0))
-    # axis.set_aspect('equal')
+    axis.set_title(parsed_settings['labels']['title'])
+    axis.ticklabel_format(axis='y', style=parsed_settings['axes_format'], scilimits=(0, 0))
+    axis.set_aspect(parsed_settings['axes_aspect'])
 
 
 def _add_vertical_lines(axes: plt.Axes, x_positions: list, y_min: float = 0, y_max: float = 1, label: str = '') -> None:
