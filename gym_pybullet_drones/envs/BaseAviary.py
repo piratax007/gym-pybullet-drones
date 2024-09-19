@@ -820,11 +820,28 @@ class BaseAviary(gym.Env):
     ################################################################################
 
     def _wind(self):
-        wind_speed = 0.00025
-        wind_direction = np.array([1.0, 0.0, 0.0])
-        wind_variability = np.random.normal(0, 0.0025, size=3)
+        mean_wind_speed = 0.00025
+        mean_wind_direction = np.array([1.0, 0.0, 0.0])
 
-        wind_force = wind_speed * wind_direction + wind_variability
+        turbulence_intensity = 0.1
+        turbulence_scale = 0.02
+
+        gust_frequency = 0.5
+        gust_amplitude = 0.0005
+        gust_variability = np.random.normal(0, gust_amplitude, size=3)
+
+        wind_direction_variability = np.random.normal(0, 0.1, size=3)
+        wind_direction = mean_wind_direction + wind_direction_variability
+        wind_direction = wind_direction / np.linalg.norm(wind_direction)  # Normalize the direction
+
+        wind_speed_variability = np.random.normal(0, mean_wind_speed * 0.2)
+        wind_speed = mean_wind_speed + wind_speed_variability
+
+        turbulence = turbulence_intensity * np.random.normal(0, turbulence_scale, size=3)
+
+        gust = gust_amplitude * np.sin(2 * np.pi * gust_frequency * np.random.rand()) * gust_variability
+
+        wind_force = wind_speed * wind_direction # + turbulence + gust
 
         for drone_id in self.DRONE_IDS:
             p.applyExternalForce(

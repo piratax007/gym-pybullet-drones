@@ -14,11 +14,10 @@ class ObS12Stage3(ObS12Stage2):
                  initial_xyzs=np.array([[0, 0, 0]]),
                  initial_rpys=np.array([[0, 0, 0]]),
                  target_xyzs=np.array([0, 0, 1]),
-                 target_rpys=np.array([[0, 0, 0]]),
-                 physics: Physics = Physics.PYB,
+                 physics: Physics = Physics.PYB_GND,
                  pyb_freq: int = 240,
                  ctrl_freq: int = 30,
-                 wind=False,
+                 wind=True,
                  gui=False,
                  record=False,
                  obs: ObservationType = ObservationType.KIN,
@@ -54,7 +53,6 @@ class ObS12Stage3(ObS12Stage2):
         """
         self.INIT_XYZS = initial_xyzs
         self.TARGET_POS = target_xyzs
-        self.TARGET_ORIENTATION = target_rpys
         self.EPISODE_LEN_SEC = 5
         self.LOG_ANGULAR_VELOCITY = np.zeros((1, 3))
         super().__init__(drone_model=drone_model,
@@ -71,10 +69,6 @@ class ObS12Stage3(ObS12Stage2):
                          )
 
     ################################################################################
-
-    def _target_error(self, state):
-        return (np.linalg.norm(self.TARGET_POS - state[0:3]) +
-                np.linalg.norm(self.TARGET_ORIENTATION - state[7:10]))
 
     def reset(self,
               seed: int = None,
