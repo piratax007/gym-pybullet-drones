@@ -18,8 +18,8 @@ class ObS12Stage3(ObS12Stage2):
                  physics: Physics = Physics.PYB,
                  pyb_freq: int = 240,
                  ctrl_freq: int = 30,
-                 gui=True,
-                 record=True,
+                 gui=False,
+                 record=False,
                  obs: ObservationType = ObservationType.KIN,
                  act: ActionType = ActionType.RPM
                  ):
