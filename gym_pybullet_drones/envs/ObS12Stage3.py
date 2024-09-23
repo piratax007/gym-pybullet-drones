@@ -14,12 +14,12 @@ class ObS12Stage3(ObS12Stage2):
                  initial_xyzs=np.array([[0, 0, 0]]),
                  initial_rpys=np.array([[0, 0, 0]]),
                  target_xyzs=np.array([0, 0, 1]),
-                 physics: Physics = Physics.PYB_GND,
+                 target_rpys=np.array([[0, 0, 0]]),
+                 physics: Physics = Physics.PYB,
                  pyb_freq: int = 240,
                  ctrl_freq: int = 30,
-                 wind=True,
-                 gui=False,
-                 record=False,
+                 gui=True,
+                 record=True,
                  obs: ObservationType = ObservationType.KIN,
                  act: ActionType = ActionType.RPM
                  ):
@@ -53,6 +53,7 @@ class ObS12Stage3(ObS12Stage2):
         """
         self.INIT_XYZS = initial_xyzs
         self.TARGET_POS = target_xyzs
+        self.TARGET_ORIENTATION = target_rpys
         self.EPISODE_LEN_SEC = 5
         self.LOG_ANGULAR_VELOCITY = np.zeros((1, 3))
         super().__init__(drone_model=drone_model,
@@ -61,7 +62,6 @@ class ObS12Stage3(ObS12Stage2):
                          physics=physics,
                          pyb_freq=pyb_freq,
                          ctrl_freq=ctrl_freq,
-                         wind=wind,
                          gui=gui,
                          record=record,
                          obs=obs,
@@ -69,6 +69,10 @@ class ObS12Stage3(ObS12Stage2):
                          )
 
     ################################################################################
+
+    def _target_error(self, state):
+        return (np.linalg.norm(self.TARGET_POS - state[0:3]) +
+                np.linalg.norm(self.TARGET_ORIENTATION - state[7:10]))
 
     def reset(self,
               seed: int = None,
@@ -114,6 +118,7 @@ class ObS12Stage3(ObS12Stage2):
             np.random.uniform(-1, 1 + 1e-10, 1)[0],
             np.random.uniform(-1, 1 + 1e-10, 1)[0]
         ]
+        p.resetBasePositionAndOrientation(self.DRONE_IDS[0], self.INIT_XYZS[0], p.getQuaternionFromEuler(self.INIT_RPYS[0]))
         p.resetBaseVelocity(self.DRONE_IDS[0], initial_linear_velocity, initial_anguler_velocity)
         initial_obs = self._computeObs()
         initial_info = self._computeInfo()
