@@ -2,10 +2,10 @@
 from gym_pybullet_drones.envs import ObS12Stage3
 from gym_pybullet_drones.experiments.learning_script import run_learning
 
-print("############# WCL-DISTURBANCES-RANDOM-VELOCITIES_0 #############")
+print("############# WCL-DISTURBANCES-RANDOM-VELOCITIES_ACC #############")
 
 results = run_learning(environment=ObS12Stage3,
-                       learning_id="WCL-RANDOM-VELOCITIES_0",
+                       learning_id="WCL-RANDOM-VELOCITIES_ACC",
                        continuous_learning=False,
                        parallel_environments=4,
                        time_steps=int(30e6),

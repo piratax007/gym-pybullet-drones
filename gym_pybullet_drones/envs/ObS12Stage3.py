@@ -11,10 +11,7 @@ class ObS12Stage3(ObS12Stage2):
 
     def __init__(self,
                  drone_model: DroneModel = DroneModel.CF2X,
-                 initial_xyzs=np.array([[0, 0, 0]]),
-                 initial_rpys=np.array([[0, 0, 0]]),
                  target_xyzs=np.array([0, 0, 1]),
-                 target_rpys=np.array([[0, 0, 0]]),
                  physics: Physics = Physics.PYB,
                  pyb_freq: int = 240,
                  ctrl_freq: int = 30,
@@ -51,14 +48,10 @@ class ObS12Stage3(ObS12Stage2):
             The type of action space (1 or 3D; RPMS, thurst and torques, or waypoint with PID control)
 
         """
-        self.INIT_XYZS = initial_xyzs
         self.TARGET_POS = target_xyzs
-        self.TARGET_ORIENTATION = target_rpys
         self.EPISODE_LEN_SEC = 5
         self.LOG_ANGULAR_VELOCITY = np.zeros((1, 3))
         super().__init__(drone_model=drone_model,
-                         initial_xyzs=initial_xyzs,
-                         initial_rpys=initial_rpys,
                          physics=physics,
                          pyb_freq=pyb_freq,
                          ctrl_freq=ctrl_freq,
@@ -70,9 +63,34 @@ class ObS12Stage3(ObS12Stage2):
 
     ################################################################################
 
-    def _target_error(self, state):
-        return (np.linalg.norm(self.TARGET_POS - state[0:3]) +
-                np.linalg.norm(self.TARGET_ORIENTATION - state[7:10]))
+    @staticmethod
+    def _random_cylindrical_positions(
+            inner_radius: float = 0.0,
+            outer_radius: float = 1.5,
+            cylinder_height: float = 1.5,
+            cylinder_center: tuple = (0, 0, 1),
+            mode: str = "inside",
+            min_distance: float = 0.0,
+            max_distance: float = 0.0
+    ) -> tuple:
+        cx, cy, cz = cylinder_center
+
+        if mode == "inside":
+            r = np.sqrt(np.random.uniform(inner_radius**2, outer_radius**2))
+        elif mode == "outside":
+            r = np.sqrt(np.random.uniform((outer_radius + min_distance)**2, (outer_radius + max_distance)**2))
+        else:
+            r = 0
+
+        print(f"############### RADIUS: {r} ###########")
+        theta = np.random.uniform(0, 2*np.pi)
+        z = np.random.uniform(0, cylinder_height + max_distance)
+
+        x = cx + r * np.cos(theta)
+        y = cy + r * np.sin(theta)
+        z = cz + z / 2
+
+        return x, y, z
 
     def reset(self,
               seed: int = None,
@@ -99,10 +117,7 @@ class ObS12Stage3(ObS12Stage2):
         p.resetSimulation(physicsClientId=self.CLIENT)
         self._housekeeping()
         self._updateAndStoreKinematicInformation()
-        self.INIT_XYZS = np.array([[
-            np.random.uniform(-2, 2 + 1e-10, 1)[0],
-            np.random.uniform(-2, 2 + 1e-10, 1)[0],
-            np.random.uniform(0, 2 + 1e-10, 1)[0]]])
+        self.INIT_XYZS = np.array([[*self._random_cylindrical_positions(outer_radius=2.0, cylinder_height=2, mode='inside')]])
         self.INIT_RPYS = np.array([[
             np.random.uniform(-0.2, 0.2 + 1e-10, 1)[0],
             np.random.uniform(-0.2, 0.2 + 1e-10, 1)[0],
