@@ -82,7 +82,6 @@ class ObS12Stage3(ObS12Stage2):
         else:
             r = 0
 
-        print(f"############### RADIUS: {r} ###########")
         theta = np.random.uniform(0, 2*np.pi)
         z = np.random.uniform(0, cylinder_height + max_distance)
 
