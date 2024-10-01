@@ -83,11 +83,11 @@ class ObS12Stage3(ObS12Stage2):
             r = 0
 
         theta = np.random.uniform(0, 2*np.pi)
-        z = np.random.uniform(0, cylinder_height + max_distance)
+        z = np.random.uniform(-cylinder_height / 2, cylinder_height / 2 + max_distance)
 
         x = cx + r * np.cos(theta)
         y = cy + r * np.sin(theta)
-        z = cz + z / 2
+        z = cz + z
 
         return x, y, z
 

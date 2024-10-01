@@ -209,7 +209,7 @@ def run_simulation(
                              obs2[3:12],
                              actions2
                              ]),
-            # reward=reward,
+            reward=reward,
             control=np.zeros(12)
         )
 
