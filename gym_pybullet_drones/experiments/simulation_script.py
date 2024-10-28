@@ -6,10 +6,10 @@ import numpy as np
 from scipy.interpolate import splprep, splev
 from scipy.spatial.transform import Rotation as R
 from stable_baselines3 import PPO
-from gym_pybullet_drones.envs import HoverCrazyflieSim2Real, ObS12Stage1
+from gym_pybullet_drones.envs import ObS12Stage1
 from gym_pybullet_drones.utils.Logger import Logger
 from gym_pybullet_drones.utils.enums import ObservationType, ActionType
-from gym_pybullet_drones.utils.utils import sync, str2bool, FIRFilter
+from gym_pybullet_drones.utils.utils import sync, str2bool
 
 
 def in_degrees(angles):
@@ -40,6 +40,16 @@ def spiral_trajectory(number_of_points: int = 50, radius: int = 2, angle_range: 
     yaw_angles += oscillation
 
     yaw_angles = np.clip(yaw_angles, -angle_range_rad, angle_range_rad)
+
+    return x_coordinates, y_coordinates, z_coordinates, yaw_angles
+
+def lemniscata_trajectory(number_of_points: int = 50, a: float = 2) -> tuple:
+    t = np.linspace(0, 2.125 * np.pi, number_of_points)
+    x_coordinates = a * np.sin(t) / (1 + np.cos(t)**2)
+    y_coordinates = a * np.sin(t) * np.cos(t) / (1 + np.cos(t)**2)
+    z_coordinates = np.zeros(number_of_points)
+
+    yaw_angles = np.arctan2(-y_coordinates, -x_coordinates)
 
     return x_coordinates, y_coordinates, z_coordinates, yaw_angles
 
@@ -92,15 +102,16 @@ def run_simulation(
         save=False,
         plot=False,
         debug=False,
-        apply_filter=False,
         comment=""
 ):
     policy = get_policy(policy_path, model)
 
-    test_env = test_env(gui=gui,
+    test_env = test_env(
+                 initial_xyzs=np.array([[2, 0, 0]]),
+                 initial_rpys=np.array([[0, 0, 0]]),
+        gui=gui,
                         obs=ObservationType('kin'),
                         act=ActionType('rpm'),
-                        initial_xyzs=np.array([[0, 0, 0]]),
                         record=record_video)
 
     logger = Logger(
@@ -110,18 +121,12 @@ def run_simulation(
         colab=False
     )
 
-    obs, info = test_env.reset(seed=42, options={})
-    simulation_length = (test_env.EPISODE_LEN_SEC + 15) * test_env.CTRL_FREQ
+    obs, info = test_env.reset(options={})
+    simulation_length = (test_env.EPISODE_LEN_SEC + 55) * test_env.CTRL_FREQ
 
     start = time.time()
 
-    firfilter = FIRFilter()
-    #
-    for _ in range(firfilter.buffer_size):
-        firfilter.buffer.append(np.zeros((1, 4)))
-
-    # x_straight = np.linspace(-2, 2, simulation_length)
-    # y_straight = np.linspace(-2, 2, simulation_length)
+    # x_target, y_target, z_target, yaw_target = spiral_trajectory(simulation_length, 2)
     x_target, y_target, z_target, yaw_target = spiral_trajectory(simulation_length, 2)
     # points = [
     #     [-4, 0, 0],
@@ -164,20 +169,17 @@ def run_simulation(
         # obs[0][0] -= x_target
         # obs[0][1] -= y_target
         # obs[0][2] -= z_target
-        # obs[0][5] -= yaw_target
+        # obs[0][5] -= 1
 
         # TRAJECTORY TRACKING
-        # obs[0][0] -= x_target[i]
-        # obs[0][1] -= y_target[i]
-        # obs[0][2] -= z_target[i]
+        obs[0][0] -= x_target[i]
+        obs[0][1] -= y_target[i]
+        obs[0][2] -= z_target[i]
         # obs[0][5] -= yaw_target[i]
 
         action, _states = policy.predict(obs,
                                          deterministic=True
                                          )
-
-        if apply_filter:
-            action = firfilter.filter_actions(action)
 
         obs, reward, terminated, truncated, info = test_env.step(action)
         actions = test_env._getDroneStateVector(0)[16:20]
@@ -223,12 +225,12 @@ def run_simulation(
 
     if plot:
         logger.plot_position_and_orientation()
-        logger.plot_rpms()
+        # logger.plot()
+        # logger.plot_rpms()
         logger.plot_trajectory()
 
     if save:
         logger.save_as_csv(comment)
-        # save_to_csv(tuple([log_timestamp, log_reward]), policy_path, 'instantaneous_reward', 'full-task')
 
 
 if __name__ == '__main__':
@@ -243,7 +245,7 @@ if __name__ == '__main__':
     )
     parser.add_argument(
         '--test_env',
-        default=HoverCrazyflieSim2Real, #ObS12Stage1,
+        default=ObS12Stage1,
         help='The name of the environment to learn, registered with gym_pybullet_drones'
     )
     parser.add_argument(
@@ -288,11 +290,11 @@ if __name__ == '__main__':
         type=str2bool,
         help="Prints debug information"
     )
-    parser.add_argument(
-        '--apply_filter',
-        default=False,
-        type=str2bool,
-        help="Applies a low pass to the actions coming from the policy"
-    )
+    # parser.add_argument(
+    #     '--apply_filter',
+    #     default=False,
+    #     type=str2bool,
+    #     help="Applies a low pass to the actions coming from the policy"
+    # )
 
     run_simulation(**vars(parser.parse_args()))
