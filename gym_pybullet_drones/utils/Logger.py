@@ -50,7 +50,7 @@ class Logger(object):
         self.counters = np.zeros(num_drones)
         self.timestamps = np.zeros((num_drones, duration_sec * self.LOGGING_FREQ_HZ))
         # Note: this is the suggest information to log ##############################
-        self.states = np.zeros((num_drones, 16, duration_sec * self.LOGGING_FREQ_HZ))  # 16 states: pos_x,
+        self.states = np.zeros((num_drones, 20, duration_sec * self.LOGGING_FREQ_HZ))  # 16 states: pos_x,
         # pos_y,
         # pos_z,
         # vel_x,
@@ -112,7 +112,7 @@ class Logger(object):
         # Add rows to the matrices if a counter exceeds their size
         if current_counter >= self.timestamps.shape[1]:
             self.timestamps = np.concatenate((self.timestamps, np.zeros((self.NUM_DRONES, 1))), axis=1)
-            self.states = np.concatenate((self.states, np.zeros((self.NUM_DRONES, 16, 1))), axis=2)
+            self.states = np.concatenate((self.states, np.zeros((self.NUM_DRONES, 20, 1))), axis=2)
             self.controls = np.concatenate((self.controls, np.zeros((self.NUM_DRONES, 12, 1))), axis=2)
             self.rewards = np.concatenate((self.rewards, np.zeros((self.NUM_DRONES, 1))), axis=1)
         # Advance a counter is the matrices have overgrown it ###
@@ -121,7 +121,8 @@ class Logger(object):
         # Log the information and increase the counter ##########
         self.timestamps[drone, current_counter] = timestamp
         # Re-order the kinematic obs (of most Aviaries) #########
-        self.states[drone, :, current_counter] = np.hstack([state[0:3], state[10:13], state[7:10], state[13:20]])
+        self.states[drone, :, current_counter] = np.hstack([state[0:3], state[10:13], state[7:10], state[13:20], state[3:7]])
+        print(f'################### FROM LOGGER: ANGLES {state[7:10]} QUATERTION {state[3:7]} ######################')
         self.controls[drone, :, current_counter] = control
         self.counters[drone] = current_counter + 1
         self.rewards[drone, current_counter] = reward
@@ -166,6 +167,15 @@ class Logger(object):
                 np.savetxt(out_file, np.transpose(np.vstack([t, self.states[i, 1, :]])), delimiter=",")
             with open(csv_dir + "/z" + str(i) + ".csv", 'wb') as out_file:
                 np.savetxt(out_file, np.transpose(np.vstack([t, self.states[i, 2, :]])), delimiter=",")
+            ####
+            with open(csv_dir + "/qx" + str(i) + ".csv", 'wb') as out_file:
+                np.savetxt(out_file, np.transpose(np.vstack([t, self.states[i, 16, :]])), delimiter=",")
+            with open(csv_dir + "/qy" + str(i) + ".csv", 'wb') as out_file:
+                np.savetxt(out_file, np.transpose(np.vstack([t, self.states[i, 17, :]])), delimiter=",")
+            with open(csv_dir + "/qz" + str(i) + ".csv", 'wb') as out_file:
+                np.savetxt(out_file, np.transpose(np.vstack([t, self.states[i, 18, :]])), delimiter=",")
+            with open(csv_dir + "/qw" + str(i) + ".csv", 'wb') as out_file:
+                np.savetxt(out_file, np.transpose(np.vstack([t, self.states[i, 19, :]])), delimiter=",")
             ####
             with open(csv_dir + "/r" + str(i) + ".csv", 'wb') as out_file:
                 np.savetxt(out_file, np.transpose(np.vstack([t, list(map(lambda angle: (angle * 180) / np.pi, self.states[i, 6, :]))])), delimiter=",")

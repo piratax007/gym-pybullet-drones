@@ -13,8 +13,8 @@ class ObS12Stage2(ObS12Stage1):
                  target_xyzs=np.array([0, 0, 1]),
                  target_rpys=np.array([0, 0, 0]),
                  physics: Physics = Physics.PYB,
-                 pyb_freq: int = 240,
-                 ctrl_freq: int = 30,
+                 pyb_freq: int = 400,
+                 ctrl_freq: int = 200,
                  wind=False,
                  gui=False,
                  record=False,
@@ -69,6 +69,55 @@ class ObS12Stage2(ObS12Stage1):
 
     ################################################################################
 
+    def _target_pose_error(self, state):
+        return (np.linalg.norm(self.TARGET_POS - state[0:3]) +
+                np.linalg.norm(self.TARGET_ORIENTATION - state[7:10]))
+
+    def _computeReward(self):
+        """Computes the current reward value.
+
+        Returns
+        -------
+        float
+            The reward.
+
+        """
+        state = self._getDroneStateVector(0)
+        we_differences = self._get_we_differences(state)
+        ret = (0.25 - 0.20 * self._target_pose_error(state) -
+               1 * (1 if self._is_away_from_exploration_area(state) else -0.2) +
+               0.20 * self._performance(state) -
+               0.18 * (we_differences['roll'] ** 2 + we_differences['pitch'] ** 2 + we_differences['yaw'] ** 2))
+        return ret
+
+    @staticmethod
+    def _random_cylindrical_positions(
+            inner_radius: float = 0.0,
+            outer_radius: float = 1.5,
+            cylinder_height: float = 1.5,
+            cylinder_center: tuple = (0, 0, 1),
+            mode: str = "inside",
+            min_distance: float = 0.0,
+            max_distance: float = 0.0
+    ) -> tuple:
+        cx, cy, cz = cylinder_center
+
+        if mode == "inside":
+            r = np.sqrt(np.random.uniform(inner_radius ** 2, outer_radius ** 2))
+        elif mode == "outside":
+            r = np.sqrt(np.random.uniform((outer_radius + min_distance) ** 2, (outer_radius + max_distance) ** 2))
+        else:
+            r = 0
+
+        theta = np.random.uniform(0, 2 * np.pi)
+        z = np.random.uniform(-cylinder_height / 2, cylinder_height / 2 + max_distance)
+
+        x = cx + r * np.cos(theta)
+        y = cy + r * np.sin(theta)
+        z = cz + z
+
+        return x, y, z
+
     def reset(self,
               seed: int = None,
               options: dict = None):
@@ -94,10 +143,15 @@ class ObS12Stage2(ObS12Stage1):
         p.resetSimulation(physicsClientId=self.CLIENT)
         self._housekeeping()
         self._updateAndStoreKinematicInformation()
-        self.INIT_XYZS = np.array([[
-            np.random.uniform(-2, 2 + 1e-10, 1)[0],
-            np.random.uniform(-2, 2 + 1e-10, 1)[0],
-            np.random.uniform(0, 2 + 1e-10, 1)[0]]])
+        self.INIT_XYZS = np.array(
+            [[*self._random_cylindrical_positions(outer_radius=2.0, cylinder_height=2.0, mode='inside')]])
+        self.INIT_RPYS = np.array([[
+            np.random.uniform(-0.2, 0.2 + 1e-10, 1)[0],
+            np.random.uniform(-0.2, 0.2 + 1e-10, 1)[0],
+            np.random.uniform(-3.14, 3.14 + 1e-10, 1)[0]
+        ]])
+        p.resetBasePositionAndOrientation(self.DRONE_IDS[0], self.INIT_XYZS[0],
+                                          p.getQuaternionFromEuler(self.INIT_RPYS[0]))
         initial_obs = self._computeObs()
         initial_info = self._computeInfo()
         return initial_obs, initial_info

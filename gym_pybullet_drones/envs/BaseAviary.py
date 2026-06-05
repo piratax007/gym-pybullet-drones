@@ -521,6 +521,7 @@ class BaseAviary(gym.Env):
         for i in range (self.NUM_DRONES):
             self.pos[i], self.quat[i] = p.getBasePositionAndOrientation(self.DRONE_IDS[i], physicsClientId=self.CLIENT)
             self.rpy[i] = p.getEulerFromQuaternion(self.quat[i])
+            print(f'################ ANGLES {self.rpy[0]} QUATERNION {self.quat[0]} ####################')
             self.vel[i], self.ang_v[i] = p.getBaseVelocity(self.DRONE_IDS[i], physicsClientId=self.CLIENT)
     
     ################################################################################

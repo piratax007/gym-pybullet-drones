@@ -7,6 +7,7 @@ from scipy.interpolate import splprep, splev
 from scipy.spatial.transform import Rotation as R
 from stable_baselines3 import PPO
 from gym_pybullet_drones.envs import ObS12Stage1
+from gym_pybullet_drones.envs import HoverAviary
 from gym_pybullet_drones.utils.Logger import Logger
 from gym_pybullet_drones.utils.enums import ObservationType, ActionType
 from gym_pybullet_drones.utils.utils import sync, str2bool
@@ -17,9 +18,7 @@ def in_degrees(angles):
 
 
 def get_policy(policy_path, model):
-    # if os.path.isfile(policy_path + '/best_model.zip'):
     if os.path.isfile(policy_path + '/' + model):
-        # return PPO.load(policy_path + '/best_model.zip')
         return PPO.load(policy_path + '/' + model)
 
     raise Exception("[ERROR]: no model under the specified path", policy_path)
@@ -122,64 +121,23 @@ def run_simulation(
     )
 
     obs, info = test_env.reset(options={})
-    simulation_length = (test_env.EPISODE_LEN_SEC + 55) * test_env.CTRL_FREQ
+    simulation_length = (test_env.EPISODE_LEN_SEC + 5) * test_env.CTRL_FREQ
 
     start = time.time()
 
     # x_target, y_target, z_target, yaw_target = spiral_trajectory(simulation_length, 2)
-    x_target, y_target, z_target, yaw_target = spiral_trajectory(simulation_length, 2)
-    # points = [
-    #     [-4, 0, 0],
-    #     [-2, 1, 0.75],
-    #     [-1, -2, 1.5],
-    #     [1, 0, 2],
-    #     [4, 1, 1],
-    #     [6, -1, 0.5]
-    # ]
-    # x_target, y_target, z_target, yaw_target = smooth_trajectory(points, num_points=simulation_length)
+    # x_target, y_target, z_target, yaw_target = spiral_trajectory(simulation_length, 2)
 
     for i in range(simulation_length):
-        # WAY-POINT TRACKING
-        # if i < simulation_length / 5:
-        #     x_target = -1
-        #     y_target = 1
-        #     z_target = 0
-        #     yaw_target = -0.52
-        # elif simulation_length / 5 < i < 2 * simulation_length / 5:
-        #     x_target = -2
-        #     y_target = 0
-        #     z_target = 0.5
-        #     yaw_target = 0
-        # elif 2 * simulation_length / 5 < i < 3 * simulation_length / 5:
-        #     x_target = -2
-        #     y_target = -2
-        #     z_target = 1.5
-        #     yaw_target = 0.35
-        # elif 3 * simulation_length / 5 < i < 4 * simulation_length / 5:
-        #     x_target = -1
-        #     y_target = -3
-        #     z_target = 0
-        #     yaw_target = 0.7
-        # else:
-        #     x_target = -2.8
-        #     y_target = -3.8
-        #     z_target = 1
-        #     yaw_target = 0
-        #
-        # obs[0][0] -= x_target
-        # obs[0][1] -= y_target
-        # obs[0][2] -= z_target
-        # obs[0][5] -= 1
-
-        # TRAJECTORY TRACKING
-        obs[0][0] -= x_target[i]
-        obs[0][1] -= y_target[i]
-        obs[0][2] -= z_target[i]
-        # obs[0][5] -= yaw_target[i]
+        # obs[0][0] -= x_target[i]
+        # obs[0][1] -= y_target[i]
+        # obs[0][2] -= z_target[i]
 
         action, _states = policy.predict(obs,
                                          deterministic=True
                                          )
+
+        print(f"############### PREDICTED ACTION: {action} ####################")
 
         obs, reward, terminated, truncated, info = test_env.step(action)
         actions = test_env._getDroneStateVector(0)[16:20]
@@ -245,7 +203,7 @@ if __name__ == '__main__':
     )
     parser.add_argument(
         '--test_env',
-        default=ObS12Stage1,
+        default=HoverAviary,
         help='The name of the environment to learn, registered with gym_pybullet_drones'
     )
     parser.add_argument(
@@ -290,11 +248,5 @@ if __name__ == '__main__':
         type=str2bool,
         help="Prints debug information"
     )
-    # parser.add_argument(
-    #     '--apply_filter',
-    #     default=False,
-    #     type=str2bool,
-    #     help="Applies a low pass to the actions coming from the policy"
-    # )
 
     run_simulation(**vars(parser.parse_args()))

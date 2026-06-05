@@ -58,7 +58,7 @@ def _plot_references(
                 *reference,
                 color='black',
                 linestyle=style,
-                linewidth=2.5,
+                linewidth=2,
                 label=label if (i == 0 and labeled) else None
             )
 
@@ -96,7 +96,14 @@ def _parse_references(references: dict) -> dict:
     return references
 
 
-def _traces_from_csv(files: list, labels: list, axis: plt.Axes, references: dict, **colors: dict) -> None:
+def _traces_from_csv(
+        files: list,
+        labels: list,
+        axis: plt.Axes,
+        references: dict,
+        line_style: str = '-',
+        **colors: dict
+) -> None:
     parsed_references = _parse_references(references)
 
     interior_axes = _interior_axes(
@@ -106,11 +113,28 @@ def _traces_from_csv(files: list, labels: list, axis: plt.Axes, references: dict
     )
 
     for i, file in enumerate(files):
+        if colors['color_mode'] == 'custom'  and type(colors['color_list'][i][1]) is float:
+            color = colors['color_list'][i][0]
+            alpha = colors['color_list'][i][1]
+        elif colors['color_mode'] == 'custom':
+            color = colors['color_list'][i]
+            alpha = 1
+        else:
+            color = None
+            alpha = 1
+
         data = _get_data_from_csv(file)
         if interior_axes is not None:
-            interior_axes.plot(*data, colors['color_list'][i] if colors['color_mode'] != 'auto' else '')
-            axis.indicate_inset_zoom(interior_axes, edgecolor='gray', alpha=0.25)
-        axis.plot(*data, colors['color_list'][i] if colors['color_mode'] != 'auto' else '', label=labels[i] if labels[i] != '' else None)
+            interior_axes.plot(*data, color=color, alpha=alpha)
+            axis.indicate_inset_zoom(interior_axes, edgecolor='lightgray', alpha=0.25)
+        axis.plot(
+            *data,
+            color=color,
+            label=labels[i] if labels[i] != '' else None,
+            linestyle=line_style,
+            linewidth=1.5,
+            alpha=alpha
+        )
 
     if parsed_references['show']:
         _plot_references(
@@ -121,9 +145,9 @@ def _traces_from_csv(files: list, labels: list, axis: plt.Axes, references: dict
             parsed_references['style']
         )
 
-    axis.legend()
+    # axis.legend()
     # 2D
-    axis.legend(bbox_to_anchor=(0, 1, 1, 0.75), loc="lower left", borderaxespad=0, ncol=4)
+    axis.legend(bbox_to_anchor=(0, 1, 1, 0.25), loc="lower right", borderaxespad=0.5, ncol=3)
     # 3D
     # axis.legend(bbox_to_anchor=(0, 0.8, 1, 0.75), loc="lower left", borderaxespad=0, ncol=4)
 
@@ -180,7 +204,7 @@ def add_double_arrow_with_label_2D(
 ) -> None:
     axes.annotate('', xy=end, xytext=start, arrowprops=dict(arrowstyle='<->', color='black', linewidth=2))
 
-    mid_point = ((start[0] + end[0]) / 2, (start[1] + end[1]) / 2)
+    # mid_point = ((start[0] + end[0]) / 2, (start[1] + end[1]) / 2)
     axes.text(
         label_position[0] - horizontal_offset,
         label_position[1] - vertical_offset,
@@ -190,18 +214,22 @@ def add_double_arrow_with_label_2D(
     )
 
 
-def single_axis_2D(files: list, labels: list, references: dict, colors: dict, settings: dict) -> None:
+def single_axis_2D(files: list, labels: list, references: dict, colors: dict, settings: dict, callbacks: list = None) -> None:
     _, axis = plt.subplots(1)
 
     _traces_from_csv(files, labels, axis, references, **colors)
-    _set_axis(axis, **settings)
+    _set_axis(axis, settings)
+
+    if callbacks is not None:
+        for callback in callbacks:
+            callback(axis)
 
     # TRAINING METRICS
     # _add_vertical_lines(axis, x_positions=[6000000, 6200000, 7000000, 17950000], y_min=0.0, y_max=1.0, label='Training stopped')
     # _add_vertical_lines(axis, x_positions=[17950000], y_min=0.0, y_max=1.0)
     #  TRANSFERENCE KNOWLEDGE
-    # add_double_arrow_with_label_2D(axis, (73, 35), (146, 35), 'Time to Threshold', label_position=(75.4, 35.5), vertical_offset=2.7)
-    # add_double_arrow_with_label_2D(axis, (588, 36.86), (588, 42.4), 'Asymptotic Performance', label_position=(410, 39), vertical_offset=-1)
+    add_double_arrow_with_label_2D(axis, (73, 35), (146, 35), 'Time to Threshold', label_position=(75.4, 35.5), vertical_offset=2.7)
+    add_double_arrow_with_label_2D(axis, (588, 36.86), (588, 42.4), 'Asymptotic Performance', label_position=(375, 39), vertical_offset=-1)
 
     plt.show()
 
@@ -219,6 +247,7 @@ def single_axis_3D(
         colors: dict,
         settings: dict,
         decorations: dict = None,
+        callbacks: list = None
 ) -> None:
     plt.rcParams['text.usetex'] = True
     figure = plt.figure()
@@ -229,10 +258,12 @@ def single_axis_3D(
         labels,
         axis,
         references,
+        line_style=settings['line_style'] if 'line_style' in settings else '-',
+        line_width=settings['line_width'] if 'line_width' in settings else 1.5,
         **colors
     )
 
-    if decorations['show']:
+    if decorations is not None and decorations['show']:
         for i in range(len(decorations['position_files'])):
             positions = _select_equally_spaced_sample(
                 combine_data_from(decorations['position_files'][i]),
@@ -244,6 +275,10 @@ def single_axis_3D(
             )
             add_body_frame(positions, euler_angles, axis)
 
+    if callbacks is not None:
+        for callback in callbacks:
+            callback(axis)
+
     # WAY POINT TRACKER
     # axis.text(-1, 0.5, 0, '$P_0$', color='black', fontsize=20)
     # axis.text(-1.25, 1, 1.25, '$P_1$', color='black', fontsize=20)
@@ -251,11 +286,11 @@ def single_axis_3D(
     # axis.text(-2.25, -2, 2.75, '$P_3$', color='black', fontsize=20)
     # axis.text(-1.25, -3, 1.25, '$P_4$', color='black', fontsize=20)
     # axis.text(-3.05, -3.8, 2.25, '$P_5$', color='black', fontsize=20)
-    # add_cylinder(axis, center=(-1, 1, 1))
-    # add_cylinder(axis, center=(-2, 0, 1.5), color='red')
-    # add_cylinder(axis, center=(-2, -2, 2.5), color='green')
-    # add_cylinder(axis, center=(-1, -3, 1), color='orange'),
-    # add_cylinder(axis, center=(-2.8, -3.8, 2), color='gray')
+    # add_cylinder(axis, center=(-1, 1, 1), alpha=0.09)
+    # add_cylinder(axis, center=(-2, 0, 1.5), color='red', alpha=0.09)
+    # add_cylinder(axis, center=(-2, -2, 2.5), color='green', alpha=0.09)
+    # add_cylinder(axis, center=(-1, -3, 1), color='orange', alpha=0.09),
+    # add_cylinder(axis, center=(-2.8, -3.8, 2), color='gray', alpha=0.09)
     # add_inertial_frame((-5, -6, 0), axis)
 
     # TRAJECTORY TRACKING
@@ -263,8 +298,8 @@ def single_axis_3D(
 
     # REWARD FUNCTION DIAGRAM
     # add_inertial_frame((-2, -2, 0), axis)
-    # add_cylinder(axis, height=1, center=(0, 0, 0.5))
-    # add_cylinder(axis, radius=2.1, height=1.1, center=(0, 0, 0.55), color='gray')
+    # add_cylinder(axis, height=1, center=(0, 0, 0.5), alpha=0.1)
+    # add_cylinder(axis, radius=2.1, height=1.1, center=(0, 0, 0.55), color='gray', alpha=0.1)
     # axis.scatter(-0.6165, -1.9004, 0.24961, color='black', s=100, marker='o')
     # axis.scatter(1.5998, 1.1824, 0.0093, color='black', s=100, marker='o')
     # axis.scatter(2.25, 0.75, 0.9, color='black', s=150, marker='x')
@@ -323,7 +358,7 @@ def single_axis_3D(
     # axis.scatter(2, 1, 0.5, color='black', s=100, marker='o')
     # axis.scatter(0, 0, 1, color='black', s=150, marker='x')
 
-    _set_axis(axis, **settings)
+    _set_axis(axis, settings)
 
     plt.show()
 
@@ -331,7 +366,8 @@ def single_axis_3D(
 def multiple_axis_2D(
         subplots: dict,
         content_specification: dict,
-        colors: dict
+        colors: dict,
+        callbacks: list = None
 ) -> None:
     plt.rcParams['text.usetex'] = True
     fig, axis = plt.subplots(subplots['rows'], subplots['columns'])
@@ -340,7 +376,10 @@ def multiple_axis_2D(
     for col in range(subplots['columns']):
         for row in range(subplots['rows']):
             traces_key = str(f"({row}, {col})")
-            # _add_vertical_lines(axis[row], x_positions=[8.3, 18.4, 29.5], label='Disturbances' if row == 0 else '')
+            if callbacks is not None:
+                for callback in callbacks:
+                    callback(axis)
+            # _add_vertical_lines(axis[row], x_positions=[8.75, 14.87, 23.12, 31.13], label='Disturbances' if row == 0 else '')
             _traces_from_csv(
                 content_specification[traces_key]['files'],
                 content_specification[traces_key]['labels'],
@@ -350,7 +389,7 @@ def multiple_axis_2D(
             )
             _set_axis(
                 axis[row] if subplots['columns'] == 1 else axis[row, col],
-                **content_specification[traces_key]['settings']
+                content_specification[traces_key]['settings']
             )
 
     plt.show()
@@ -385,26 +424,35 @@ def animate(data: dict, references: dict, settings: dict, colors: dict, video_na
         anim.save(video_name + str(i) + '.mp4', 'ffmpeg', fps=30, dpi=300)
 
 
-def animation_3D(data: dict, references: dict, settings: dict, color: str = 'red', video_name: str = 'video') -> None:
+def animation_3D(
+        data: dict,
+        references: dict,
+        settings: dict,
+        color: str = 'red',
+        video_name: str = 'video',
+        callbacks: list = None,
+) -> None:
     figure = plt.figure(figsize=(16, 9), dpi=720 / 16)
     axis = figure.add_subplot(111, projection='3d')
-    axis.view_init(elev=30, azim=0, roll=0)
-    _set_axis(axis, **settings)
+    axis.view_init(elev=25, azim=40)
+    _set_axis(axis, settings)
 
     x, y, z = _get_data_from_csv(data['files'][0])
+    add_inertial_frame((1.5, -2, 0), axis)
 
-    axis.text(-1, 0.65, 0, '$P_0$', color='black', fontsize=18)
-    axis.text(-1, 1.2, 1, '$P_1$', color='black', fontsize=18)
-    axis.text(-2, 0, 1.6, '$P_2$', color='black', fontsize=18)
-    axis.text(-2, -2, 2.6, '$P_3$', color='black', fontsize=18)
-    axis.text(-1, -3.35, 1, '$P_4$', color='black', fontsize=18)
-    axis.text(-2.8, -3.8, 2, '$P_5$', color='black', fontsize=18)
-    add_cylinder(axis, center=(-1, 1, 1))
-    add_cylinder(axis, center=(-2, 0, 1.5), color='red')
-    add_cylinder(axis, center=(-2, -2, 2.5), color='green')
-    add_cylinder(axis, center=(-1, -3, 1), color='orange'),
-    add_cylinder(axis, center=(-2.8, -3.8, 2), color='gray')
-    add_inertial_frame((-5, -6, 0), axis)
+    # axis.text(-1, 0.65, 0, '$P_0$', color='black', fontsize=18)
+    # axis.text(-1, 1.2, 1, '$P_1$', color='black', fontsize=18)
+    # axis.text(-2, 0, 1.6, '$P_2$', color='black', fontsize=18)
+    # axis.text(-2, -2, 2.6, '$P_3$', color='black', fontsize=18)
+    # axis.text(-1, -3.35, 1, '$P_4$', color='black', fontsize=18)
+    # axis.text(-2.8, -3.8, 2, '$P_5$', color='black', fontsize=18)
+    # add_cylinder(axis, center=(-1, 1, 1))
+    # add_cylinder(axis, center=(-2, 0, 1.5), color='red')
+    # add_cylinder(axis, center=(-2, -2, 2.5), color='green')
+    # add_cylinder(axis, center=(-1, -3, 1), color='orange'),
+    # add_cylinder(axis, center=(-2.8, -3.8, 2), color='gray')
+    # add_inertial_frame((-5, -6, 0), axis)
+    add_sphere(axis, (0.01, -0.01, 1), 0.1)
 
     if references['show']:
         _traces_from_csv(
@@ -415,18 +463,34 @@ def animation_3D(data: dict, references: dict, settings: dict, color: str = 'red
             **dict(color_mode='custom', color_list=['black'])
         )
 
-    def update(frame_number):
-        trace.set_data(x[:frame_number], y[:frame_number])
-        trace.set_3d_properties(z[:frame_number])
-        return axis
-
     trace, = axis.plot3D([], [], [], color)
     trace.set_label('Actual Trajectory')
+
+    all_quivers = []
+
+    def update(frame_number):
+        nonlocal all_quivers
+        trace.set_data(x[:frame_number], y[:frame_number])
+        trace.set_3d_properties(z[:frame_number])
+
+        if all_quivers:
+            for quiver in all_quivers:
+                quiver.remove()
+
+        all_quivers = []
+        if callbacks is not None:
+            for callback in callbacks:
+                quivers = callback(frame_number, axis=axis)
+                if quivers:
+                    all_quivers.extend(quivers)
+
+        return [trace] + all_quivers
+
     anim = animation.FuncAnimation(figure, update, frames=len(x), interval=3, repeat=False)
     anim.save(video_name + '.mp4', 'ffmpeg', fps=30, dpi=300)
 
 
-def _euler_to_rotation_matrix(euler_angles: tuple) -> np.ndarray:
+def euler_to_rotation_matrix(euler_angles: tuple) -> np.ndarray:
     angles_in_radians= tuple(np.deg2rad(euler_angles))
     rotation_x = np.array([
         [1, 0, 0],
@@ -458,7 +522,7 @@ def add_body_frame(positions: tuple, attitudes: tuple, axes: plt.Axes) -> None:
 
         return tuple(arranged_data)
 
-    rotation_matrix = tuple(map(lambda a: _euler_to_rotation_matrix(a), arrange(attitudes)))
+    rotation_matrix = tuple(map(lambda a: euler_to_rotation_matrix(a), arrange(attitudes)))
     arranged_positions = arrange(positions)
 
     for i in range(len(arranged_positions)):
@@ -467,8 +531,8 @@ def add_body_frame(positions: tuple, attitudes: tuple, axes: plt.Axes) -> None:
         body_frame_y = rotation_matrix[i] @ np.array([0, 1, 0])
         body_frame_z = rotation_matrix[i] @ np.array([0, 0, 1])
 
-        axes.quiver(*origin, *body_frame_x, color='green', length=0.25, normalize=True)
-        axes.quiver(*origin, *body_frame_y, color='red', length=0.25, normalize=True)
+        axes.quiver(*origin, *body_frame_x, color='red', length=0.25, normalize=True)
+        axes.quiver(*origin, *body_frame_y, color='green', length=0.25, normalize=True)
         axes.quiver(*origin, *body_frame_z, color='blue', length=0.25, normalize=True)
 
 
@@ -477,7 +541,8 @@ def add_cylinder(
         radius: float = 2.0,
         height: float = 2.0,
         center: tuple = (0, 0, 1),
-        color: str = 'blue'
+        color: str = 'blue',
+        alpha: float = 0.25
 ) -> None:
     z = np.linspace(0, height, 100)
     theta = np.linspace(0, 2 * np.pi, 100)
@@ -486,7 +551,7 @@ def add_cylinder(
     y_grid = radius * np.sin(theta_grid) + center[1]
     z_grid = z_grid + center[2] - height / 2
 
-    axes.plot_surface(x_grid, y_grid, z_grid, alpha=0.07, rstride=5, cstride=5, color=color)
+    axes.plot_surface(x_grid, y_grid, z_grid, alpha=alpha, rstride=5, cstride=5, color=color)
 
 
 def add_sphere(axes: plt.Axes, center: tuple = (0, 0, 0.978), radius: float = 0.1) -> None:
@@ -543,15 +608,15 @@ def add_double_arrow_annotation(
 
 
 def add_inertial_frame(position: tuple, axes: plt.Axes, label_offset: tuple = (0.1, 0.1, 0.1)) -> None:
-    rotation_matrix = _euler_to_rotation_matrix((0, 0, 0))
+    rotation_matrix = euler_to_rotation_matrix((0, 0, 0))
 
     origin = np.array(position)
     inertial_frame_x = rotation_matrix @ np.array([1, 0, 0])
     inertial_frame_y = rotation_matrix @ np.array([0, 1, 0])
     inertial_frame_z = rotation_matrix @ np.array([0, 0, 1])
 
-    axes.quiver(*origin, *inertial_frame_x, color='green', length=0.35, normalize=True)
-    axes.quiver(*origin, *inertial_frame_y, color='red', length=0.35, normalize=True)
+    axes.quiver(*origin, *inertial_frame_x, color='red', length=0.35, normalize=True)
+    axes.quiver(*origin, *inertial_frame_y, color='green', length=0.35, normalize=True)
     axes.quiver(*origin, *inertial_frame_z, color='blue', length=0.35, normalize=True)
 
     axes.text(
@@ -562,3 +627,17 @@ def add_inertial_frame(position: tuple, axes: plt.Axes, label_offset: tuple = (0
         color='black',
         fontsize=18
     )
+
+def compose_sources(parent_directory: str, common_name: str) -> list:
+    sources = []
+
+    if not os.path.isdir(parent_directory):
+        assert False, "Parent directory doesn't exist"
+
+    for source in os.listdir(parent_directory):
+        if common_name in source:
+            sources.append(parent_directory + source + '/')
+
+    sources.sort()
+
+    return sources
